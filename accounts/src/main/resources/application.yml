@@ -1,0 +1,9 @@
+server:
+  port: 8084
+spring:
+  application:
+    name: accounts-service
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/accounts_db}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}

@@ -1,0 +1,9 @@
+server:
+  port: 8086
+spring:
+  application:
+    name: audit-service
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/audit_db}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
