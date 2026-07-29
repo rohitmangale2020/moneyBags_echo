@@ -1,0 +1,3 @@
+spring:
+  application:
+    name: moneyBags_echo
