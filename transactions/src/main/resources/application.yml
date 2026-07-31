@@ -4,6 +4,14 @@ spring:
   application:
     name: transactions-service
   datasource:
-    url: ${DB_URL:jdbc:mysql://localhost:3306/transactions_db}
-    username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:}
+    url: jdbc:oracle:thin:@//ofss-mum-1212.snbomprshared1.gbucdsint02bom.oraclevcn.com:1521/pdb1
+    username: ECHO
+    password: Echo@123
+    driver-class-name: oracle.jdbc.OracleDriver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
