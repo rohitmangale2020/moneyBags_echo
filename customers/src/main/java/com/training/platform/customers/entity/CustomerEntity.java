@@ -1,6 +1,8 @@
 package com.training.platform.customers.entity;
 
 
+import com.training.platform.customers.constants.CustomerStatus;
+import com.training.platform.customers.constants.Gender;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -15,7 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Customer {
+public class CustomerEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -61,7 +63,7 @@ public class Customer {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
-    private List<Address> addresses;
+    private List<AddressEntity> addresses;
 
     @PrePersist
     public void onCreate() {

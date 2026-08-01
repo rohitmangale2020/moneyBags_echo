@@ -3,8 +3,8 @@ package com.training.platform.customers.repository;
 
 
 
-import com.training.platform.customers.entity.Customer;
-import com.training.platform.customers.entity.CustomerStatus;
+import com.training.platform.customers.entity.CustomerEntity;
+import com.training.platform.customers.constants.CustomerStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -12,13 +12,13 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface CustomerRepository extends JpaRepository<Customer, Long> {
+public interface CustomerRepository extends JpaRepository<CustomerEntity, Long> {
 
-    Optional<Customer> findByCifNo(String cifNo);
+    Optional<CustomerEntity> findByCifNo(String cifNo);
 
-    Optional<Customer> findByEmail(String email);
+    Optional<CustomerEntity> findByEmail(String email);
 
-    Optional<Customer> findByPhone(String phone);
+    Optional<CustomerEntity> findByPhone(String phone);
 
     boolean existsByEmail(String email);
 
@@ -26,5 +26,5 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
     boolean existsByCifNo(String cifNo);
 
-    List<Customer> findByStatus(CustomerStatus status);
+    List<CustomerEntity> findByStatus(CustomerStatus status);
 }

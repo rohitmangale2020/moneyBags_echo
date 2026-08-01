@@ -1,15 +1,15 @@
 package com.training.platform.customers.repository;
 
 
-import com.training.platform.customers.entity.Address;
+import com.training.platform.customers.entity.AddressEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
-public interface AddressRepository extends JpaRepository<Address, Long> {
+public interface AddressRepository extends JpaRepository<AddressEntity, Long> {
 
-    List<Address> findByCustomerCustomerId(Long customerId);
+    List<AddressEntity> findByCustomerCustomerId(Long customerId);
 
 }

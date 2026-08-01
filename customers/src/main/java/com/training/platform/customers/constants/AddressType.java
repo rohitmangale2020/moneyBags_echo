@@ -1,4 +1,4 @@
-package com.training.platform.customers.entity;
+package com.training.platform.customers.constants;
 
 public enum AddressType {
     CURRENT,
