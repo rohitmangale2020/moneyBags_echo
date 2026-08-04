@@ -1,6 +1,38 @@
+# Maven / Spring Boot
 .m2/
 **/target/
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# Spring Tool Suite
+.apt_generated/
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache/
+
+# Application logs and JVM crash reports
+**/logs/
+*.log
+*.log.*
+hs_err_pid*
+replay_pid*
+
+# IntelliJ IDEA
 .idea/
+*.iws
 *.iml
+*.ipr
+
+# Visual Studio Code
+.vscode/
+
+# Local environment files
 .env
 .env.local
+
+# Operating system files
+.DS_Store
+Thumbs.db

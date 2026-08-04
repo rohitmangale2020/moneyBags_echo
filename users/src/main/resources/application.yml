@@ -1,5 +1,6 @@
 spring:
   application:
-    name: security-management-service
+    name: User-Management-Service
+
   profiles:
     active: test
