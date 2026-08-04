@@ -1,9 +1,21 @@
 package com.training.platform.users.repository;
 
-import com.training.platform.users.model.UserAccount;
-import java.util.Optional;
+import com.training.platform.users.model.User;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UserRepository extends JpaRepository<UserAccount, Long> {
-    Optional<UserAccount> findByUsername(String username);
+import java.util.Optional;
+
+public interface UserRepository extends JpaRepository<User, Long> {
+
+    boolean existsByUsernameIgnoreCase(String username);
+
+    boolean existsByEmailIgnoreCase(String email);
+
+    boolean existsByUsernameIgnoreCaseAndIdNot(String username, Long id);
+
+    boolean existsByEmailIgnoreCaseAndIdNot(String email, Long id);
+
+    @EntityGraph(attributePaths = "profile")
+    Optional<User> findWithProfileById(Long id);
 }
