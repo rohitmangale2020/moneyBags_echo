@@ -24,6 +24,7 @@
         <module>accounts</module>
         <module>transactions</module>
         <module>audit</module>
+        <module>discovery-client</module>
     </modules>
 
     <properties>
