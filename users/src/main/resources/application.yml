@@ -3,6 +3,9 @@ server:
 spring:
   application:
     name: users-service
+  cloud:
+    config:
+      enabled: false
   datasource:
     url: ${DBURL}
     username: ${DBUSER}
