@@ -53,7 +53,7 @@ class UserServiceImplTest {
     @BeforeEach
     void setUp() {
         createRequest = new CreateUserRequest(
-                "  Priyansh  ", "  PRIYANSH@example.com ", "password123", profileRequest());
+                "  Priyansh  ", "  PRIYANSH@example.com ", "password123", " customer ", profileRequest());
     }
 
     @Test
@@ -69,6 +69,7 @@ class UserServiceImplTest {
         assertEquals("priyansh", capturedUser.getUsername());
         assertEquals("priyansh@example.com", capturedUser.getEmail());
         assertEquals("encoded-password", capturedUser.getPasswordHash());
+        assertEquals("CUSTOMER", capturedUser.getRole());
         assertEquals(UserStatus.PENDING_VERIFICATION, capturedUser.getStatus());
         assertEquals("priyansh", response.username());
     }
@@ -104,13 +105,14 @@ class UserServiceImplTest {
     @Test
     void update_validRequest_returnsUpdatedUser() {
         User existingUser = user(1L, "old-user", "old@example.com");
-        UpdateUserRequest request = new UpdateUserRequest("new-user", "NEW@example.com", profileRequest());
+        UpdateUserRequest request = new UpdateUserRequest("new-user", "NEW@example.com", "admin", profileRequest());
         when(userRepository.findWithProfileById(1L)).thenReturn(Optional.of(existingUser));
 
         UserResponse response = userService.update(1L, request);
 
         assertEquals("new-user", existingUser.getUsername());
         assertEquals("new@example.com", existingUser.getEmail());
+        assertEquals("ADMIN", existingUser.getRole());
         assertEquals("new-user", response.username());
     }
 
@@ -118,7 +120,7 @@ class UserServiceImplTest {
     void update_duplicateEmail_throwsUserConflictException() {
         when(userRepository.findWithProfileById(1L)).thenReturn(Optional.of(user(1L, "user", "user@example.com")));
         when(userRepository.existsByEmailIgnoreCaseAndIdNot("new@example.com", 1L)).thenReturn(true);
-        UpdateUserRequest request = new UpdateUserRequest("new-user", "new@example.com", profileRequest());
+        UpdateUserRequest request = new UpdateUserRequest("new-user", "new@example.com", "CUSTOMER", profileRequest());
 
         assertThrows(UserConflictException.class, () -> userService.update(1L, request));
     }
@@ -168,6 +170,7 @@ class UserServiceImplTest {
         user.setUsername(username);
         user.setEmail(email);
         user.setPasswordHash("encoded-password");
+        user.setRole("CUSTOMER");
         user.setStatus(UserStatus.PENDING_VERIFICATION);
         UserProfile profile = new UserProfile();
         profile.setFirstName("Priyansh");

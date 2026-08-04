@@ -41,6 +41,7 @@ public class UserServiceImpl implements UserService {
         user.setUsername(username);
         user.setEmail(email);
         user.setPasswordHash(passwordEncoder.encode(request.password()));
+        user.setRole(normalizeRole(request.role()));
         user.setStatus(UserStatus.PENDING_VERIFICATION);
         user.attachProfile(toProfile(request.profile()));
 
@@ -71,6 +72,7 @@ public class UserServiceImpl implements UserService {
 
         user.setUsername(username);
         user.setEmail(email);
+        user.setRole(normalizeRole(request.role()));
         applyProfile(user, request.profile());
         log.info("User updated id={}", id);
         return toResponse(user);
@@ -160,6 +162,7 @@ public class UserServiceImpl implements UserService {
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
+                user.getRole(),
                 user.getStatus(),
                 toProfileResponse(user.getProfile()),
                 user.getCreatedAt(),
@@ -190,6 +193,10 @@ public class UserServiceImpl implements UserService {
 
     private String normalizeIdentity(String value) {
         return value.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private String normalizeRole(String role) {
+        return role.trim().toUpperCase(Locale.ROOT);
     }
 
     private String clean(String value) {

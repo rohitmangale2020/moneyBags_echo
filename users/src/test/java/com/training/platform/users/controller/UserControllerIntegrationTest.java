@@ -50,6 +50,7 @@ class UserControllerIntegrationTest {
                 .andExpect(header().exists("Location"))
                 .andExpect(jsonPath("$.username").value("priyansh"))
                 .andExpect(jsonPath("$.email").value("priyansh@example.com"))
+                .andExpect(jsonPath("$.role").value("CUSTOMER"))
                 .andExpect(jsonPath("$.status").value("PENDING_VERIFICATION"))
                 .andExpect(jsonPath("$.profile.firstName").value("Priyansh"))
                 .andExpect(jsonPath("$.password").doesNotExist())
@@ -98,6 +99,7 @@ class UserControllerIntegrationTest {
                 "username", username,
                 "email", email,
                 "password", "correct-horse-battery-staple",
+                "role", "CUSTOMER",
                 "profile", Map.of(
                         "firstName", "Priyansh",
                         "lastName", "Pachauri",

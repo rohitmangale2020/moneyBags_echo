@@ -36,6 +36,9 @@ public class User {
     @Column(name = "STATUS", nullable = false, length = 30)
     private UserStatus status = UserStatus.PENDING_VERIFICATION;
 
+    @Column(name = "USER_ROLE", nullable = false, length = 50)
+    private String role;
+
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private UserProfile profile;
 

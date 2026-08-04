@@ -8,6 +8,7 @@ public record UserResponse(
         Long id,
         String username,
         String email,
+        String role,
         UserStatus status,
         UserProfileResponse profile,
         Instant createdAt,
