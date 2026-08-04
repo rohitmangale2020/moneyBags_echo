@@ -1,9 +1,6 @@
-server:
-  port: 8081
 spring:
   application:
-    name: users-service
-  datasource:
-    url: ${DB_URL:jdbc:mysql://localhost:3306/users_db}
-    username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:}
+    name: User-Management-Service
+
+  profiles:
+    active: test
