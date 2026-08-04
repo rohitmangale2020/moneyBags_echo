@@ -63,16 +63,6 @@ class AuthController {
         return ResponseEntity.ok(new TokenResponse(token, "Bearer", ttl.toSeconds()));
     }
 
-    @PostMapping("/register")
-    ResponseEntity<UserResponse> register(@Valid @RequestBody Credentials credentials) {
-        try {
-            UserResponse user = usersClient.post().uri("/internal/users").body(credentials).retrieve().body(UserResponse.class);
-            return ResponseEntity.status(HttpStatus.CREATED).body(user);
-        } catch (RestClientResponseException exception) {
-            return ResponseEntity.status(exception.getStatusCode()).build();
-        }
-    }
-
     @GetMapping("/jwks")
     Map<String, Object> jwks() { return new JWKSet(rsaKey.toPublicJWK()).toJSONObject(); }
 
