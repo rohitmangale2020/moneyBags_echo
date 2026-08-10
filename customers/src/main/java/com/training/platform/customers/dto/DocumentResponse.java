@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-public class DocumentResponseDto {
+public class DocumentResponse {
     private Long docId;
     private Long customerId;
     private DocumentType documentType;

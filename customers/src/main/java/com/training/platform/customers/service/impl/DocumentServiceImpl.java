@@ -1,7 +1,7 @@
 package com.training.platform.customers.service.impl;
 
-import com.training.platform.customers.dto.DocumentRequestDto;
-import com.training.platform.customers.dto.DocumentResponseDto;
+import com.training.platform.customers.dto.DocumentRequest;
+import com.training.platform.customers.dto.DocumentResponse;
 import com.training.platform.customers.entity.CustomerEntity;
 import com.training.platform.customers.entity.DocumentEntity;
 import com.training.platform.customers.exception.BadRequestException;
@@ -35,7 +35,7 @@ public class DocumentServiceImpl implements DocumentService {
     private String uploadDir;
 
     @Override
-    public DocumentResponseDto uploadDocument(Long customerId, MultipartFile file, DocumentRequestDto requestDto) {
+    public DocumentResponse uploadDocument(Long customerId, MultipartFile file, DocumentRequest requestDto) {
         CustomerEntity customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id " + customerId));
 
@@ -64,7 +64,7 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    public List<DocumentResponseDto> getDocumentsByCustomerId(Long customerId) {
+    public List<DocumentResponse> getDocumentsByCustomerId(Long customerId) {
         if (!customerRepository.existsById(customerId)) {
             throw new ResourceNotFoundException("Customer not found with id " + customerId);
         }
@@ -76,7 +76,7 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    public DocumentResponseDto getDocumentById(Long customerId, Long docId) {
+    public DocumentResponse getDocumentById(Long customerId, Long docId) {
         DocumentEntity document = documentRepository.findByDocIdAndCustomerCustomerId(docId, customerId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Document not found with id " + docId + " for customer " + customerId));
@@ -85,7 +85,7 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    public DocumentResponseDto updateDocument(Long customerId, Long docId, MultipartFile file, DocumentRequestDto requestDto) {
+    public DocumentResponse updateDocument(Long customerId, Long docId, MultipartFile file, DocumentRequest requestDto) {
         DocumentEntity document = documentRepository.findByDocIdAndCustomerCustomerId(docId, customerId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Document not found with id " + docId + " for customer " + customerId));
@@ -131,8 +131,8 @@ public class DocumentServiceImpl implements DocumentService {
         }
     }
 
-    private DocumentResponseDto toResponse(DocumentEntity entity) {
-        DocumentResponseDto dto = new DocumentResponseDto();
+    private DocumentResponse toResponse(DocumentEntity entity) {
+        DocumentResponse dto = new DocumentResponse();
         dto.setDocId(entity.getDocId());
 
         if (entity.getCustomer() != null) {

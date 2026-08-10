@@ -9,7 +9,7 @@ import java.time.LocalDate;
 
 @Getter
 @Setter
-public class DocumentRequestDto {
+public class DocumentRequest {
     private DocumentType documentType;
     private String documentNumber;
     private LocalDate issueDate;
