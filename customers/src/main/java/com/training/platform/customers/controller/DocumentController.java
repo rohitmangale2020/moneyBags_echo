@@ -1,7 +1,9 @@
 package com.training.platform.customers.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.training.platform.customers.dto.DocumentRequest;
 import com.training.platform.customers.dto.DocumentResponse;
+import com.training.platform.customers.exception.BadRequestException;
 import com.training.platform.customers.service.DocumentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -18,15 +21,26 @@ import java.util.List;
 public class DocumentController {
 
     private final DocumentService documentService;
+    private final ObjectMapper objectMapper;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<DocumentResponse> uploadDocument(
             @PathVariable Long customerId,
             @RequestPart("file") MultipartFile file,
-            @Valid @RequestPart("data") DocumentRequest requestDto
+            @RequestPart("data") byte[] data
     ) {
-        DocumentResponse response = documentService.uploadDocument(customerId, file, requestDto);
-        return ResponseEntity.ok(response);
+        try {
+            DocumentRequest requestDto =
+                    objectMapper.readValue(data, DocumentRequest.class);
+
+            DocumentResponse response =
+                    documentService.uploadDocument(customerId, file, requestDto);
+
+            return ResponseEntity.ok(response);
+
+        } catch (IOException exception) {
+            throw new BadRequestException("Invalid JSON in the data field");
+        }
     }
 
     @GetMapping
