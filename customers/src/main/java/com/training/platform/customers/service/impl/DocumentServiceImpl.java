@@ -8,6 +8,7 @@ import com.training.platform.customers.exception.BadRequestException;
 import com.training.platform.customers.exception.ResourceNotFoundException;
 import com.training.platform.customers.repository.CustomerRepository;
 import com.training.platform.customers.repository.DocumentRepository;
+import com.training.platform.customers.security.CurrentUser;
 import com.training.platform.customers.service.DocumentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -53,10 +54,10 @@ public class DocumentServiceImpl implements DocumentService {
         entity.setIssueDate(requestDto.getIssueDate());
         entity.setExpiryDate(requestDto.getExpiryDate());
         entity.setStatus(requestDto.getStatus());
-        entity.setVerifiedBy(requestDto.getVerifiedBy());
+        entity.setVerifiedBy(requestDto.getStatus().name().equalsIgnoreCase("VERIFIED") ? CurrentUser.id() : null);
         entity.setRejectedReason(requestDto.getRejectedReason());
         entity.setRemarks(requestDto.getRemarks());
-        entity.setUpdatedBy(requestDto.getUpdatedBy());
+        entity.setUpdatedBy(CurrentUser.id());
         entity.setUpdatedOn(LocalDateTime.now());
 
         DocumentEntity saved = documentRepository.save(entity);
@@ -100,10 +101,10 @@ public class DocumentServiceImpl implements DocumentService {
         document.setIssueDate(requestDto.getIssueDate());
         document.setExpiryDate(requestDto.getExpiryDate());
         document.setStatus(requestDto.getStatus());
-        document.setVerifiedBy(requestDto.getVerifiedBy());
+        document.setVerifiedBy(requestDto.getStatus().name().equalsIgnoreCase("VERIFIED") ? CurrentUser.id() : null);
         document.setRejectedReason(requestDto.getRejectedReason());
         document.setRemarks(requestDto.getRemarks());
-        document.setUpdatedBy(requestDto.getUpdatedBy());
+        document.setUpdatedBy(CurrentUser.id());
         document.setUpdatedOn(LocalDateTime.now());
 
         DocumentEntity updated = documentRepository.save(document);

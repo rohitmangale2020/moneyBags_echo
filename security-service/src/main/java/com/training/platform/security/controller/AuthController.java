@@ -57,7 +57,8 @@ class AuthController {
         if (user == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         Instant now = Instant.now();
         JwtClaimsSet claims = JwtClaimsSet.builder().issuer(issuer).subject(user.username()).audience(List.of(audience))
-                .issuedAt(now).expiresAt(now.plus(ttl)).claim("roles", user.roles()).build();
+                .issuedAt(now).expiresAt(now.plus(ttl)).claim("roles", user.roles())
+                .claim("userId", user.userId()).build();
         String token = jwtEncoder.encode(org.springframework.security.oauth2.jwt.JwtEncoderParameters.from(
                 JwsHeader.with(SignatureAlgorithm.RS256).keyId(rsaKey.getKeyID()).build(), claims)).getTokenValue();
         return ResponseEntity.ok(new TokenResponse(token, "Bearer", ttl.toSeconds()));
@@ -67,6 +68,6 @@ class AuthController {
     Map<String, Object> jwks() { return new JWKSet(rsaKey.toPublicJWK()).toJSONObject(); }
 
     record Credentials(@NotBlank String username, @NotBlank String password) { }
-    record UserResponse(String username, java.util.Set<String> roles) { }
+    record UserResponse(Long userId, String username, java.util.Set<String> roles) { }
     record TokenResponse(String accessToken, String tokenType, long expiresIn) { }
 }

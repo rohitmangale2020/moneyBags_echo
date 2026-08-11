@@ -9,6 +9,7 @@ import com.training.platform.customers.exception.DuplicateResourceException;
 import com.training.platform.customers.exception.ResourceNotFoundException;
 import com.training.platform.customers.repository.CustomerRepository;
 import com.training.platform.customers.repository.KycRepository;
+import com.training.platform.customers.security.CurrentUser;
 import com.training.platform.customers.service.KycService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -35,12 +36,12 @@ public class KycServiceImpl implements KycService {
         kyc.setCustomer(customer);
         kyc.setKycStatus(requestDto.getKycStatus());
         kyc.setKycDate(requestDto.getKycDate());
-        kyc.setVerifiedBy(requestDto.getVerifiedBy());
+        kyc.setVerifiedBy(requestDto.getKycStatus().name().equalsIgnoreCase("VERIFIED") ? CurrentUser.id() : null);
         kyc.setRiskLevel(requestDto.getRiskLevel());
         kyc.setRiskScore(requestDto.getRiskScore());
         kyc.setExpiryDate(requestDto.getExpiryDate());
         kyc.setRemarks(requestDto.getRemarks());
-        kyc.setUpdatedBy(requestDto.getUpdatedBy());
+        kyc.setUpdatedBy(CurrentUser.id());
         kyc.setUpdatedOn(LocalDateTime.now());
 
         if (requestDto.getKycStatus() != null
@@ -75,12 +76,12 @@ public class KycServiceImpl implements KycService {
 
         kyc.setKycStatus(requestDto.getKycStatus());
         kyc.setKycDate(requestDto.getKycDate());
-        kyc.setVerifiedBy(requestDto.getVerifiedBy());
+        kyc.setVerifiedBy(requestDto.getKycStatus().name().equalsIgnoreCase("VERIFIED") ? CurrentUser.id() : null);
         kyc.setRiskLevel(requestDto.getRiskLevel());
         kyc.setRiskScore(requestDto.getRiskScore());
         kyc.setExpiryDate(requestDto.getExpiryDate());
         kyc.setRemarks(requestDto.getRemarks());
-        kyc.setUpdatedBy(requestDto.getUpdatedBy());
+        kyc.setUpdatedBy(CurrentUser.id());
         kyc.setUpdatedOn(LocalDateTime.now());
 
         if (requestDto.getKycStatus().name().equalsIgnoreCase("VERIFIED")) {

@@ -36,6 +36,8 @@ public class Account {
     @jakarta.persistence.Version @Column(name = "version_no", nullable = false) private Long versionNo;
     @Column(name = "created_at", nullable = false, updatable = false) private LocalDateTime createdAt;
     @Column(name = "updated_at", nullable = false) private LocalDateTime updatedAt;
+    @Column(name = "created_by_user_id", updatable = false, length = 36) private String createdByUserId;
+    @Column(name = "updated_by_user_id", length = 36) private String updatedByUserId;
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true) private List<AccountHolder> holders = new ArrayList<>();
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true) private List<AccountStatusHistory> statusHistory = new ArrayList<>();
 
@@ -56,6 +58,8 @@ public class Account {
     public Long getVersionNo() { return versionNo; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public String getCreatedByUserId() { return createdByUserId; }
+    public String getUpdatedByUserId() { return updatedByUserId; }
 
     public void setAccountNumber(String accountNumber) { this.accountNumber = accountNumber; }
     public void setCustomerId(String customerId) { this.customerId = customerId; }
@@ -65,4 +69,6 @@ public class Account {
     public void setCurrencyCode(String currencyCode) { this.currencyCode = currencyCode; }
     public void setAvailableBalance(BigDecimal availableBalance) { this.availableBalance = availableBalance; }
     public void setClosedAt(LocalDateTime closedAt) { this.closedAt = closedAt; }
+    public void setCreatedByUserId(String createdByUserId) { this.createdByUserId = createdByUserId; }
+    public void setUpdatedByUserId(String updatedByUserId) { this.updatedByUserId = updatedByUserId; }
 }

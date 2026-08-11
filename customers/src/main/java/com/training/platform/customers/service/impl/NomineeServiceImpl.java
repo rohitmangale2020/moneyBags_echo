@@ -13,6 +13,7 @@ import com.training.platform.customers.exception.ResourceNotFoundException;
 import com.training.platform.customers.mapper.AddressMapper;
 import com.training.platform.customers.repository.CustomerRepository;
 import com.training.platform.customers.repository.NomineeRepository;
+import com.training.platform.customers.security.CurrentUser;
 import com.training.platform.customers.service.NomineeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -72,7 +73,7 @@ public class NomineeServiceImpl implements NomineeService {
         entity.setSharePercentage(requestDto.getSharePercentage());
         entity.setStatus(status);
         entity.setUpdatedAt(LocalDateTime.now());
-        entity.setUpdatedBy(requestDto.getUpdatedBy());
+        entity.setUpdatedBy(CurrentUser.id());
         entity.setStartDate(requestDto.getStartDate() != null ? requestDto.getStartDate() : LocalDate.now());
         entity.setEndDate(requestDto.getEndDate());
 
@@ -122,7 +123,7 @@ public class NomineeServiceImpl implements NomineeService {
         updateAddress(nominee, requestDto.getAddress());
         nominee.setSharePercentage(requestDto.getSharePercentage());
         nominee.setStatus(requestDto.getStatus() == null ? nominee.getStatus() : requestDto.getStatus());
-        nominee.setUpdatedBy(requestDto.getUpdatedBy());
+        nominee.setUpdatedBy(CurrentUser.id());
         nominee.setUpdatedAt(LocalDateTime.now());
         nominee.setStartDate(requestDto.getStartDate() != null ? requestDto.getStartDate() : nominee.getStartDate());
         nominee.setEndDate(requestDto.getEndDate());

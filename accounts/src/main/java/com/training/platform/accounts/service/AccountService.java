@@ -67,6 +67,7 @@ public class AccountService {
         existing.setStatus(account.getStatus());
         existing.setCurrencyCode(account.getCurrencyCode());
         existing.setClosedAt(account.getClosedAt());
+        existing.setUpdatedByUserId(account.getUpdatedByUserId());
         validate(existing);
         return accountRepository.save(existing);
     }

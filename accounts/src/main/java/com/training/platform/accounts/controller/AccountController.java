@@ -9,6 +9,8 @@ import com.training.platform.accounts.service.AccountService;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -42,12 +44,12 @@ public class AccountController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public AccountResponse create(@Valid @RequestBody AccountRequest request) {
-        return AccountResponse.from(accountService.create(toEntity(request)));
+        return AccountResponse.from(accountService.create(toEntity(request, currentUserId())));
     }
 
     @PutMapping("/{accountId}")
     public AccountResponse update(@PathVariable String accountId, @Valid @RequestBody AccountRequest request) {
-        return AccountResponse.from(accountService.update(accountId, toEntity(request)));
+        return AccountResponse.from(accountService.update(accountId, toEntity(request, currentUserId())));
     }
 
     @PostMapping("/transfers")
@@ -55,7 +57,7 @@ public class AccountController {
         return accountService.transfer(request);
     }
 
-    private Account toEntity(AccountRequest request) {
+    private Account toEntity(AccountRequest request, String userId) {
         Account account = new Account();
         account.setAccountNumber(request.accountNumber());
         account.setCustomerId(request.customerId());
@@ -65,6 +67,21 @@ public class AccountController {
         account.setCurrencyCode(request.currencyCode().toUpperCase());
         account.setAvailableBalance(request.availableBalance());
         account.setClosedAt(request.closedAt());
+        account.setCreatedByUserId(userId);
+        account.setUpdatedByUserId(userId);
         return account;
+    }
+
+    private String currentUserId() {
+        Authentication authentication = org.springframework.security.core.context.SecurityContextHolder
+                .getContext().getAuthentication();
+        if (!(authentication instanceof JwtAuthenticationToken jwtAuthentication)) {
+            throw new IllegalStateException("An authenticated JWT user is required");
+        }
+        Number userId = jwtAuthentication.getToken().getClaim("userId");
+        if (userId == null) {
+            throw new IllegalStateException("JWT does not contain a userId claim");
+        }
+        return userId.longValue() + "";
     }
 }
