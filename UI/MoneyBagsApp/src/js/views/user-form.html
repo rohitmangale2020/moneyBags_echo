@@ -1,0 +1,13 @@
+<div class="page-content">
+  <div class="page-heading"><div><div class="eyebrow">Identity &amp; access</div><h1><oj-bind-text value="[[title]]"></oj-bind-text></h1><p class="muted">Create or manage a banking-system user identity.</p></div><oj-button on-oj-action="[[cancel]]">Back to directory</oj-button></div>
+  <section class="content-card form-card"><h2>Account identity</h2><p class="muted">Required fields are marked with an asterisk.</p>
+    <oj-form-layout max-columns="2" direction="row">
+      <oj-input-text label-hint="Username" value="{{username}}" required="true"></oj-input-text><oj-input-text label-hint="Email address" value="{{email}}" required="true"></oj-input-text>
+      <oj-select-single label-hint="Role" value="{{role}}"><oj-option value="ADMIN">ADMIN</oj-option><oj-option value="EMPLOYEE">EMPLOYEE</oj-option><oj-option value="CUSTOMER">CUSTOMER</oj-option></oj-select-single>
+      <oj-select-single label-hint="Account status" value="{{status}}"><oj-option value="PENDING_VERIFICATION">PENDING VERIFICATION</oj-option><oj-option value="ACTIVE">ACTIVE</oj-option><oj-option value="LOCKED">LOCKED</oj-option><oj-option value="DEACTIVATED">DEACTIVATED</oj-option></oj-select-single>
+    </oj-form-layout>
+    <h2 class="form-section">Personal and contact profile</h2>
+    <oj-form-layout max-columns="2" direction="row"><oj-input-text label-hint="First name" value="{{firstName}}" required="true"></oj-input-text><oj-input-text label-hint="Last name" value="{{lastName}}" required="true"></oj-input-text><oj-input-text label-hint="Phone number" value="{{phoneNumber}}"></oj-input-text><oj-input-text label-hint="City" value="{{city}}"></oj-input-text><oj-input-text label-hint="Country code" value="{{countryCode}}"></oj-input-text></oj-form-layout>
+    <p class="form-error"><oj-bind-text value="[[message]]"></oj-bind-text></p><div class="form-actions"><oj-button on-oj-action="[[cancel]]">Cancel</oj-button><oj-bind-if test="[[isEdit]]"><oj-button chroming="danger" on-oj-action="[[deactivate]]">Deactivate</oj-button></oj-bind-if><oj-button chroming="callToAction" on-oj-action="[[save]]">Save user</oj-button></div>
+  </section>
+</div>

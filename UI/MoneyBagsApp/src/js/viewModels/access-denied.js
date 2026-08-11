@@ -1,0 +1,1 @@
+define(['accUtils', 'appController'], function (accUtils, app) { function AccessDeniedViewModel() { this.signOut = () => app.signOut(); this.connected = () => { accUtils.announce('Access denied.'); document.title = 'MoneyBags | Access denied'; }; } return AccessDeniedViewModel; });
