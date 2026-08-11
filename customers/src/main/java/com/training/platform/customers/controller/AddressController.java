@@ -3,6 +3,7 @@ package com.training.platform.customers.controller;
 import com.training.platform.customers.dto.AddressRequest;
 import com.training.platform.customers.dto.AddressResponse;
 import com.training.platform.customers.service.AddressService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +21,7 @@ public class AddressController {
     @PostMapping
     public ResponseEntity<AddressResponse> addAddress(
             @PathVariable Long customerId,
-            @RequestBody AddressRequest request) {
+            @Valid @RequestBody AddressRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(addressService.addAddress(customerId, request));
     }
 
@@ -40,7 +41,7 @@ public class AddressController {
     public ResponseEntity<AddressResponse> updateAddress(
             @PathVariable Long customerId,
             @PathVariable Long addressId,
-            @RequestBody AddressRequest request) {
+            @Valid @RequestBody AddressRequest request) {
         return ResponseEntity.ok(addressService.updateAddress(customerId, addressId, request));
     }
 
