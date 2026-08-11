@@ -22,7 +22,7 @@ public class NomineeRequestDto {
 
     private String phone;
 
-    private String address;
+    private AddressRequest address;
 
     private Double sharePercentage;
 
