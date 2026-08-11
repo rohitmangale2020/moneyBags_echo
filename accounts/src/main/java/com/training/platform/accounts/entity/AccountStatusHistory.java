@@ -25,5 +25,14 @@ public class AccountStatusHistory {
     @Column(name = "changed_at", nullable = false) private LocalDateTime changedAt;
 
     protected AccountStatusHistory() { }
+
+    public static AccountStatusHistory initialStatus(Account account) {
+        AccountStatusHistory history = new AccountStatusHistory();
+        history.account = account;
+        history.newStatus = account.getStatus();
+        history.reason = "Account created";
+        return history;
+    }
+
     @jakarta.persistence.PrePersist void beforeInsert() { if (statusHistoryId == null) statusHistoryId = UUID.randomUUID().toString(); if (changedAt == null) changedAt = LocalDateTime.now(); }
 }
