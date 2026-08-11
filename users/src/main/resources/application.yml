@@ -7,9 +7,9 @@ spring:
     config:
       enabled: false
   datasource:
-    url: ${DBURL}
-    username: ${DBUSER}
-    password: ${DBPASSWORD}
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
     driver-class-name: oracle.jdbc.OracleDriver
   jpa:
     hibernate:

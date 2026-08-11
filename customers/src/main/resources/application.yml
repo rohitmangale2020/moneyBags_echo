@@ -5,8 +5,8 @@ spring:
     name: customers-service
   datasource:
     url: ${DB_URL:jdbc:mysql://localhost:3306/customers_db}
-    username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:}
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD}
   security:
     oauth2:
       resourceserver:
