@@ -1,6 +1,5 @@
 package com.training.platform.transactions.dto;
 
-import com.training.platform.transactions.entity.TransactionChannel;
 import com.training.platform.transactions.entity.TransactionStatus;
 import com.training.platform.transactions.entity.TransactionType;
 import jakarta.validation.constraints.DecimalMin;
@@ -15,7 +14,6 @@ public record TransactionRequest(
         @NotBlank @Size(max = 40) String transactionRef,
         @NotNull TransactionType transactionType,
         @NotNull TransactionStatus transactionStatus,
-        @NotNull TransactionChannel transactionChannel,
         String debitAccountId, String creditAccountId, String externalBeneficiary,
         @NotNull @DecimalMin(value = "0.01") BigDecimal amount,
         @NotBlank @Pattern(regexp = "[A-Za-z]{3}") String currencyCode,

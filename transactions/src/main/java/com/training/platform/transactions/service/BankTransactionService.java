@@ -51,9 +51,6 @@ public class BankTransactionService {
         if (transaction.getTransactionStatus() == null) {
             throw new IllegalArgumentException("Transaction status is required");
         }
-        if (transaction.getTransactionChannel() == null) {
-            throw new IllegalArgumentException("Transaction channel is required");
-        }
         if (isBlank(transaction.getTransactionRef())) throw new IllegalArgumentException("Transaction reference is required");
         if (transaction.getAmount() == null || transaction.getAmount().signum() <= 0) throw new IllegalArgumentException("Amount must be greater than zero");
         if (isBlank(transaction.getCurrencyCode())) throw new IllegalArgumentException("Currency code is required");
@@ -63,7 +60,6 @@ public class BankTransactionService {
         target.setTransactionRef(source.getTransactionRef());
         target.setTransactionType(source.getTransactionType());
         target.setTransactionStatus(source.getTransactionStatus());
-        target.setTransactionChannel(source.getTransactionChannel());
         target.setDebitAccountId(source.getDebitAccountId());
         target.setCreditAccountId(source.getCreditAccountId());
         target.setExternalBeneficiary(source.getExternalBeneficiary());

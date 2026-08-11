@@ -6,7 +6,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.training.platform.transactions.entity.BankTransaction;
-import com.training.platform.transactions.entity.TransactionChannel;
 import com.training.platform.transactions.entity.TransactionStatus;
 import com.training.platform.transactions.entity.TransactionType;
 import com.training.platform.transactions.repository.BankTransactionRepository;
@@ -40,7 +39,6 @@ class BankTransactionServiceTest {
     @Test void savesTransactionWhenInitiating() {
         when(transaction.getTransactionType()).thenReturn(TransactionType.TRANSFER);
         when(transaction.getTransactionStatus()).thenReturn(TransactionStatus.INITIATED);
-        when(transaction.getTransactionChannel()).thenReturn(TransactionChannel.MOBILE_APP);
         when(transaction.getTransactionRef()).thenReturn("TXN-1");
         when(transaction.getAmount()).thenReturn(BigDecimal.ONE);
         when(transaction.getCurrencyCode()).thenReturn("INR");

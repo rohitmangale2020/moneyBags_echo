@@ -22,13 +22,12 @@ import java.util.UUID;
         @Index(name = "idx_transaction_credit_account", columnList = "credit_account_id, initiated_at"),
         @Index(name = "idx_transaction_status", columnList = "transaction_status, initiated_at")
 })
-/** Represents a monetary transfer, including its accounts, amount, status, and channel. */
+/** Represents a monetary transfer, including its accounts, amount, status. */
 public class BankTransaction {
     @Id @Column(name = "transaction_id", length = 36) private String transactionId;
     @Column(name = "transaction_ref", nullable = false, length = 40) private String transactionRef;
     @Enumerated(EnumType.STRING) @Column(name = "transaction_type", nullable = false, length = 30) private TransactionType transactionType;
     @Enumerated(EnumType.STRING) @Column(name = "transaction_status", nullable = false, length = 30) private TransactionStatus transactionStatus;
-    @Enumerated(EnumType.STRING) @Column(name = "transaction_channel", nullable = false, length = 30) private TransactionChannel transactionChannel;
     @Column(name = "debit_account_id", length = 36) private String debitAccountId;
     @Column(name = "credit_account_id", length = 36) private String creditAccountId;
     @Column(name = "external_beneficiary", length = 200) private String externalBeneficiary;
@@ -49,7 +48,6 @@ public class BankTransaction {
 
     public TransactionType getTransactionType() { return transactionType; }
     public TransactionStatus getTransactionStatus() { return transactionStatus; }
-    public TransactionChannel getTransactionChannel() { return transactionChannel; }
     public String getTransactionId() { return transactionId; }
     public String getTransactionRef() { return transactionRef; }
     public String getDebitAccountId() { return debitAccountId; }
@@ -68,7 +66,6 @@ public class BankTransaction {
     public void setTransactionRef(String transactionRef) { this.transactionRef = transactionRef; }
     public void setTransactionType(TransactionType transactionType) { this.transactionType = transactionType; }
     public void setTransactionStatus(TransactionStatus transactionStatus) { this.transactionStatus = transactionStatus; }
-    public void setTransactionChannel(TransactionChannel transactionChannel) { this.transactionChannel = transactionChannel; }
     public void setDebitAccountId(String debitAccountId) { this.debitAccountId = debitAccountId; }
     public void setCreditAccountId(String creditAccountId) { this.creditAccountId = creditAccountId; }
     public void setExternalBeneficiary(String externalBeneficiary) { this.externalBeneficiary = externalBeneficiary; }

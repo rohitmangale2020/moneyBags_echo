@@ -52,7 +52,6 @@ public class TransactionController {
         transaction.setTransactionRef(request.transactionRef());
         transaction.setTransactionType(request.transactionType());
         transaction.setTransactionStatus(request.transactionStatus());
-        transaction.setTransactionChannel(request.transactionChannel());
         transaction.setDebitAccountId(request.debitAccountId());
         transaction.setCreditAccountId(request.creditAccountId());
         transaction.setExternalBeneficiary(request.externalBeneficiary());
