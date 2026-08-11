@@ -17,7 +17,7 @@ public class NomineeResponseDto {
     private String relationType;
     private LocalDate dob;
     private String phone;
-    private String address;
+    private AddressResponse address;
     private Double sharePercentage;
     private String status;
     private LocalDateTime updatedAt;
