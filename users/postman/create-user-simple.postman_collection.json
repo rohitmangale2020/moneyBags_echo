@@ -1,0 +1,38 @@
+{
+  "info": {
+    "_postman_id": "6e6f60de-fc9c-43ef-9b0b-43d9d74d5890",
+    "name": "Create User - Simple",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create User",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"simple-user-001\",\n  \"email\": \"simple-user-001@example.com\",\n  \"password\": \"correct-horse-battery-staple\",\n  \"profile\": {\n    \"firstName\": \"Simple\",\n    \"lastName\": \"User\",\n    \"phoneNumber\": \"+919876543210\",\n    \"dateOfBirth\": \"2000-01-01\",\n    \"city\": \"Bengaluru\",\n    \"state\": \"Karnataka\",\n    \"postalCode\": \"560001\",\n    \"countryCode\": \"IN\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8081/api/v1/users",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8081",
+          "path": ["api", "v1", "users"]
+        }
+      },
+      "response": []
+    }
+  ]
+}

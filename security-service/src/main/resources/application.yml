@@ -1,0 +1,13 @@
+server:
+  port: 8087
+spring:
+  application:
+    name: security-service
+security-service:
+  issuer: ${JWT_ISSUER:http://localhost:8087}
+  audience: ${JWT_AUDIENCE:banking-api}
+  access-token-ttl: ${JWT_ACCESS_TOKEN_TTL:PT15M}
+  users-url: ${USERS_SERVICE_URL:http://localhost:8081}
+  jwt-private-key: ${JWT_PRIVATE_KEY:}
+  jwt-public-key: ${JWT_PUBLIC_KEY:}
+  key-id: ${JWT_KEY_ID:banking-dev-key}

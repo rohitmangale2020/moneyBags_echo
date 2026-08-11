@@ -4,10 +4,16 @@ spring:
   application:
     name: transactions-service
   datasource:
-    url: jdbc:oracle:thin:@//ofss-mum-1212.snbomprshared1.gbucdsint02bom.oraclevcn.com:1521/pdb1
-    username: ECHO
-    password: Echo@123
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
     driver-class-name: oracle.jdbc.OracleDriver
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${JWT_ISSUER:http://localhost:8087}
+
   jpa:
     hibernate:
       ddl-auto: update

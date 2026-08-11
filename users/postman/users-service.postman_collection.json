@@ -1,0 +1,115 @@
+{
+  "info": {
+    "_postman_id": "a8b3ea0e-5dd9-42b7-af06-90e7a3fedf56",
+    "name": "Moneybags Users Service",
+    "description": "Run the Lifecycle folder in order. Create User stores the response id in the active environment as userId.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Lifecycle",
+      "item": [
+        {
+          "name": "Create User",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const suffix = Date.now();",
+                  "pm.environment.set('username', `postman-user-${suffix}`);",
+                  "pm.environment.set('email', `postman-user-${suffix}@example.com`);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('returns 201 Created', () => pm.response.to.have.status(201));",
+                  "const user = pm.response.json();",
+                  "pm.environment.set('userId', user.id);",
+                  "pm.test('stores a user id', () => pm.expect(user.id).to.exist);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{username}}\",\n  \"email\": \"{{email}}\",\n  \"password\": \"correct-horse-battery-staple\",\n  \"profile\": {\n    \"firstName\": \"Postman\",\n    \"lastName\": \"User\",\n    \"phoneNumber\": \"+919876543210\",\n    \"dateOfBirth\": \"2000-01-01\",\n    \"city\": \"Bengaluru\",\n    \"state\": \"Karnataka\",\n    \"postalCode\": \"560001\",\n    \"countryCode\": \"IN\"\n  }\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/users"
+          }
+        },
+        {
+          "name": "Get All Users",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('returns 200 OK', () => pm.response.to.have.status(200));"] } }],
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/users?page=0&size=20&sort=id,asc" }
+        },
+        {
+          "name": "Get User by ID",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('returns 200 OK', () => pm.response.to.have.status(200));"] } }],
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/users/{{userId}}" }
+        },
+        {
+          "name": "Update User",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('returns 200 OK', () => pm.response.to.have.status(200));"] } }],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{username}}-updated\",\n  \"email\": \"updated-{{email}}\",\n  \"profile\": {\n    \"firstName\": \"Updated\",\n    \"lastName\": \"User\",\n    \"phoneNumber\": \"+919876543210\",\n    \"dateOfBirth\": \"2000-01-01\",\n    \"city\": \"Bengaluru\",\n    \"state\": \"Karnataka\",\n    \"postalCode\": \"560001\",\n    \"countryCode\": \"IN\"\n  }\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/users/{{userId}}"
+          }
+        },
+        {
+          "name": "Update Password",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('returns 204 No Content', () => pm.response.to.have.status(204));"] } }],
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"password\": \"new-secure-password\"\n}" },
+            "url": "{{baseUrl}}/api/v1/users/{{userId}}/password"
+          }
+        },
+        {
+          "name": "Update Status",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('returns 200 OK', () => pm.response.to.have.status(200));"] } }],
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"ACTIVE\"\n}" },
+            "url": "{{baseUrl}}/api/v1/users/{{userId}}/status"
+          }
+        },
+        {
+          "name": "Deactivate User",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('returns 204 No Content', () => pm.response.to.have.status(204));"] } }],
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/api/v1/users/{{userId}}" }
+        }
+      ]
+    },
+    {
+      "name": "Validation",
+      "item": [
+        {
+          "name": "Create User - Missing Required Data",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('returns 400 Bad Request', () => pm.response.to.have.status(400));"] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{}" },
+            "url": "{{baseUrl}}/api/v1/users"
+          }
+        }
+      ]
+    }
+  ]
+}
