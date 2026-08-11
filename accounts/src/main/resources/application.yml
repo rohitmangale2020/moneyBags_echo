@@ -7,3 +7,8 @@ spring:
     url: ${DB_URL:jdbc:mysql://localhost:3306/accounts_db}
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${JWT_ISSUER:http://localhost:8087}

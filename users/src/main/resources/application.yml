@@ -3,7 +3,20 @@ server:
 spring:
   application:
     name: users-service
+  cloud:
+    config:
+      enabled: false
   datasource:
-    url: ${DB_URL:jdbc:mysql://localhost:3306/users_db}
-    username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:}
+    url: ${DBURL}
+    username: ${DBUSER}
+    password: ${DBPASSWORD}
+    driver-class-name: oracle.jdbc.OracleDriver
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:update}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${JWT_ISSUER:http://localhost:8087}
+

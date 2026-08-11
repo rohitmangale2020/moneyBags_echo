@@ -8,6 +8,12 @@ spring:
     username: ECHO
     password: Echo@123
     driver-class-name: oracle.jdbc.OracleDriver
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${JWT_ISSUER:http://localhost:8087}
+
   jpa:
     hibernate:
       ddl-auto: update
