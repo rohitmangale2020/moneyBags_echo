@@ -33,7 +33,7 @@ public class NomineeEntity {
     private String relationship;
 
     @Column(name = "relation_type", nullable = false, length = 50)
-    private String relationType; // nominee, joint holder, guardian, authorized signatory, spouse, parent, child
+    private String relationType; // nominee, joint holder, guardian, authorized signatory
 
     @Column(name = "dob")
     private LocalDate dob;
@@ -41,8 +41,9 @@ public class NomineeEntity {
     @Column(name = "phone", length = 20)
     private String phone;
 
-    @Column(name = "address", length = 500)
-    private String address;
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "address_id", unique = true)
+    private AddressEntity address;
 
     @Column(name = "share_percentage")
     private Double sharePercentage;
