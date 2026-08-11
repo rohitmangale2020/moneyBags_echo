@@ -14,23 +14,31 @@ spring:
         webmvc:
           routes:
             - id: security-service
-              uri: ${SECURITY_SERVICE_URL:http://localhost:8087}
+              uri: lb://security-service
               predicates: ["Path=/auth,/auth/**,/.well-known,/.well-known/**"]
             - id: users-service
-              uri: ${USERS_SERVICE_URL:http://localhost:8081}
+              uri: lb://users-service
               predicates: ["Path=/api/v1/users,/api/v1/users/**"]
             - id: customers-service
-              uri: ${CUSTOMERS_SERVICE_URL:http://localhost:8082}
+              uri: lb://customers-service
               predicates: ["Path=/api/customers,/api/customers/**"]
             - id: products-service
-              uri: ${PRODUCTS_SERVICE_URL:http://localhost:8083}
-              predicates: ["Path=/api/products,/api/products/**"]
+              uri: lb://products-service
+              predicates: ["Path=/api/v1/products,/api/v1/products/**,/api/v1/product-types,/api/v1/product-types/**"]
             - id: accounts-service
-              uri: ${ACCOUNTS_SERVICE_URL:http://localhost:8084}
+              uri: lb://accounts-service
               predicates: ["Path=/api/accounts,/api/accounts/**"]
             - id: transactions-service
-              uri: ${TRANSACTIONS_SERVICE_URL:http://localhost:8085}
+              uri: lb://transactions-service
               predicates: ["Path=/api/transactions,/api/transactions/**"]
+            - id: statements-service
+              uri: lb://transactions-service
+              predicates: ["Path=/api/statements,/api/statements/**"]
             - id: audit-service
-              uri: ${AUDIT_SERVICE_URL:http://localhost:8086}
+              uri: lb://audit-service
               predicates: ["Path=/api/audit,/api/audit/**"]
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka}

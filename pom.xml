@@ -18,6 +18,7 @@
     <name>banking-platform</name>
 
     <modules>
+        <module>discovery-service</module>
         <module>users</module>
         <module>customers</module>
         <module>products</module>
