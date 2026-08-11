@@ -33,6 +33,17 @@ public class StatementController {
         return statementService.getByAccountId(accountId).stream().map(StatementResponse::from).toList();
     }
 
+    @GetMapping("/monthly")
+    public List<StatementResponse> getMonthlyStatement(
+            @RequestParam String accountId,
+            @RequestParam int year,
+            @RequestParam int month) {
+        return statementService.getMonthlyStatement(accountId, year, month)
+                .stream()
+                .map(StatementResponse::from)
+                .toList();
+    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public StatementResponse record(@Valid @RequestBody StatementRequest request) {

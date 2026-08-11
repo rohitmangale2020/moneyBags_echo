@@ -3,6 +3,10 @@ server:
 spring:
   application:
     name: accounts-service
+  security:
+    user:
+      name: ${ACCOUNTS_API_USERNAME:accounts-service}
+      password: ${ACCOUNTS_API_PASSWORD:local-development-only}
   datasource:
     url: jdbc:oracle:thin:@//ofss-mum-1212.snbomprshared1.gbucdsint02bom.oraclevcn.com:1521/pdb1
     username: ECHO

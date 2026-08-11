@@ -31,6 +31,14 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Allows the end-to-end test to start the accounts application in-process. -->
+        <dependency>
+            <groupId>com.training</groupId>
+            <artifactId>accounts</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+
         <!-- Web Services -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

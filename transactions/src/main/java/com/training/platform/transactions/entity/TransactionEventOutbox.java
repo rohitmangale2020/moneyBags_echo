@@ -23,5 +23,23 @@ public class TransactionEventOutbox {
     @Column(name = "retry_count", nullable = false) private Integer retryCount = 0;
 
     protected TransactionEventOutbox() { }
+
+    public static TransactionEventOutbox create(String aggregateId, TransactionEventType eventType,
+                                                 String payloadJson) {
+        TransactionEventOutbox event = new TransactionEventOutbox();
+        event.aggregateId = aggregateId;
+        event.eventType = eventType;
+        event.payloadJson = payloadJson;
+        return event;
+    }
+
     @jakarta.persistence.PrePersist void beforeInsert() { if (eventId == null) eventId = UUID.randomUUID().toString(); if (occurredAt == null) occurredAt = LocalDateTime.now(); }
+
+    public String getEventId() { return eventId; }
+    public String getAggregateId() { return aggregateId; }
+    public TransactionEventType getEventType() { return eventType; }
+    public String getPayloadJson() { return payloadJson; }
+    public LocalDateTime getOccurredAt() { return occurredAt; }
+    public LocalDateTime getPublishedAt() { return publishedAt; }
+    public Integer getRetryCount() { return retryCount; }
 }

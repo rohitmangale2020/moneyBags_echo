@@ -4,6 +4,9 @@ import com.training.platform.transactions.entity.AccountStatement;
 import com.training.platform.transactions.repository.BankTransactionRepository;
 import com.training.platform.transactions.repository.AccountStatementRepository;
 import jakarta.persistence.EntityNotFoundException;
+import java.time.DateTimeException;
+import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +29,21 @@ public class AccountStatementService {
 
     public List<AccountStatement> getByAccountId(String accountId) {
         return statementRepository.findByAccountIdOrderByPostedAtDesc(accountId);
+    }
+
+    public List<AccountStatement> getMonthlyStatement(String accountId, int year, int month) {
+        if (isBlank(accountId)) throw new IllegalArgumentException("Account ID is required");
+
+        try {
+            YearMonth requestedMonth = YearMonth.of(year, month);
+            LocalDateTime start = requestedMonth.atDay(1).atStartOfDay();
+            LocalDateTime end = requestedMonth.plusMonths(1).atDay(1).atStartOfDay();
+            return statementRepository
+                    .findByAccountIdAndPostedAtGreaterThanEqualAndPostedAtLessThanOrderByPostedAtAsc(
+                            accountId, start, end);
+        } catch (DateTimeException exception) {
+            throw new IllegalArgumentException("Invalid statement year or month", exception);
+        }
     }
 
     @Transactional

@@ -11,6 +11,7 @@ import com.training.platform.accounts.entity.OwnershipType;
 import com.training.platform.accounts.repository.AccountHolderRepository;
 import com.training.platform.accounts.repository.AccountRepository;
 import com.training.platform.accounts.repository.AccountStatusHistoryRepository;
+import com.training.platform.accounts.repository.AccountTransferOperationRepository;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.Optional;
 import java.math.BigDecimal;
@@ -25,10 +26,14 @@ class AccountServiceTest {
     @Mock private AccountRepository accountRepository;
     @Mock private AccountHolderRepository accountHolderRepository;
     @Mock private AccountStatusHistoryRepository accountStatusHistoryRepository;
+    @Mock private AccountTransferOperationRepository transferOperationRepository;
     @Mock private Account account;
     private AccountService accountService;
 
-    @BeforeEach void setUp() { accountService = new AccountService(accountRepository, accountHolderRepository, accountStatusHistoryRepository); }
+    @BeforeEach void setUp() {
+        accountService = new AccountService(accountRepository, accountHolderRepository,
+                accountStatusHistoryRepository, transferOperationRepository);
+    }
 
     @Test void returnsAccountWhenIdExists() {
         when(accountRepository.findById("account-1")).thenReturn(Optional.of(account));
