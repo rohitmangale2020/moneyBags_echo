@@ -1,0 +1,22 @@
+<div class="login-page">
+  <section class="login-brand" aria-label="MoneyBags Banking System">
+    <div class="moneybags-mark">M</div>
+    <h1>MoneyBags<br>Administration</h1>
+    <p>Secure identity and access administration for banking operations.</p>
+    <div class="login-trust">Internal banking portal &nbsp;•&nbsp; Role-controlled access</div>
+  </section>
+  <section class="login-form-wrap">
+    <div class="login-card">
+      <div class="eyebrow">Bank operations</div>
+      <h2>Sign in</h2>
+      <p class="muted">Use your administrative credentials to continue.</p>
+      <oj-form-layout max-columns="1" direction="row">
+        <oj-input-text label-hint="Username" value="{{username}}" required="true"></oj-input-text>
+        <oj-input-password label-hint="Password" value="{{password}}" required="true"></oj-input-password>
+      </oj-form-layout>
+      <oj-button chroming="callToAction" on-oj-action="[[signIn]]" class="login-submit">Sign in securely</oj-button>
+      <p class="form-error"><oj-bind-text value="[[errorMessage]]"></oj-bind-text></p>
+      <p class="demo-note">Demo: use any username and an 8+ character password. Add “employee” to test the employee role.</p>
+    </div>
+  </section>
+</div>

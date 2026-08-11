@@ -1,0 +1,17 @@
+<!--
+ Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ Licensed under The Universal Permissive License (UPL), Version 1.0
+ as shown at https://oss.oracle.com/licenses/upl/
+ -->
+<div class="page-content">
+  <div class="page-heading">
+    <div><div class="eyebrow">Internal banking portal</div><h1>User administration</h1><p class="muted">Maintain controlled access for bank staff and operational users.</p></div>
+    <oj-button chroming="callToAction" on-oj-action="[[createUser]]">Create user</oj-button>
+  </div>
+  <div class="metric-grid">
+    <section class="metric-card"><span>Total managed users</span><strong><oj-bind-text value="[[users().length]]"></oj-bind-text></strong></section>
+    <section class="metric-card"><span>Active access</span><strong><oj-bind-text value="[[activeCount]]"></oj-bind-text></strong></section>
+    <section class="metric-card"><span>Pending verification</span><strong><oj-bind-text value="[[pendingCount]]"></oj-bind-text></strong></section>
+  </div>
+  <section class="content-card"><div class="card-heading"><h2>Administrative controls</h2><oj-button on-oj-action="[[openDirectory]]">Open user directory</oj-button></div><p class="muted">Use the directory to create, update, lock, deactivate, and reset access for user identities.</p></section>
+</div>
