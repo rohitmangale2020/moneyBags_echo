@@ -3,17 +3,19 @@ server:
 spring:
   application:
     name: accounts-service
-  datasource:
-    url: ${DB_URL}
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
   security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: ${JWT_ISSUER:http://localhost:8087}
-
-eureka:
-  client:
-    service-url:
-      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka}
+    user:
+      name: ${ACCOUNTS_API_USERNAME:accounts-service}
+      password: ${ACCOUNTS_API_PASSWORD:local-development-only}
+  datasource:
+    url: jdbc:oracle:thin:@//ofss-mum-1212.snbomprshared1.gbucdsint02bom.oraclevcn.com:1521/pdb1
+    username: ECHO
+    password: Echo@123
+    driver-class-name: oracle.jdbc.OracleDriver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true

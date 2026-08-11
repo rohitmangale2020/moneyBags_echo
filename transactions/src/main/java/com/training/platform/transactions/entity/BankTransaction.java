@@ -3,6 +3,8 @@ package com.training.platform.transactions.entity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.OneToMany;
@@ -20,12 +22,12 @@ import java.util.UUID;
         @Index(name = "idx_transaction_credit_account", columnList = "credit_account_id, initiated_at"),
         @Index(name = "idx_transaction_status", columnList = "transaction_status, initiated_at")
 })
+/** Represents a monetary transfer, including its accounts, amount, status. */
 public class BankTransaction {
     @Id @Column(name = "transaction_id", length = 36) private String transactionId;
     @Column(name = "transaction_ref", nullable = false, length = 40) private String transactionRef;
-    @Column(name = "transaction_type", nullable = false, length = 30) private String transactionType;
-    @Column(name = "transaction_status", nullable = false, length = 20) private String transactionStatus;
-    @Column(name = "transaction_channel", nullable = false, length = 30) private String transactionChannel;
+    @Enumerated(EnumType.STRING) @Column(name = "transaction_type", nullable = false, length = 30) private TransactionType transactionType;
+    @Enumerated(EnumType.STRING) @Column(name = "transaction_status", nullable = false, length = 30) private TransactionStatus transactionStatus;
     @Column(name = "debit_account_id", length = 36) private String debitAccountId;
     @Column(name = "credit_account_id", length = 36) private String creditAccountId;
     @Column(name = "external_beneficiary", length = 200) private String externalBeneficiary;
@@ -39,8 +41,40 @@ public class BankTransaction {
     @Column(name = "failure_code", length = 50) private String failureCode;
     @Column(name = "failure_reason", length = 500) private String failureReason;
     @OneToMany(mappedBy = "transaction", cascade = CascadeType.ALL, orphanRemoval = true) private List<TransactionApproval> approvals = new ArrayList<>();
-    @OneToMany(mappedBy = "transaction", cascade = CascadeType.ALL, orphanRemoval = true) private List<TransactionChannelDetail> channelDetails = new ArrayList<>();
+    @OneToMany(mappedBy = "transaction", cascade = CascadeType.ALL, orphanRemoval = true) private List<AccountStatement> statements = new ArrayList<>();
 
-    protected BankTransaction() { }
+    public BankTransaction() { }
     @jakarta.persistence.PrePersist void beforeInsert() { if (transactionId == null) transactionId = UUID.randomUUID().toString(); if (initiatedAt == null) initiatedAt = LocalDateTime.now(); }
+
+    public TransactionType getTransactionType() { return transactionType; }
+    public TransactionStatus getTransactionStatus() { return transactionStatus; }
+    public String getTransactionId() { return transactionId; }
+    public String getTransactionRef() { return transactionRef; }
+    public String getDebitAccountId() { return debitAccountId; }
+    public String getCreditAccountId() { return creditAccountId; }
+    public String getExternalBeneficiary() { return externalBeneficiary; }
+    public BigDecimal getAmount() { return amount; }
+    public String getCurrencyCode() { return currencyCode; }
+    public BigDecimal getFeeAmount() { return feeAmount; }
+    public String getInitiatedByCustomerId() { return initiatedByCustomerId; }
+    public String getInitiatedByUserId() { return initiatedByUserId; }
+    public LocalDateTime getInitiatedAt() { return initiatedAt; }
+    public LocalDateTime getCompletedAt() { return completedAt; }
+    public String getFailureCode() { return failureCode; }
+    public String getFailureReason() { return failureReason; }
+
+    public void setTransactionRef(String transactionRef) { this.transactionRef = transactionRef; }
+    public void setTransactionType(TransactionType transactionType) { this.transactionType = transactionType; }
+    public void setTransactionStatus(TransactionStatus transactionStatus) { this.transactionStatus = transactionStatus; }
+    public void setDebitAccountId(String debitAccountId) { this.debitAccountId = debitAccountId; }
+    public void setCreditAccountId(String creditAccountId) { this.creditAccountId = creditAccountId; }
+    public void setExternalBeneficiary(String externalBeneficiary) { this.externalBeneficiary = externalBeneficiary; }
+    public void setAmount(BigDecimal amount) { this.amount = amount; }
+    public void setCurrencyCode(String currencyCode) { this.currencyCode = currencyCode; }
+    public void setFeeAmount(BigDecimal feeAmount) { this.feeAmount = feeAmount; }
+    public void setInitiatedByCustomerId(String initiatedByCustomerId) { this.initiatedByCustomerId = initiatedByCustomerId; }
+    public void setInitiatedByUserId(String initiatedByUserId) { this.initiatedByUserId = initiatedByUserId; }
+    public void setCompletedAt(LocalDateTime completedAt) { this.completedAt = completedAt; }
+    public void setFailureCode(String failureCode) { this.failureCode = failureCode; }
+    public void setFailureReason(String failureReason) { this.failureReason = failureReason; }
 }

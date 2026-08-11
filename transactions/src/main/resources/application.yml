@@ -3,17 +3,15 @@ server:
 spring:
   application:
     name: transactions-service
-  datasource:
-    url: ${DB_URL}
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
-    driver-class-name: oracle.jdbc.OracleDriver
   security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: ${JWT_ISSUER:http://localhost:8087}
-
+    user:
+      name: ${TRANSACTIONS_API_USERNAME:transactions-service}
+      password: ${TRANSACTIONS_API_PASSWORD:local-development-only}
+  datasource:
+    url: jdbc:oracle:thin:@//ofss-mum-1212.snbomprshared1.gbucdsint02bom.oraclevcn.com:1521/pdb1
+    username: ECHO
+    password: Echo@123
+    driver-class-name: oracle.jdbc.OracleDriver
   jpa:
     hibernate:
       ddl-auto: update
@@ -21,8 +19,8 @@ spring:
     properties:
       hibernate:
         format_sql: true
-
-eureka:
-  client:
-    service-url:
-      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka}
+services:
+  accounts:
+    base-url: ${ACCOUNTS_SERVICE_URL:http://localhost:8084}
+    username: ${ACCOUNTS_SERVICE_USERNAME:accounts-service}
+    password: ${ACCOUNTS_SERVICE_PASSWORD:local-development-only}

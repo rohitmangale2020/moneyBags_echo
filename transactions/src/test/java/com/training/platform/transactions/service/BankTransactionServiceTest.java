@@ -6,9 +6,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.training.platform.transactions.entity.BankTransaction;
+import com.training.platform.transactions.entity.TransactionStatus;
+import com.training.platform.transactions.entity.TransactionType;
 import com.training.platform.transactions.repository.BankTransactionRepository;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.Optional;
+import java.math.BigDecimal;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,6 +37,11 @@ class BankTransactionServiceTest {
     }
 
     @Test void savesTransactionWhenInitiating() {
+        when(transaction.getTransactionType()).thenReturn(TransactionType.TRANSFER);
+        when(transaction.getTransactionStatus()).thenReturn(TransactionStatus.INITIATED);
+        when(transaction.getTransactionRef()).thenReturn("TXN-1");
+        when(transaction.getAmount()).thenReturn(BigDecimal.ONE);
+        when(transaction.getCurrencyCode()).thenReturn("INR");
         when(transactionRepository.save(transaction)).thenReturn(transaction);
         assertSame(transaction, transactionService.initiate(transaction));
         verify(transactionRepository).save(transaction);
