@@ -1,7 +1,11 @@
 package com.training.platform.accounts.service;
 
 import com.training.platform.accounts.entity.Account;
+import com.training.platform.accounts.entity.AccountHolder;
+import com.training.platform.accounts.entity.AccountStatusHistory;
+import com.training.platform.accounts.repository.AccountHolderRepository;
 import com.training.platform.accounts.repository.AccountRepository;
+import com.training.platform.accounts.repository.AccountStatusHistoryRepository;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -11,8 +15,15 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class AccountService {
     private final AccountRepository accountRepository;
+    private final AccountHolderRepository accountHolderRepository;
+    private final AccountStatusHistoryRepository accountStatusHistoryRepository;
 
-    public AccountService(AccountRepository accountRepository) { this.accountRepository = accountRepository; }
+    public AccountService(AccountRepository accountRepository, AccountHolderRepository accountHolderRepository,
+                          AccountStatusHistoryRepository accountStatusHistoryRepository) {
+        this.accountRepository = accountRepository;
+        this.accountHolderRepository = accountHolderRepository;
+        this.accountStatusHistoryRepository = accountStatusHistoryRepository;
+    }
 
     public Account getById(String accountId) {
         return accountRepository.findById(accountId)
@@ -29,7 +40,10 @@ public class AccountService {
     @Transactional
     public Account create(Account account) {
         validate(account);
-        return accountRepository.save(account);
+        Account savedAccount = accountRepository.save(account);
+        accountHolderRepository.save(AccountHolder.primaryHolder(savedAccount));
+        accountStatusHistoryRepository.save(AccountStatusHistory.initialStatus(savedAccount));
+        return savedAccount;
     }
 
     @Transactional

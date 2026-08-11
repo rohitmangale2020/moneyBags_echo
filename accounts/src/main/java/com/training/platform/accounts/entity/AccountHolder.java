@@ -25,5 +25,17 @@ public class AccountHolder {
     @Column(name = "removed_at") private LocalDateTime removedAt;
 
     protected AccountHolder() { }
+
+    public static AccountHolder primaryHolder(Account account) {
+        AccountHolder holder = new AccountHolder();
+        holder.id = new AccountHolderId(account.getAccountId(), account.getCustomerId());
+        holder.account = account;
+        holder.holderRole = HolderRole.PRIMARY;
+        holder.operatingRule = OperatingRule.SOLELY;
+        holder.signingAuthority = SigningAuthority.AUTHORIZED;
+        holder.holderStatus = HolderStatus.ACTIVE;
+        return holder;
+    }
+
     @jakarta.persistence.PrePersist void beforeInsert() { if (addedAt == null) addedAt = LocalDateTime.now(); }
 }
