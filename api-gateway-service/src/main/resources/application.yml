@@ -14,23 +14,34 @@ spring:
         webmvc:
           routes:
             - id: security-service
-              uri: ${SECURITY_SERVICE_URL:http://localhost:8087}
+              uri: lb://SECURITY-SERVICE
               predicates: ["Path=/auth,/auth/**,/.well-known,/.well-known/**"]
             - id: users-service
-              uri: ${USERS_SERVICE_URL:http://localhost:8081}
+              uri: lb://USERS-SERVICE
               predicates: ["Path=/api/v1/users,/api/v1/users/**"]
             - id: customers-service
-              uri: ${CUSTOMERS_SERVICE_URL:http://localhost:8082}
+              uri: lb://CUSTOMERS-SERVICE
               predicates: ["Path=/api/customers,/api/customers/**"]
             - id: products-service
-              uri: ${PRODUCTS_SERVICE_URL:http://localhost:8083}
-              predicates: ["Path=/api/products,/api/products/**"]
+              uri: lb://PRODUCTS-SERVICE
+              predicates: ["Path=/api/v1/products,/api/v1/products/**,/api/v1/product-types,/api/v1/product-types/**"]
             - id: accounts-service
-              uri: ${ACCOUNTS_SERVICE_URL:http://localhost:8084}
+              uri: lb://ACCOUNTS-SERVICE
               predicates: ["Path=/api/accounts,/api/accounts/**"]
             - id: transactions-service
-              uri: ${TRANSACTIONS_SERVICE_URL:http://localhost:8085}
+              uri: lb://TRANSACTIONS-SERVICE
               predicates: ["Path=/api/transactions,/api/transactions/**"]
             - id: audit-service
-              uri: ${AUDIT_SERVICE_URL:http://localhost:8086}
+              uri: lb://AUDIT-SERVICE
               predicates: ["Path=/api/audit,/api/audit/**"]
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_DEFAULT_ZONE:http://localhost:8761/eureka/}
+  instance:
+    prefer-ip-address: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

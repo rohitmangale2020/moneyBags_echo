@@ -9,16 +9,16 @@ spring:
     config:
       enabled: false
   datasource:
-    url: jdbc:oracle:thin:@//localhost:1521/FREEPDB1
-    username: system
-    password: 123
-    driver-class-name: oracle.jdbc.OracleDriver
+    url: jdbc:h2:mem:users;MODE=Oracle;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
   jpa:
     open-in-view: false
     hibernate:
-      ddl-auto: update
-    database-platform: org.hibernate.dialect.OracleDialect
-    show-sql: true
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.H2Dialect
+    show-sql: false
   data:
     web:
       pageable:
@@ -27,7 +27,9 @@ spring:
 
 eureka:
   client:
+    enabled: false
     register-with-eureka: false
+    fetch-registry: false
     service-url:
       defaultZone: http://localhost:8761/eureka
 

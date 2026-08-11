@@ -1,0 +1,1 @@
+Get-CimInstance Win32_Process -Filter "Name = 'java.exe'" | Where-Object { $_.CommandLine -like '*banking-platform*' -or $_.CommandLine -like '*spring-boot:run*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
