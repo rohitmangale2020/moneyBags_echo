@@ -1,17 +1,20 @@
-define(['knockout', 'accUtils', 'appController'], function (ko, accUtils, app) {
+define(['knockout', 'accUtils', 'appController', 'services/authService'], function (ko, accUtils, app, authService) {
   function LoginViewModel() {
     this.username = ko.observable('');
     this.password = ko.observable('');
     this.errorMessage = ko.observable('');
-    this.signIn = () => {
+    this.signIn = async () => {
       if (!this.username().trim() || this.password().length < 8) {
         this.errorMessage('Enter a username and a password of at least 8 characters.');
         return;
       }
-      // Local mock only. Replace this role assignment with POST /auth/login later.
-      const role = this.username().toLowerCase().indexOf('employee') >= 0 ? 'EMPLOYEE' : 'ADMIN';
-      this.errorMessage('');
-      app.completeLogin(this.username().trim(), role);
+      try {
+        const session = await authService.login(this.username().trim(), this.password());
+        this.errorMessage('');
+        app.completeLogin(session.username, session.role);
+      } catch (error) {
+        this.errorMessage(error.message);
+      }
     };
     this.connected = () => { accUtils.announce('Sign in page loaded.'); document.title = 'MoneyBags | Sign in'; };
   }

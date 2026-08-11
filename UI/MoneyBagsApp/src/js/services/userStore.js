@@ -1,15 +1,15 @@
-define(['knockout'], function (ko) {
-  const users = ko.observableArray([
-    { id: 101, username: 'anita.sharma', email: 'anita.sharma@moneybags.bank', role: 'ADMIN', status: 'ACTIVE', firstName: 'Anita', lastName: 'Sharma', phoneNumber: '+919812345678', city: 'Mumbai', countryCode: 'IN' },
-    { id: 102, username: 'rohit.mehta', email: 'rohit.mehta@moneybags.bank', role: 'EMPLOYEE', status: 'ACTIVE', firstName: 'Rohit', lastName: 'Mehta', phoneNumber: '+919876543210', city: 'Pune', countryCode: 'IN' },
-    { id: 103, username: 'neha.kapoor', email: 'neha.kapoor@moneybags.bank', role: 'EMPLOYEE', status: 'PENDING_VERIFICATION', firstName: 'Neha', lastName: 'Kapoor', phoneNumber: '+919111222333', city: 'Bengaluru', countryCode: 'IN' }
-  ]);
+define(['knockout', 'services/api'], function (ko, api) {
+  const users = ko.observableArray([]);
   const selectedUser = ko.observable(null);
-  const save = (user) => {
-    const copy = Object.assign({}, user);
-    const existing = users().findIndex((item) => item.id === copy.id);
-    if (existing >= 0) users.splice(existing, 1, copy);
-    else { copy.id = Date.now(); copy.status = 'PENDING_VERIFICATION'; users.unshift(copy); }
+  const load = async () => {
+    const page = await api.request('/api/v1/users?page=0&size=100&sort=id');
+    users(page.content || []);
+    return users();
   };
-  return { users: users, selectedUser: selectedUser, save: save };
+  const create = (payload) => api.request('/api/v1/users', { method: 'POST', body: JSON.stringify(payload) });
+  const update = (id, payload) => api.request(`/api/v1/users/${id}`, { method: 'PUT', body: JSON.stringify(payload) });
+  const updateStatus = (id, status) => api.request(`/api/v1/users/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status: status }) });
+  const updatePassword = (id, password) => api.request(`/api/v1/users/${id}/password`, { method: 'PATCH', body: JSON.stringify({ password: password }) });
+  const deactivate = (id) => api.request(`/api/v1/users/${id}`, { method: 'DELETE' });
+  return { users: users, selectedUser: selectedUser, load: load, create: create, update: update, updateStatus: updateStatus, updatePassword: updatePassword, deactivate: deactivate };
 });

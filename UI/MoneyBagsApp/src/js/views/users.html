@@ -1,6 +1,7 @@
 <div class="page-content">
   <div class="page-heading"><div><div class="eyebrow">Identity &amp; access</div><h1>User directory</h1><p class="muted">Manage administrative user records and account lifecycle controls.</p></div><oj-button chroming="callToAction" on-oj-action="[[createUser]]">Create user</oj-button></div>
   <section class="content-card"><div class="card-heading"><h2>All users</h2><span class="muted"><oj-bind-text value="[[users().length]]"></oj-bind-text> records</span></div>
+    <p class="form-error"><oj-bind-text value="[[errorMessage]]"></oj-bind-text></p>
     <oj-table data="[[dataProvider]]" columns="[[columns]]" display="grid" selection-mode.row="single" on-oj-first-selected-row-changed="[[manageUser]]"></oj-table>
     <p class="table-help">Select a row to open its account profile and lifecycle controls.</p>
   </section>

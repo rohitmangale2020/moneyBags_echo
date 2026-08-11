@@ -34,3 +34,5 @@ spring:
             - id: audit-service
               uri: ${AUDIT_SERVICE_URL:http://localhost:8086}
               predicates: ["Path=/api/audit,/api/audit/**"]
+ui:
+  allowed-origins: ${UI_ALLOWED_ORIGINS:http://localhost:8000,http://localhost:8001}

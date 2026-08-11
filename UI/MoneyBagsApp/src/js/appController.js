@@ -8,8 +8,8 @@
 /*
  * Your application specific code will go here
  */
-define(['knockout', 'ojs/ojcontext', 'ojs/ojresponsiveutils', 'ojs/ojresponsiveknockoututils', 'ojs/ojcorerouter', 'ojs/ojmodulerouter-adapter', 'ojs/ojknockoutrouteradapter', 'ojs/ojurlparamadapter', 'ojs/ojarraydataprovider', 'ojs/ojknockouttemplateutils', 'ojs/ojmodule-element', 'ojs/ojknockout'],
-  function(ko, Context, ResponsiveUtils, ResponsiveKnockoutUtils, CoreRouter, ModuleRouterAdapter, KnockoutRouterAdapter, UrlParamAdapter, ArrayDataProvider, KnockoutTemplateUtils) {
+define(['knockout', 'ojs/ojcontext', 'ojs/ojresponsiveutils', 'ojs/ojresponsiveknockoututils', 'ojs/ojcorerouter', 'ojs/ojmodulerouter-adapter', 'ojs/ojknockoutrouteradapter', 'ojs/ojurlparamadapter', 'ojs/ojarraydataprovider', 'ojs/ojknockouttemplateutils', 'ojs/ojmodule-element', 'ojs/ojknockout', 'services/authService'],
+  function(ko, Context, ResponsiveUtils, ResponsiveKnockoutUtils, CoreRouter, ModuleRouterAdapter, KnockoutRouterAdapter, UrlParamAdapter, ArrayDataProvider, KnockoutTemplateUtils, moduleElement, ojKnockout, authService) {
 
      function ControllerViewModel() {
 
@@ -39,8 +39,9 @@ define(['knockout', 'ojs/ojcontext', 'ojs/ojresponsiveutils', 'ojs/ojresponsivek
         { path: 'access-denied', detail: { hidden: true, roles: ['ADMIN', 'EMPLOYEE', 'CUSTOMER'] } }
       ];
       const protectedRoutes = routes.filter((route) => route.detail && !route.detail.public);
-      this.isAuthenticated = ko.observable(false);
-      this.currentRole = ko.observable(null);
+      const restoredSession = authService.session();
+      this.isAuthenticated = ko.observable(!!restoredSession);
+      this.currentRole = ko.observable(restoredSession ? restoredSession.role : null);
       // Router setup
       const router = new CoreRouter(routes, {
         urlAdapter: new UrlParamAdapter()
@@ -56,7 +57,9 @@ define(['knockout', 'ojs/ojcontext', 'ojs/ojresponsiveutils', 'ojs/ojresponsivek
           window.setTimeout(() => router.go({ path: this.isAuthenticated() ? 'access-denied' : 'login' }), 0);
         }
       });
-      router.sync().catch(() => router.go({ path: 'login' }));
+      router.sync().then((state) => {
+        if (restoredSession && state.path === 'login') router.go({ path: restoredSession.role === 'CUSTOMER' ? 'access-denied' : 'dashboard' });
+      }).catch(() => router.go({ path: 'login' }));
 
       this.moduleAdapter = new ModuleRouterAdapter(router);
 
@@ -70,7 +73,7 @@ define(['knockout', 'ojs/ojcontext', 'ojs/ojresponsiveutils', 'ojs/ojresponsivek
       // Application Name used in Branding Area
       this.appName = ko.observable('MoneyBags Admin');
       // User Info used in Global Navigation area
-      this.userLogin = ko.observable('');
+      this.userLogin = ko.observable(restoredSession ? restoredSession.username : '');
       this.completeLogin = (username, role) => {
         this.userLogin(username);
         this.currentRole(role);
@@ -78,6 +81,7 @@ define(['knockout', 'ojs/ojcontext', 'ojs/ojresponsiveutils', 'ojs/ojresponsivek
         return router.go({ path: role === 'CUSTOMER' ? 'access-denied' : 'dashboard' });
       };
       this.signOut = () => {
+        authService.logout();
         this.isAuthenticated(false);
         this.currentRole(null);
         this.userLogin('');

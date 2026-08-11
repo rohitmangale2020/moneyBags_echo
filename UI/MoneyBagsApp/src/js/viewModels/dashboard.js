@@ -25,10 +25,10 @@ define(['knockout', 'accUtils', 'services/userStore', 'appController'],
        * and inserted into the DOM and after the View is reconnected
        * after being disconnected.
        */
-      this.connected = () => {
+      this.connected = async () => {
         accUtils.announce('Dashboard page loaded.');
         document.title = 'MoneyBags | Overview';
-        // Implement further logic if needed
+        try { await userStore.load(); } catch (error) { /* Directory displays the detailed API error. */ }
       };
 
       /**
