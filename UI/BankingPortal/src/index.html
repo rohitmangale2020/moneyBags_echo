@@ -21,10 +21,16 @@
     <div id="globalBody">
       <script type="text/html" id="navTemplate">
         <li>
-          <a href="#"
-            ><span :class="[[$data.detail.iconClass]]"></span
-            ><oj-bind-text value="[[$data.detail.label]]"></oj-bind-text
-          ></a>
+          <a href="#" class="mb-nav-link">
+            <span
+              class="oj-navigationlist-item-icon mb-nav-icon"
+              data-bind="css: $data.detail.iconClass"
+              aria-hidden="true"
+            ></span>
+            <span class="mb-nav-label"
+              ><oj-bind-text value="[[$data.detail.label]]"></oj-bind-text
+            ></span>
+          </a>
         </li>
       </script>
       <div id="announce" class="sendOffScreen" :aria-live="[[manner]]">

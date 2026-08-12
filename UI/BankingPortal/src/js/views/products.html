@@ -36,8 +36,8 @@
       </div>
       <button
         class="mb-link"
-        data-bind="visible:$parent.isEmployee()&&status!=='RETIRED',click:()=>$parent.status($data),text:status==='ACTIVE'?'Deactivate':'Activate'"
-      ></button>
+        data-bind="click:()=>$parent.manage($data)"
+      >View and manage</button>
     </article>
   </div>
   <oj-dialog
@@ -75,7 +75,7 @@
         ><oj-input-text
           label-hint="Monthly fee"
           value="{{form().fee.monthlyMaintenanceFee}}"
-        ></oj-input-text
+        ></oj-input-text><oj-input-text label-hint="Tenure months (FD/RD)" value="{{form().term.tenureMonths}}"></oj-input-text><oj-input-text label-hint="Installment amount (RD)" value="{{form().term.installmentAmount}}"></oj-input-text><oj-input-text label-hint="Installment frequency (RD)" value="{{form().term.installmentFrequency}}"></oj-input-text><oj-input-text label-hint="Lock-in period" value="{{form().term.lockInPeriod}}"></oj-input-text><oj-input-text label-hint="Maturity instruction" value="{{form().term.maturityInstruction}}"></oj-input-text><label>Premature withdrawal<select data-bind="value:form().term.prematureWithdrawalAllowed"><option data-bind="value:null">Not configured</option><option data-bind="value:true">Allowed</option><option data-bind="value:false">Not allowed</option></select></label
         ><label
           >Status<select data-bind="value:form().status">
             <option>INACTIVE</option>
@@ -88,7 +88,7 @@
     </div>
     <div slot="footer" class="mb-dialog-actions">
       <oj-button on-oj-action="[[close]]">Cancel</oj-button>
-      <oj-button chroming="callToAction" on-oj-action="[[save]]">Create product</oj-button>
+      <oj-button chroming="callToAction" on-oj-action="[[save]]"><oj-bind-text value="[[editingCode()?'Save changes':'Create product']]"></oj-bind-text></oj-button>
     </div></oj-dialog
   >
   <oj-dialog
@@ -118,4 +118,6 @@
       <oj-button chroming="callToAction" on-oj-action="[[saveType]]">Create type</oj-button>
     </div>
   </oj-dialog>
+  <oj-dialog id="productDetailDialog" class="mb-dialog mb-dialog-wide" dialog-title="Product details" cancel-behavior="icon"><div slot="body"><div class="mb-error" data-bind="visible:error,text:error"></div><div data-bind="with:selected"><div class="mb-detail-hero"><div><small data-bind="text:productCode"></small><h2 data-bind="text:productName"></h2><p data-bind="text:description||'No description'"></p></div><span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span></div><dl class="mb-kv three"><div><dt>Type</dt><dd data-bind="text:productTypeName"></dd></div><div><dt>Interest</dt><dd data-bind="text:`${rate&&rate.interestRate||0}%`"></dd></div><div><dt>Monthly fee</dt><dd data-bind="text:fee&&fee.monthlyMaintenanceFee"></dd></div><div><dt>Minimum</dt><dd data-bind="text:minimumBalance"></dd></div><div><dt>Maximum</dt><dd data-bind="text:maximumBalance"></dd></div><div><dt>Currency</dt><dd data-bind="text:currency"></dd></div></dl></div><div class="mb-detail-actions"><button class="mb-link" data-bind="visible:isAdmin,click:edit">Edit product</button><button class="mb-link" data-bind="visible:isEmployee,click:()=>openStatus(selected())">Change status</button><button class="mb-link danger" data-bind="visible:isAdmin,click:()=>retire(selected())">Retire</button></div><div class="mb-section-title"><small>STATUS HISTORY</small><h3>Lifecycle changes</h3></div><div class="mb-table compact"><table><thead><tr><th>Change</th><th>Reason</th><th>By</th><th>Date</th></tr></thead><tbody data-bind="foreach:history"><tr><td data-bind="text:`${previousStatus} → ${newStatus}`"></td><td data-bind="text:changeReason"></td><td data-bind="text:changedBy"></td><td data-bind="text:changedDate"></td></tr></tbody></table></div></div></oj-dialog>
+  <oj-dialog id="productStatusDialog" class="mb-dialog" dialog-title="Change product status" cancel-behavior="icon"><div slot="body"><div class="mb-error" data-bind="visible:error,text:error"></div><p data-bind="with:statusTarget">The product will be marked <strong data-bind="text:status==='ACTIVE'?'INACTIVE':'ACTIVE'"></strong>.</p><label class="mb-field">Reason<textarea data-bind="value:statusReason" maxlength="500"></textarea></label></div><div slot="footer" class="mb-dialog-actions"><oj-button on-oj-action="[[$data.close.bind(null,'productStatusDialog')]]">Cancel</oj-button><oj-button chroming="callToAction" on-oj-action="[[status]]">Confirm change</oj-button></div></oj-dialog>
 </section>

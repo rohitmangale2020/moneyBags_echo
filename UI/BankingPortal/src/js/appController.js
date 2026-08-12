@@ -166,6 +166,11 @@ define([
       () => new ArrayDataProvider(self.navItems(), { keyAttributes: "path" }),
     );
     self.go = (p) => router.go({ path: p });
+    self.customerToManage = ko.observable(null);
+    self.openCustomer = (customerId) => {
+      self.customerToManage(String(customerId));
+      return router.go({ path: "customers" });
+    };
     self.completeLogin = async () => {
       try {
         session.profile(await services.users.get(session.userId()));

@@ -5,10 +5,9 @@
       <h1>Account statements</h1>
       <p>View debit, credit, balance-after, and transaction references from the ledger.</p>
     </div>
-    <oj-button on-oj-action="[[download]]" disabled="[[!state.data().length]]"
-      >Download CSV</oj-button
-    >
+    <div class="mb-heading-actions"><oj-button on-oj-action="[[download]]" disabled="[[!state.data().length]]">Download CSV</oj-button><oj-button chroming="callToAction" on-oj-action="[[openRecord]]">Record entry</oj-button></div>
   </div>
+  <div class="mb-search-panel mb-id-search"><oj-input-text label-hint="Statement ID" value="{{statementId}}"></oj-input-text><oj-button on-oj-action="[[getById]]">Find entry by ID</oj-button></div>
   <div class="mb-search-panel statement">
     <oj-input-text label-hint="Account ID" value="{{accountId}}"></oj-input-text
     ><label><input type="checkbox" data-bind="checked:monthly" /> Monthly statement</label
@@ -50,4 +49,5 @@
   <div class="mb-empty" data-bind="visible:!state.loading()&&!state.error()&&!state.data().length">
     Enter an account ID to load real statement entries.
   </div>
+  <oj-dialog id="statementDialog" class="mb-dialog" dialog-title="Record statement entry" cancel-behavior="icon"><div slot="body"><div class="mb-info">Normal transfers already create debit and credit entries automatically. Use this operation only when an authorized workflow requires a direct record.</div><div class="mb-error" data-bind="visible:error,text:error"></div><div class="mb-form"><oj-input-text label-hint="Transaction ID" required value="{{form.transactionId}}"></oj-input-text><oj-input-text label-hint="Account ID" required value="{{form.accountId}}"></oj-input-text><label>Entry type<select data-bind="value:form.entryType"><option>DEBIT</option><option>CREDIT</option></select></label><oj-input-text label-hint="Amount" value="{{form.amount}}"></oj-input-text><oj-input-text label-hint="Currency" value="{{form.currencyCode}}"></oj-input-text><oj-input-text label-hint="Balance after" value="{{form.balanceAfter}}"></oj-input-text></div></div><div slot="footer" class="mb-dialog-actions"><oj-button on-oj-action="[[close]]">Cancel</oj-button><oj-button chroming="callToAction" on-oj-action="[[record]]">Record entry</oj-button></div></oj-dialog>
 </section>
