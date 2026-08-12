@@ -4,9 +4,9 @@ spring:
   application:
     name: transactions-service
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
+    url: ${DBURL}
+    username: ${DBUSER}
+    password: ${DBPASSWORD}
     driver-class-name: oracle.jdbc.OracleDriver
   jpa:
     hibernate:
@@ -15,6 +15,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
+    database-platform: org.hibernate.dialect.OracleDialect
   security:
     oauth2:
       resourceserver:
