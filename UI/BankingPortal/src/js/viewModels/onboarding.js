@@ -1,8 +1,25 @@
-define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton'], function (ko, app) {
+define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton', 'ojs/ojdatetimepicker'], function (ko, app) {
   'use strict';
 
   const today = () => new Date().toISOString().slice(0, 10);
   const text = (value) => String(value || '').trim();
+  const dateValue = (value) => {
+    const raw = text(value);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) return null;
+    const date = new Date(`${raw}T00:00:00`);
+    const normalized = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    return Number.isNaN(date.getTime()) || normalized !== raw ? null : date;
+  };
+  const ageInYears = (value) => {
+    const dob = dateValue(value);
+    if (!dob) return null;
+    const now = new Date();
+    let age = now.getFullYear() - dob.getFullYear();
+    const birthdayNotReached =
+      now.getMonth() < dob.getMonth() ||
+      (now.getMonth() === dob.getMonth() && now.getDate() < dob.getDate());
+    return birthdayNotReached ? age - 1 : age;
+  };
 
   function VM() {
     const s = this;
@@ -23,7 +40,7 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton'], functio
       firstName: ko.observable(''),
       lastName: ko.observable(''),
       dob: ko.observable(''),
-      gender: ko.observable('MALE'),
+      gender: ko.observable(''),
       phone: ko.observable(''),
       email: ko.observable(''),
       occupation: ko.observable(''),
@@ -56,6 +73,13 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton'], functio
       dob: ko.observable(''),
       phone: ko.observable(''),
       sharePercentage: ko.observable(100),
+      addressType: ko.observable('CURRENT'),
+      line1: ko.observable(''),
+      line2: ko.observable(''),
+      city: ko.observable(''),
+      state: ko.observable(''),
+      country: ko.observable(''),
+      pincode: ko.observable(''),
     };
     s.accountForm = {
       accountNumber: ko.observable(''),
@@ -63,11 +87,30 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton'], functio
       ownershipType: ko.observable('INDIVIDUAL'),
       availableBalance: ko.observable(0),
     };
+    s.nomineeRequired = ko.pureComputed(() => {
+      const age = ageInYears(s.profile.dob());
+      return age !== null && age < 18;
+    });
+    s.nomineeRequired.subscribe((minor) => {
+      if (minor && !text(s.nominee.relationship())) s.nominee.relationship('Legal guardian');
+    });
+    s.documentRequiresExpiry = ko.pureComputed(() =>
+      ['PASSPORT', 'DRIVING_LICENSE'].includes(s.document.documentType()),
+    );
+    s.document.documentType.subscribe(() => {
+      if (!s.documentRequiresExpiry()) {
+        s.document.expiryDate('');
+        const errors = Object.assign({}, s.fieldErrors());
+        delete errors.expiryDate;
+        s.fieldErrors(errors);
+      }
+    });
 
     s.setErrors = (errors) => {
       s.fieldErrors(errors);
       const first = Object.values(errors)[0];
-      s.error(first || '');
+      // Validation details belong beside their fields; reserve the top alert for API failures.
+      s.error('');
       return !first;
     };
     s.clearErrors = () => {
@@ -103,14 +146,20 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton'], functio
       const occupation = text(s.profile.occupation());
       if (!firstName) e.firstName = 'First name is required.';
       else if (firstName.length > 100) e.firstName = 'First name cannot exceed 100 characters.';
-      if (lastName.length > 100) e.lastName = 'Last name cannot exceed 100 characters.';
+      if (!lastName) e.lastName = 'Last name is required.';
+      else if (lastName.length > 100) e.lastName = 'Last name cannot exceed 100 characters.';
       if (!s.profile.dob()) e.dob = 'Date of birth is required.';
+      else if (!dateValue(s.profile.dob())) e.dob = 'Enter a valid date of birth.';
       else if (s.profile.dob() >= today()) e.dob = 'Date of birth must be in the past.';
+      else if (ageInYears(s.profile.dob()) > 120) e.dob = 'Enter a realistic date of birth.';
+      if (!s.profile.gender()) e.gender = 'Select a gender.';
       if (!phone) e.phone = 'Mobile number is required.';
-      else if (!/^[6-9][0-9]{9}$/.test(phone)) e.phone = 'Enter a 10-digit Indian mobile number beginning with 6, 7, 8, or 9.';
-      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) e.email = 'Enter a valid email address, for example name@example.com.';
+      else if (!/^[6-9][0-9]{9}$/.test(phone)) e.phone = 'Enter a valid 10-digit mobile number.';
+      if (!email) e.email = 'Email address is required.';
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) e.email = 'Enter a valid email address, for example name@example.com.';
       else if (email.length > 254) e.email = 'Email cannot exceed 254 characters.';
-      if (occupation.length > 100) e.occupation = 'Occupation cannot exceed 100 characters.';
+      if (!occupation) e.occupation = 'Occupation is required.';
+      else if (occupation.length > 100) e.occupation = 'Occupation cannot exceed 100 characters.';
       return s.setErrors(e);
     };
 
@@ -160,14 +209,18 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton'], functio
       if (!number) e.documentNumber = 'Document number is required.';
       else if (number.length > 100) e.documentNumber = 'Document number cannot exceed 100 characters.';
       if (!s.file()) e.file = 'Choose a PDF or image to upload.';
-      if (s.document.issueDate() && s.document.issueDate() > today()) e.issueDate = 'Issue date cannot be in the future.';
-      if (s.document.issueDate() && s.document.expiryDate() && s.document.expiryDate() < s.document.issueDate()) e.expiryDate = 'Expiry date cannot be earlier than the issue date.';
+      if (s.document.issueDate() && !dateValue(s.document.issueDate())) e.issueDate = 'Enter a valid issue date.';
+      else if (s.document.issueDate() && s.document.issueDate() > today()) e.issueDate = 'Issue date cannot be in the future.';
+      if (s.documentRequiresExpiry() && !s.document.expiryDate()) e.expiryDate = 'Expiry date is required for this document type.';
+      else if (s.documentRequiresExpiry() && !dateValue(s.document.expiryDate())) e.expiryDate = 'Enter a valid expiry date.';
+      else if (s.documentRequiresExpiry() && s.document.expiryDate() <= today()) e.expiryDate = 'Expiry date must be in the future.';
+      else if (s.documentRequiresExpiry() && s.document.issueDate() && s.document.expiryDate() < s.document.issueDate()) e.expiryDate = 'Expiry date cannot be earlier than the issue date.';
       if (!s.setErrors(e)) return;
       const payload = {
         documentType: s.document.documentType(),
         documentNumber: number,
         issueDate: s.document.issueDate() || null,
-        expiryDate: s.document.expiryDate() || null,
+        expiryDate: s.documentRequiresExpiry() ? s.document.expiryDate() : null,
         status: 'UPLOADED',
         verifiedBy: null,
         rejectedReason: null,
@@ -183,18 +236,33 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton'], functio
 
     s.saveKyc = async () => {
       const e = {};
-      const score = Number(s.kyc.riskScore());
-      if (s.kyc.kycDate() && s.kyc.kycDate() > today()) e.kycDate = 'KYC date cannot be in the future.';
-      if (!Number.isInteger(score) || score < 0 || score > 100) e.riskScore = 'Risk score must be a whole number from 0 to 100.';
+      const score = 0;
+      if (!s.kyc.kycDate()) e.kycDate = 'KYC date is required.';
+      else if (!dateValue(s.kyc.kycDate())) e.kycDate = 'Enter a valid KYC date.';
+      else if (s.kyc.kycDate() > today()) e.kycDate = 'KYC date cannot be in the future.';
       if (text(s.kyc.remarks()).length > 500) e.remarks = 'Remarks cannot exceed 500 characters.';
-      const hasNominee = Boolean(text(s.nominee.nomineeName()) || text(s.nominee.relationship()) || text(s.nominee.dob()) || text(s.nominee.phone()));
-      if (hasNominee && !text(s.nominee.nomineeName())) e.nomineeName = 'Nominee name is required when nominee details are entered.';
+      const nomineeAddressStarted = Boolean(text(s.nominee.line1()) || text(s.nominee.line2()) || text(s.nominee.city()) || text(s.nominee.state()) || text(s.nominee.country()) || text(s.nominee.pincode()));
+      const hasNominee = Boolean(s.nomineeRequired() || text(s.nominee.nomineeName()) || text(s.nominee.relationship()) || text(s.nominee.dob()) || text(s.nominee.phone()) || nomineeAddressStarted);
+      if (hasNominee && !text(s.nominee.nomineeName())) e.nomineeName = s.nomineeRequired() ? 'A nominee is required because this customer is under 18.' : 'Nominee name is required when nominee details are entered.';
       if (text(s.nominee.nomineeName()).length > 150) e.nomineeName = 'Nominee name cannot exceed 150 characters.';
-      if (text(s.nominee.relationship()).length > 100) e.relationship = 'Relationship cannot exceed 100 characters.';
-      if (s.nominee.dob() && s.nominee.dob() >= today()) e.nomineeDob = 'Nominee date of birth must be in the past.';
-      if (text(s.nominee.phone()) && !/^[6-9][0-9]{9}$/.test(text(s.nominee.phone()))) e.nomineePhone = 'Enter a valid 10-digit Indian mobile number for the nominee.';
+      if (hasNominee && !text(s.nominee.relationship())) e.relationship = 'Select the nominee relationship.';
+      else if (text(s.nominee.relationship()).length > 100) e.relationship = 'Relationship cannot exceed 100 characters.';
+      if (s.nominee.dob() && !dateValue(s.nominee.dob())) e.nomineeDob = 'Enter a valid nominee date of birth.';
+      else if (s.nominee.dob() && s.nominee.dob() >= today()) e.nomineeDob = 'Nominee date of birth must be in the past.';
+      if (text(s.nominee.phone()) && !/^[6-9][0-9]{9}$/.test(text(s.nominee.phone()))) e.nomineePhone = 'Enter a valid 10-digit mobile number.';
       const share = Number(s.nominee.sharePercentage());
       if (hasNominee && (!Number.isFinite(share) || share < 0.01 || share > 100)) e.sharePercentage = 'Nominee share must be between 0.01 and 100.';
+      if (nomineeAddressStarted) {
+        const nomineeAddress = ['line1', 'city', 'state', 'country', 'pincode'];
+        nomineeAddress.forEach((field) => {
+          const value = text(s.nominee[field]());
+          const label = field === 'line1' ? 'Address line 1' : field[0].toUpperCase() + field.slice(1);
+          if (!value) e[`nominee${field[0].toUpperCase()}${field.slice(1)}`] = `${label} is required for the nominee address.`;
+          else if (field !== 'pincode' && value.length > (field === 'line1' ? 250 : 100)) e[`nominee${field[0].toUpperCase()}${field.slice(1)}`] = `${label} is too long.`;
+        });
+        if (text(s.nominee.line2()).length > 250) e.nomineeLine2 = 'Address line 2 cannot exceed 250 characters.';
+        if (text(s.nominee.pincode()) && !/^[1-9][0-9]{5}$/.test(text(s.nominee.pincode()))) e.nomineePincode = 'Enter a valid six-digit pincode.';
+      }
       if (!s.setErrors(e)) return;
 
       const payload = {
@@ -207,20 +275,22 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton'], functio
         remarks: text(s.kyc.remarks()) || null,
         updatedBy: s.verifiedBy(),
       };
-      const result = await s.run(
-        () => app.services.customers.createKyc(s.customer().customerId, payload),
-        'KYC saved.',
-      );
-      if (!result) return;
-      s.kycRecord(result);
       if (hasNominee) {
         const nominee = {
           nomineeName: text(s.nominee.nomineeName()),
           relationship: text(s.nominee.relationship()) || null,
-          relationType: 'NOMINEE',
+          relationType: s.nomineeRequired() ? 'GUARDIAN' : 'NOMINEE',
           dob: s.nominee.dob() || null,
           phone: text(s.nominee.phone()),
-          address: null,
+          address: nomineeAddressStarted ? {
+            addressType: s.nominee.addressType(),
+            line1: text(s.nominee.line1()),
+            line2: text(s.nominee.line2()) || null,
+            city: text(s.nominee.city()),
+            state: text(s.nominee.state()),
+            country: text(s.nominee.country()),
+            pincode: text(s.nominee.pincode()),
+          } : null,
           sharePercentage: share,
           status: 'ACTIVE',
           updatedBy: s.verifiedBy(),
@@ -233,6 +303,12 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton'], functio
         );
         if (!nomineeResult) return;
       }
+      const result = await s.run(
+        () => app.services.customers.createKyc(s.customer().customerId, payload),
+        'KYC saved.',
+      );
+      if (!result) return;
+      s.kycRecord(result);
       s.step(5);
     };
 
@@ -253,18 +329,42 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton'], functio
       const existing = await s.run(() => calls[s.resumeKind()](value));
       if (!existing) return;
       s.customer(existing);
-      const kyc = await s.run(() => app.services.customers.kyc(existing.customerId));
-      if (!kyc) return;
-      s.kycRecord(kyc);
-      if (kyc.kycStatus !== 'VERIFIED') return s.setErrors({ resumeValue: `Customer ${existing.cifNo} cannot continue because KYC is ${kyc.kycStatus}.` });
-      if (existing.status !== 'ACTIVE') return s.setErrors({ resumeValue: `Customer ${existing.cifNo} is ${existing.status}. Activate the customer from Customer Management first.` });
-      const products = await s.run(() => app.services.products.list());
-      if (!products) return;
-      s.products(products.filter((product) => product.status === 'ACTIVE'));
-      if (!s.products().length) return s.setErrors({ resumeValue: 'No active banking products are available for account opening.' });
-      s.account(null);
-      s.step(6);
-      app.notify(`Resumed account opening for ${existing.cifNo}.`);
+      Object.keys(s.profile).forEach((key) => s.profile[key](existing[key] || ''));
+      const records = await s.run(() => Promise.allSettled([
+        app.services.customers.addresses(existing.customerId),
+        app.services.customers.documents(existing.customerId),
+        app.services.customers.kyc(existing.customerId),
+        app.services.customers.nominees(existing.customerId),
+      ]));
+      if (!records) return;
+      const valueOf = (result, fallback) => result.status === 'fulfilled' ? result.value : fallback;
+      const addresses = valueOf(records[0], []);
+      const documents = valueOf(records[1], []);
+      const kyc = valueOf(records[2], null);
+      const nominees = valueOf(records[3], []);
+      if (nominees.length) {
+        const savedNominee = nominees[0];
+        ['nomineeName', 'relationship', 'dob', 'phone', 'sharePercentage'].forEach((key) => {
+          if (savedNominee[key] !== undefined && savedNominee[key] !== null) s.nominee[key](savedNominee[key]);
+        });
+      }
+      if (!addresses.length) s.step(2);
+      else if (!documents.length) s.step(3);
+      else if (!kyc) s.step(4);
+      else if (kyc.kycStatus === 'VERIFIED' && existing.status === 'ACTIVE') {
+        const products = await s.run(() => app.services.products.list());
+        if (!products) return;
+        s.products(products.filter((product) => product.status === 'ACTIVE'));
+        if (!s.products().length) return s.setErrors({ resumeValue: 'No active banking products are available for account opening.' });
+        s.kycRecord(kyc);
+        s.account(null);
+        s.step(6);
+      }
+      else {
+        s.kycRecord(kyc);
+        s.step(5);
+      }
+      app.notify(`Resumed onboarding for ${existing.cifNo}.`);
     };
 
     s.openAccount = async () => {

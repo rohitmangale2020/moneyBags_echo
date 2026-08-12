@@ -23,6 +23,14 @@ define([
   const nomineeBlank = () => ({
     nomineeId: null, nomineeName: '', relationship: '', relationType: 'NOMINEE', dob: '', phone: '', sharePercentage: 100, status: 'ACTIVE', updatedBy: '', startDate: '', endDate: '', includeAddress: false, address: addressBlank(),
   });
+  const isMinor = (dob) => {
+    if (!dob) return false;
+    const birthDate = new Date(`${dob}T00:00:00`);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    if (today.getMonth() < birthDate.getMonth() || (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate())) age -= 1;
+    return age < 18;
+  };
 
   function clean(value) {
     const result = {};
@@ -139,10 +147,13 @@ define([
       document.getElementById('kycDialog').open();
     };
     s.saveKyc = async () => {
-      const raw = ko.toJS(s.kycForm()), d = clean({ kycStatus: raw.kycStatus, kycDate: raw.kycDate, verifiedBy: raw.verifiedBy, riskLevel: raw.riskLevel, riskScore: raw.riskScore, expiryDate: raw.expiryDate, remarks: raw.remarks, updatedBy: raw.updatedBy }), id = s.selected().customerId;
-      if (Number(d.riskScore) < 0 || Number(d.riskScore) > 100) return s.error('Risk score must be between 0 and 100.');
+      const raw = ko.toJS(s.kycForm()), d = clean({ kycStatus: raw.kycStatus, kycDate: raw.kycDate, verifiedBy: raw.verifiedBy, riskLevel: 'LOW', riskScore: 0, expiryDate: raw.expiryDate, remarks: raw.remarks, updatedBy: raw.updatedBy }), id = s.selected().customerId;
+      const nominees = s.detailState.data().nominees || [];
+      if (isMinor(s.selected().dob) && !nominees.some((nominee) => String(nominee.status || '').toUpperCase() === 'ACTIVE')) {
+        return s.error('A minor customer must have an active nominee before KYC can be saved. Add the nominee first.');
+      }
       if (d.kycDate && new Date(d.kycDate) > new Date()) return s.error('KYC date cannot be in the future.');
-      d.riskScore = Number(d.riskScore);
+      d.riskScore = 0;
       try { s.detailState.data().kyc ? await app.services.customers.updateKyc(id, d) : await app.services.customers.createKyc(id, d); document.getElementById('kycDialog').close(); app.notify('KYC record saved.'); await s.loadDetail(s.selected()); }
       catch (e) { s.error(e.message); }
     };
@@ -182,7 +193,18 @@ define([
     };
     s.closeNominee = async (x) => { try { await app.services.customers.closeNominee(s.selected().customerId, x.nomineeId); app.notify('Nominee closed.'); await s.loadDetail(s.selected()); } catch (e) { app.notify(e.message, 'error'); } };
     s.close = (id) => document.getElementById(id).close();
-    s.load();
+    s.load().then(async () => {
+      const customerId = app.customerToManage && app.customerToManage();
+      if (!customerId) return;
+      app.customerToManage(null);
+      setTimeout(async () => {
+        try {
+          await s.openDetail({ customerId });
+        } catch (e) {
+          app.notify(e.message || 'Unable to open the selected customer.', 'error');
+        }
+      }, 0);
+    });
   }
   return VM;
 });

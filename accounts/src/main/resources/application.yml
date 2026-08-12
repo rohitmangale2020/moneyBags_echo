@@ -5,7 +5,7 @@ spring:
     name: accounts-service
   datasource:
     url: ${DBURL}
-    username: ${DBUSER}
+    username: ${DBUSERNAME}
     password: ${DBPASSWORD}
     driver-class-name: oracle.jdbc.OracleDriver
   jpa:

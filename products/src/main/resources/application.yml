@@ -6,9 +6,9 @@ spring:
     name: products-service
 
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
+    url: ${DBURL}
+    username: ${DBUSERNAME}
+    password: ${DBPASSWORD}
     driver-class-name: oracle.jdbc.OracleDriver
 
   jpa:

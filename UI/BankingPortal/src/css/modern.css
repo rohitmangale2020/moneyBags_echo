@@ -389,7 +389,16 @@ body:not(:has(#navDrawer)) .mb-content {
 }
 
 .mb-form {
-  gap: 18px;
+  column-gap: 22px;
+  row-gap: 24px;
+}
+
+.mb-workflow .mb-form.three {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.mb-workflow .mb-form > div {
+  min-width: 0;
 }
 
 .mb-form label {
@@ -841,26 +850,77 @@ body:not(:has(#navDrawer)) .mb-content {
 
 .mb-resume-search {
   display: grid;
-  grid-template-columns: 150px minmax(220px, 1fr) auto;
+  grid-template-columns: 150px minmax(220px, 1fr) 156px;
   gap: 12px;
   align-items: end;
 }
 
-.mb-field-hint,
+.mb-resume-action,
+.mb-resume-action oj-button {
+  width: 100%;
+}
+
+.mb-resume-action oj-button {
+  min-height: 46px;
+}
+
 .mb-field-error {
   display: block;
   margin-top: 5px;
-  font-size: 11px;
-  line-height: 1.4;
-}
-
-.mb-field-hint {
-  color: var(--mb-subtle);
-}
-
-.mb-field-error {
   color: #b42318;
+  font-size: 10px;
   font-weight: 650;
+  line-height: 1.25;
+}
+
+.mb-workflow .mb-field-hint {
+  display: none;
+}
+
+.mb-workflow h3.mb-subsection {
+  margin: 28px 0 6px;
+  padding-top: 22px;
+  border-top: 1px solid #e3e9f3;
+}
+
+.mb-nominee-address {
+  margin-top: 14px;
+  padding: 18px;
+  border: 1px solid #dce5f4;
+  border-radius: 12px;
+  background: #fafcff;
+}
+
+.mb-form oj-input-date,
+.mb-form oj-input-text {
+  width: 100%;
+}
+
+.mb-select-field {
+  position: relative;
+}
+
+.mb-select-field > label {
+  position: absolute;
+  z-index: 1;
+  top: 8px;
+  left: 13px;
+  color: #56647d;
+  font-size: 12px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.mb-form .mb-select-field > select {
+  width: 100%;
+  min-height: 46px;
+  padding: 21px 36px 5px 13px;
+}
+
+@media (max-width: 700px) {
+  .mb-workflow .mb-form.three {
+    grid-template-columns: 1fr;
+  }
 }
 
 .mb-form > div.wide {
