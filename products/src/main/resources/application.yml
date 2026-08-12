@@ -1,14 +1,14 @@
 server:
-  port: ${SERVER_PORT:8083}
+  port: ${SERVER_PORT:8090}
 
 spring:
   application:
     name: products-service
 
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
+    url: jdbc:oracle:thin:@//ofss-mum-1212.snbomprshared1.gbucdsint02bom.oraclevcn.com:1521/pdb1
+    username: ECHO
+    password: Echo@123
     driver-class-name: oracle.jdbc.OracleDriver
 
   jpa:
