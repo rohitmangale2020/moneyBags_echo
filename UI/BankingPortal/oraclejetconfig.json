@@ -18,5 +18,6 @@
   "defaultBrowser": "chrome",
   "sassVer": "4.13.0",
   "defaultTheme": "redwood",
-  "generatorVersion": "10.1.0"
+  "generatorVersion": "10.1.0",
+  "watchInterval": 1000
 }

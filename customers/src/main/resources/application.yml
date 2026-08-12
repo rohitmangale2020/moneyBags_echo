@@ -4,9 +4,24 @@ spring:
   application:
     name: customers-service
   datasource:
-    url: ${DBURL}
-    username: ${DBUSERNAME}
-    password: ${DBPASSWORD}
+
+    url: jdbc:oracle:thin:@//ofss-mum-1212.snbomprshared1.gbucdsint02bom.oraclevcn.com:1521/pdb1
+    username: ECHO
+    password: Echo@123
+    driver-class-name: oracle.jdbc.OracleDriver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    database-platform: org.hibernate.dialect.OracleDialect
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+
   security:
     oauth2:
       resourceserver:
