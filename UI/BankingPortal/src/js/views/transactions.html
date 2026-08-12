@@ -17,6 +17,7 @@
         <option value="debitAccountId">Debit account</option>
         <option value="creditAccountId">Credit account</option>
         <option value="transactionRef">Reference</option>
+        <option value="transactionId">Transaction ID</option>
       </select></label
     ><oj-input-text placeholder="Account ID or reference" value="{{query}}"></oj-input-text
     ><oj-button chroming="callToAction" on-oj-action="[[search]]">Search</oj-button>
@@ -31,6 +32,7 @@
           <th>Amount</th>
           <th>Status</th>
           <th>Initiated</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody data-bind="foreach:state.data">
@@ -48,6 +50,7 @@
             ></span>
           </td>
           <td data-bind="text:$parent.date(initiatedAt)"></td>
+          <td><button class="mb-link" data-bind="click:()=>$parent.edit($data)">View / edit</button></td>
         </tr>
       </tbody>
     </table>
@@ -83,8 +86,9 @@
         ><span data-bind="text:result()&&result().transactionRef"></span>
       </div>
     </div>
-    <div slot="footer">
-      <oj-button chroming="callToAction" on-oj-action="[[transfer]]">Submit transfer</oj-button>
+    <div slot="footer" class="mb-dialog-actions">
+      <oj-button on-oj-action="[[$data.close.bind(null,'transferDialog')]]">Cancel</oj-button><oj-button chroming="callToAction" on-oj-action="[[transfer]]">Submit transfer</oj-button>
     </div></oj-dialog
   >
+  <oj-dialog id="transactionEditDialog" class="mb-dialog mb-dialog-wide" dialog-title="Transaction record" cancel-behavior="icon"><div slot="body"><div class="mb-error" data-bind="visible:error,text:error"></div><div class="mb-form three"><oj-input-text label-hint="Reference" value="{{form.transactionRef}}"></oj-input-text><label>Type<select data-bind="value:form.transactionType"><option>TRANSFER</option><option>DEPOSIT</option><option>WITHDRAWAL</option><option>PAYMENT</option><option>FEE</option><option>INTEREST</option><option>REVERSAL</option></select></label><label>Status<select data-bind="value:form.transactionStatus"><option>INITIATED</option><option>PENDING_APPROVAL</option><option>PROCESSING</option><option>COMPLETED</option><option>FAILED</option><option>REVERSED</option><option>CANCELLED</option></select></label><oj-input-text label-hint="Amount" value="{{form.amount}}"></oj-input-text><oj-input-text label-hint="Debit account ID" value="{{form.debitAccountId}}"></oj-input-text><oj-input-text label-hint="Credit account ID" value="{{form.creditAccountId}}"></oj-input-text><oj-input-text label-hint="External beneficiary" value="{{form.externalBeneficiary}}"></oj-input-text><oj-input-text label-hint="Currency" value="{{form.currencyCode}}"></oj-input-text><oj-input-text label-hint="Fee" value="{{form.feeAmount}}"></oj-input-text><oj-input-text label-hint="Customer ID" value="{{form.initiatedByCustomerId}}"></oj-input-text><oj-input-text label-hint="User ID" value="{{form.initiatedByUserId}}"></oj-input-text><label>Completed at<input type="datetime-local" data-bind="value:form.completedAt" /></label><oj-input-text label-hint="Failure code" value="{{form.failureCode}}"></oj-input-text><label class="wide">Failure reason<textarea data-bind="value:form.failureReason"></textarea></label></div><div class="mb-info">This operation maps to PUT /api/transactions/{transactionId}. The backend controls valid record semantics.</div></div><div slot="footer" class="mb-dialog-actions"><oj-button on-oj-action="[[$data.close.bind(null,'transactionEditDialog')]]">Cancel</oj-button><oj-button chroming="callToAction" on-oj-action="[[update]]">Save transaction</oj-button></div></oj-dialog>
 </section>

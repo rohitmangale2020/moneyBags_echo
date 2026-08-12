@@ -13,7 +13,7 @@
         Customer ID</button
       ><button data-bind="click:()=>mode('number'),css:{active:mode()==='number'}">
         Account number
-      </button>
+      </button><button data-bind="click:()=>mode('id'),css:{active:mode()==='id'}">Account ID</button>
     </div>
     <oj-input-text placeholder="Enter lookup value" value="{{query}}"></oj-input-text
     ><oj-button chroming="callToAction" on-oj-action="[[search]]">Search</oj-button>
@@ -50,6 +50,7 @@
           <dd data-bind="text:$parent.date(openedAt)"></dd>
         </div>
       </dl>
+      <button class="mb-link" data-bind="click:()=>$parent.edit($data)">Edit account</button>
     </article>
   </div>
   <oj-dialog id="accountDialog" dialog-title="Open customer account"
@@ -78,12 +79,13 @@
           </select></label
         ><oj-input-text
           label-hint="Opening balance"
+          disabled="[[!!editingId()]]"
           value="{{form.availableBalance}}"
-        ></oj-input-text>
+        ></oj-input-text><label data-bind="visible:editingId">Status<select data-bind="value:form.status"><option>ACTIVE</option><option>INACTIVE</option><option>DORMANT</option><option>FROZEN</option><option>CLOSED</option></select></label><oj-input-text data-bind="visible:editingId" label-hint="Currency" value="{{form.currencyCode}}"></oj-input-text><label data-bind="visible:editingId">Closed at<input type="datetime-local" data-bind="value:form.closedAt" /></label>
       </div>
     </div>
-    <div slot="footer">
-      <oj-button chroming="callToAction" on-oj-action="[[create]]">Open account</oj-button>
+    <div slot="footer" class="mb-dialog-actions">
+      <oj-button on-oj-action="[[close]]">Cancel</oj-button><oj-button chroming="callToAction" on-oj-action="[[create]]"><oj-bind-text value="[[editingId()?'Save account':'Open account']]"></oj-bind-text></oj-button>
     </div></oj-dialog
   >
 </section>

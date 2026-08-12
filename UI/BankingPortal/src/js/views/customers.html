@@ -1,63 +1,84 @@
 <section class="mb-stack">
   <div class="mb-heading">
-    <div>
-      <small>CUSTOMER SERVICE / DIRECTORY</small>
-      <h1>Customer directory</h1>
-      <p>Search CIF profiles and manage supported customer lifecycle actions.</p>
-    </div>
-    <oj-button
-      chroming="callToAction"
-      on-oj-action="[[openOnboarding]]"
-      :style.display="[[isEmployee()?'inline-flex':'none']]"
-      >Onboard customer</oj-button
-    >
+    <div><small>CUSTOMER SERVICE / DIRECTORY</small><h1>Customer management</h1><p>Manage profiles, KYC, addresses, documents, nominees, and lifecycle status.</p></div>
+    <oj-button chroming="callToAction" on-oj-action="[[openOnboarding]]" :style.display="[[isEmployee()?'inline-flex':'none']]">Onboard customer</oj-button>
   </div>
-  <oj-input-text
-    class="mb-search"
-    placeholder="Search CIF, name, phone, or email"
-    value="{{query}}"
-  ></oj-input-text>
-  <div class="mb-error" data-bind="visible:state.error">
-    <span data-bind="text:state.error"></span><button data-bind="click:load">Retry</button>
+  <div class="mb-search-panel mb-directory-search">
+    <label>Search using<select data-bind="value:searchMode"><option value="local">Loaded records</option><option value="cif">CIF</option><option value="email">Email</option><option value="phone">Phone</option><option value="status">Status</option></select></label>
+    <oj-input-text placeholder="Search value" value="{{query}}"></oj-input-text>
+    <oj-button chroming="callToAction" on-oj-action="[[backendSearch]]">Search</oj-button>
   </div>
+  <div class="mb-error" data-bind="visible:state.error"><span data-bind="text:state.error"></span><button data-bind="click:load">Retry</button></div>
   <div class="mb-table">
-    <table>
-      <thead>
-        <tr>
-          <th>Customer</th>
-          <th>CIF</th>
-          <th>Status</th>
-          <th>Contact</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody data-bind="foreach:filtered">
-        <tr>
-          <td>
-            <strong data-bind="text:`${firstName} ${lastName||''}`"></strong
-            ><small data-bind="text:occupation||'Occupation not provided'"></small>
-          </td>
-          <td><code data-bind="text:cifNo"></code></td>
-          <td>
-            <span
-              class="mb-badge"
-              data-bind="text:status.replaceAll('_',' '),css:status.toLowerCase()"
-            ></span>
-          </td>
-          <td>
-            <span data-bind="text:phone"></span><small data-bind="text:email||'No email'"></small>
-          </td>
-          <td>
-            <button
-              class="mb-link"
-              data-bind="click:()=>$parent.status($data),text:status==='ACTIVE'?'Deactivate':'Activate'"
-            ></button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <div class="mb-empty" data-bind="visible:!state.loading()&&!filtered().length">
-      No matching customers found.
-    </div>
+    <table><thead><tr><th>Customer</th><th>CIF</th><th>Status</th><th>Contact</th><th>Actions</th></tr></thead>
+      <tbody data-bind="foreach:filtered"><tr>
+        <td><strong data-bind="text:`${firstName} ${lastName||''}`"></strong><small data-bind="text:occupation||'Occupation not provided'"></small></td>
+        <td><code data-bind="text:cifNo"></code></td>
+        <td><span class="mb-badge" data-bind="text:status.replaceAll('_',' '),css:status.toLowerCase()"></span></td>
+        <td><span data-bind="text:phone"></span><small data-bind="text:email||'No email'"></small></td>
+        <td><button class="mb-link" data-bind="click:()=>$parent.openDetail($data)">Manage</button><button class="mb-link" data-bind="click:()=>$parent.status($data),text:status==='ACTIVE'?'Deactivate':'Activate'"></button></td>
+      </tr></tbody></table>
+    <div class="mb-empty" data-bind="visible:!state.loading()&&!filtered().length">No matching customers found.</div>
   </div>
+
+  <oj-dialog id="customerDetailDialog" class="mb-dialog mb-dialog-xl" dialog-title="Customer workspace" cancel-behavior="icon">
+    <div slot="body">
+      <div class="mb-error" data-bind="visible:error,text:error"></div>
+      <div class="mb-loading" data-bind="visible:detailState.loading">Loading customer records…</div>
+      <div data-bind="with:selected">
+        <div class="mb-detail-hero"><div><small data-bind="text:cifNo"></small><h2 data-bind="text:`${firstName} ${lastName||''}`"></h2><p data-bind="text:`${email||'No email'} · ${phone}`"></p></div><span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span></div>
+        <div class="mb-detail-actions"><button class="mb-link" data-bind="click:$parent.editCustomer">Edit profile</button><button class="mb-link" data-bind="click:()=>$parent.status($data),text:status==='ACTIVE'?'Deactivate':'Activate'"></button><button class="mb-link danger" data-bind="click:()=>$parent.remove($data)">Delete</button></div>
+      </div>
+      <div class="mb-resource-grid">
+        <section class="mb-resource-card"><div class="mb-resource-head"><div><small>KYC</small><h3>Identity verification</h3></div><button class="mb-link" data-bind="click:openKyc,text:detailState.data().kyc?'Update':'Add KYC'"></button></div>
+          <div data-bind="with:detailState.data().kyc"><span class="mb-badge" data-bind="text:kycStatus,css:kycStatus.toLowerCase()"></span><dl class="mb-kv"><div><dt>Risk</dt><dd data-bind="text:`${riskLevel||'—'} · ${riskScore??'—'}`"></dd></div><div><dt>Verified by</dt><dd data-bind="text:verifiedBy||'—'"></dd></div><div><dt>Expiry</dt><dd data-bind="text:expiryDate||'—'"></dd></div></dl></div><div class="mb-empty compact" data-bind="visible:!detailState.data().kyc">No KYC record.</div>
+        </section>
+        <section class="mb-resource-card"><div class="mb-resource-head"><div><small>ADDRESSES</small><h3>Contact locations</h3></div><button class="mb-link" data-bind="click:()=>openAddress(null)">Add address</button></div>
+          <div class="mb-resource-list" data-bind="foreach:detailState.data().addresses"><article><strong data-bind="text:addressType"></strong><span data-bind="text:`${line1}, ${city}, ${state} ${pincode}`"></span><div><button class="mb-link" data-bind="click:()=>$parent.openAddress($data)">Edit</button><button class="mb-link danger" data-bind="click:()=>$parent.deleteAddress($data)">Delete</button></div></article></div><div class="mb-empty compact" data-bind="visible:!detailState.data().addresses.length">No addresses.</div>
+        </section>
+        <section class="mb-resource-card"><div class="mb-resource-head"><div><small>DOCUMENTS</small><h3>KYC evidence</h3></div><button class="mb-link" data-bind="click:()=>openDocument(null)">Upload</button></div>
+          <div class="mb-resource-list" data-bind="foreach:detailState.data().documents"><article><strong data-bind="text:`${documentType} · ${documentNumber}`"></strong><span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span><button class="mb-link" data-bind="click:()=>$parent.openDocument($data)">Update</button></article></div><div class="mb-empty compact" data-bind="visible:!detailState.data().documents.length">No documents.</div>
+        </section>
+        <section class="mb-resource-card"><div class="mb-resource-head"><div><small>RELATIONSHIPS</small><h3>Nominees and holders</h3></div><button class="mb-link" data-bind="click:()=>openNominee(null)">Add nominee</button></div>
+          <div class="mb-resource-list" data-bind="foreach:detailState.data().nominees"><article><strong data-bind="text:nomineeName"></strong><span data-bind="text:`${relationType} · ${sharePercentage||0}%`"></span><div><button class="mb-link" data-bind="click:()=>$parent.openNominee($data)">Edit</button><button class="mb-link danger" data-bind="visible:status!=='CLOSED',click:()=>$parent.closeNominee($data)">Close</button></div></article></div><div class="mb-empty compact" data-bind="visible:!detailState.data().nominees.length">No nominees.</div>
+        </section>
+      </div>
+    </div>
+  </oj-dialog>
+
+  <oj-dialog id="customerEditDialog" class="mb-dialog mb-dialog-wide" dialog-title="Edit customer profile" cancel-behavior="icon"><div slot="body"><div class="mb-error" data-bind="visible:error,text:error"></div><div class="mb-form three"><oj-input-text label-hint="First name" required value="{{form().firstName}}"></oj-input-text><oj-input-text label-hint="Last name" value="{{form().lastName}}"></oj-input-text><label>Date of birth<input type="date" data-bind="value:form().dob" /></label><label>Gender<select data-bind="value:form().gender"><option>MALE</option><option>FEMALE</option><option>OTHER</option></select></label><oj-input-text label-hint="Phone" required value="{{form().phone}}"></oj-input-text><oj-input-text label-hint="Email" value="{{form().email}}"></oj-input-text><oj-input-text label-hint="Occupation" value="{{form().occupation}}"></oj-input-text></div></div><div slot="footer" class="mb-dialog-actions"><oj-button on-oj-action="[[$data.close.bind(null,'customerEditDialog')]]">Cancel</oj-button><oj-button chroming="callToAction" on-oj-action="[[saveCustomer]]">Save profile</oj-button></div></oj-dialog>
+
+  <oj-dialog id="addressDialog" class="mb-dialog" dialog-title="Customer address" cancel-behavior="icon"><div slot="body"><div class="mb-error" data-bind="visible:error,text:error"></div><div class="mb-form"><label>Address type<select data-bind="value:addressForm().addressType"><option>CURRENT</option><option>PERMANENT</option><option>OFFICE</option></select></label><oj-input-text label-hint="Address line 1" required value="{{addressForm().line1}}"></oj-input-text><oj-input-text label-hint="Address line 2" value="{{addressForm().line2}}"></oj-input-text><oj-input-text label-hint="City" required value="{{addressForm().city}}"></oj-input-text><oj-input-text label-hint="State" required value="{{addressForm().state}}"></oj-input-text><oj-input-text label-hint="Country" required value="{{addressForm().country}}"></oj-input-text><oj-input-text label-hint="Pincode" required value="{{addressForm().pincode}}"></oj-input-text></div></div><div slot="footer" class="mb-dialog-actions"><oj-button on-oj-action="[[$data.close.bind(null,'addressDialog')]]">Cancel</oj-button><oj-button chroming="callToAction" on-oj-action="[[saveAddress]]">Save address</oj-button></div></oj-dialog>
+
+  <oj-dialog id="kycDialog" class="mb-dialog" dialog-title="KYC verification" cancel-behavior="icon"><div slot="body"><div class="mb-error" data-bind="visible:error,text:error"></div><div class="mb-form"><label>KYC status<select data-bind="value:kycForm().kycStatus"><option>NOT_STARTED</option><option>PENDING</option><option>VERIFIED</option><option>REJECTED</option></select></label><label>Risk level<select data-bind="value:kycForm().riskLevel"><option>LOW</option><option>MEDIUM</option><option>HIGH</option></select></label><oj-input-text label-hint="Risk score (0–100)" value="{{kycForm().riskScore}}"></oj-input-text><label>KYC date<input type="date" data-bind="value:kycForm().kycDate" /></label><label>Expiry date<input type="date" data-bind="value:kycForm().expiryDate" /></label><div><oj-input-text label-hint="Verified by user ID" readonly value="{{kycForm().verifiedBy}}"></oj-input-text><small class="mb-field-hint">Automatically taken from the signed-in employee.</small></div><label class="wide">Remarks<textarea data-bind="value:kycForm().remarks" maxlength="500"></textarea></label></div></div><div slot="footer" class="mb-dialog-actions"><oj-button on-oj-action="[[$data.close.bind(null,'kycDialog')]]">Cancel</oj-button><oj-button chroming="callToAction" on-oj-action="[[saveKyc]]">Save KYC</oj-button></div></oj-dialog>
+
+  <oj-dialog id="documentDialog" class="mb-dialog" dialog-title="Customer document" cancel-behavior="icon"><div slot="body"><div class="mb-error" data-bind="visible:error,text:error"></div><div class="mb-form"><label>Document type<select data-bind="value:documentForm().documentType"><option>PAN</option><option>AADHAAR</option><option>PASSPORT</option><option>DRIVING_LICENSE</option><option>SALARY_SLIP</option><option>PHOTO</option><option>SIGNATURE</option></select></label><oj-input-text label-hint="Document number" required value="{{documentForm().documentNumber}}"></oj-input-text><label>Issue date<input type="date" data-bind="value:documentForm().issueDate" /></label><label>Expiry date<input type="date" data-bind="value:documentForm().expiryDate" /></label><label>Status<select data-bind="value:documentForm().status"><option>UPLOADED</option><option>VERIFIED</option><option>REJECTED</option><option>EXPIRED</option></select></label><oj-input-text label-hint="Verified by" value="{{documentForm().verifiedBy}}"></oj-input-text><label class="wide">File<input type="file" data-bind="event:{change:pickFile}" /></label><label class="wide">Remarks<textarea data-bind="value:documentForm().remarks"></textarea></label><label class="wide">Rejection reason<textarea data-bind="value:documentForm().rejectedReason"></textarea></label></div></div><div slot="footer" class="mb-dialog-actions"><oj-button on-oj-action="[[$data.close.bind(null,'documentDialog')]]">Cancel</oj-button><oj-button chroming="callToAction" on-oj-action="[[saveDocument]]">Save document</oj-button></div></oj-dialog>
+
+  <oj-dialog id="nomineeDialog" class="mb-dialog mb-dialog-wide" dialog-title="Nominee or account relation" cancel-behavior="icon">
+    <div slot="body">
+      <div class="mb-error" data-bind="visible:error,text:error"></div>
+      <div class="mb-form three">
+        <oj-input-text label-hint="Name" required value="{{nomineeForm().nomineeName}}"></oj-input-text>
+        <oj-input-text label-hint="Relationship" value="{{nomineeForm().relationship}}"></oj-input-text>
+        <label>Relation type<select data-bind="value:nomineeForm().relationType"><option>NOMINEE</option><option>JOIN_HOLDER</option><option>GUARDIAN</option><option>AUTHORIZED_SIGNATORY</option></select></label>
+        <label>Status<select data-bind="value:nomineeForm().status"><option>ACTIVE</option><option>INACTIVE</option><option>PENDING</option><option>CLOSED</option></select></label>
+        <label>Date of birth<input type="date" data-bind="value:nomineeForm().dob" /></label>
+        <oj-input-text label-hint="Phone" value="{{nomineeForm().phone}}"></oj-input-text>
+        <oj-input-text label-hint="Share percentage" value="{{nomineeForm().sharePercentage}}"></oj-input-text>
+        <label>Start date<input type="date" data-bind="value:nomineeForm().startDate" /></label>
+        <label>End date<input type="date" data-bind="value:nomineeForm().endDate" /></label>
+        <label class="wide"><input type="checkbox" data-bind="checked:nomineeForm().includeAddress" /> Include nominee address</label>
+      </div>
+      <div class="mb-form three mb-subsection" data-bind="visible:nomineeForm().includeAddress">
+        <label>Address type<select data-bind="value:nomineeForm().address.addressType"><option>CURRENT</option><option>PERMANENT</option><option>OFFICE</option></select></label>
+        <oj-input-text label-hint="Address line 1" value="{{nomineeForm().address.line1}}"></oj-input-text>
+        <oj-input-text label-hint="Address line 2" value="{{nomineeForm().address.line2}}"></oj-input-text>
+        <oj-input-text label-hint="City" value="{{nomineeForm().address.city}}"></oj-input-text>
+        <oj-input-text label-hint="State" value="{{nomineeForm().address.state}}"></oj-input-text>
+        <oj-input-text label-hint="Country" value="{{nomineeForm().address.country}}"></oj-input-text>
+        <oj-input-text label-hint="Pincode" value="{{nomineeForm().address.pincode}}"></oj-input-text>
+      </div>
+    </div>
+    <div slot="footer" class="mb-dialog-actions"><oj-button on-oj-action="[[$data.close.bind(null,'nomineeDialog')]]">Cancel</oj-button><oj-button chroming="callToAction" on-oj-action="[[saveNominee]]">Save nominee</oj-button></div>
+  </oj-dialog>
 </section>

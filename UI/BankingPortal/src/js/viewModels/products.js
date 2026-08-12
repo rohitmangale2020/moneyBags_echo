@@ -35,6 +35,11 @@ define([
     s.state = u.state([]);
     s.types = ko.observableArray([]);
     s.form = ko.observable(blank());
+    s.editingCode = ko.observable(null);
+    s.selected = ko.observable(null);
+    s.history = ko.observableArray([]);
+    s.statusTarget = ko.observable(null);
+    s.statusReason = ko.observable('');
     s.typeForm = {
       productTypeCode: ko.observable(''),
       productTypeName: ko.observable(''),
@@ -55,6 +60,7 @@ define([
         })
         .catch(() => null);
     s.open = () => {
+      s.editingCode(null);
       s.form(blank());
       s.error('');
       document.getElementById('productDialog').open();
@@ -63,7 +69,31 @@ define([
       s.error('');
       document.getElementById('productTypeDialog').open();
     };
-    s.close = () => document.getElementById('productDialog').close();
+    s.manage = async (p) => {
+      s.error('');
+      document.getElementById('productDetailDialog').open();
+      try {
+        const values = await Promise.all([
+          app.services.products.get(p.productCode),
+          app.services.products.history(p.productCode),
+        ]);
+        s.selected(values[0]);
+        s.history(values[1]);
+      } catch (e) {
+        s.error(e.message);
+      }
+    };
+    s.edit = () => {
+      const d = ko.toJS(s.selected());
+      s.editingCode(d.productCode);
+      s.form(Object.assign(blank(), d, {
+        rate: Object.assign({ interestRate: 0 }, d.rate || {}),
+        term: Object.assign(blank().term, d.term || {}),
+        fee: Object.assign({ monthlyMaintenanceFee: 0 }, d.fee || {}),
+      }));
+      document.getElementById('productDialog').open();
+    };
+    s.close = (id) => document.getElementById(typeof id === 'string' ? id : 'productDialog').close();
     s.closeType = () => document.getElementById('productTypeDialog').close();
     s.saveType = async () => {
       const data = {
@@ -84,35 +114,69 @@ define([
       }
     };
     s.save = async () => {
-      const d = ko.toJS(s.form());
+      const raw = ko.toJS(s.form());
+      const d = {
+        productCode: raw.productCode, productName: raw.productName, productTypeCode: raw.productTypeCode,
+        description: raw.description, minimumBalance: raw.minimumBalance, maximumBalance: raw.maximumBalance,
+        currency: raw.currency, status: raw.status,
+        rate: Object.assign({ interestRate: 0 }, raw.rate), term: Object.assign({}, raw.term),
+        fee: Object.assign({ monthlyMaintenanceFee: 0 }, raw.fee),
+      };
       d.minimumBalance = Number(d.minimumBalance || 0);
       d.maximumBalance = d.maximumBalance ? Number(d.maximumBalance) : null;
       d.rate.interestRate = Number(d.rate.interestRate || 0);
       d.fee.monthlyMaintenanceFee = Number(d.fee.monthlyMaintenanceFee || 0);
+      d.term.tenureMonths = d.term.tenureMonths ? Number(d.term.tenureMonths) : null;
+      d.term.installmentAmount = d.term.installmentAmount ? Number(d.term.installmentAmount) : null;
+      d.term.lockInPeriod = d.term.lockInPeriod ? Number(d.term.lockInPeriod) : null;
       if (!d.productCode || !d.productName || !d.productTypeCode)
         return s.error('Complete all required fields.');
+      if (!/^[A-Z]{3}$/.test(d.currency || '')) return s.error('Currency must be a three-letter uppercase code.');
+      if ([d.minimumBalance, d.maximumBalance, d.rate.interestRate, d.fee.monthlyMaintenanceFee, d.term.installmentAmount].some((v) => v !== null && v < 0)) return s.error('Balances, rates, fees, and installments cannot be negative.');
+      if (d.maximumBalance !== null && d.maximumBalance < d.minimumBalance) return s.error('Maximum balance cannot be lower than minimum balance.');
       try {
-        await app.services.products.create(d);
+        const value = s.editingCode()
+          ? await app.services.products.update(s.editingCode(), d)
+          : await app.services.products.create(d);
         document.getElementById('productDialog').close();
-        app.notify('Product created.');
+        if (s.editingCode()) s.selected(value);
+        app.notify(s.editingCode() ? 'Product updated.' : 'Product created.');
         s.load();
       } catch (e) {
         s.error(e.message);
       }
     };
-    s.status = async (p) => {
+    s.openStatus = (p) => {
+      s.statusTarget(p);
+      s.statusReason('');
+      s.error('');
+      document.getElementById('productStatusDialog').open();
+    };
+    s.status = async () => {
+      const p = s.statusTarget();
       const v = p.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+      if (!s.statusReason().trim()) return s.error('A status-change reason is required.');
       try {
-        await app.services.products.status(
-          p.productCode,
-          v,
-          `Status changed to ${v} through portal`,
-        );
+        const value = await app.services.products.status(p.productCode, v, s.statusReason().trim());
+        document.getElementById('productStatusDialog').close();
+        if (s.selected() && s.selected().productCode === p.productCode) {
+          s.selected(value);
+          s.history(await app.services.products.history(p.productCode));
+        }
         app.notify(`Product marked ${v.toLowerCase()}.`);
         s.load();
       } catch (e) {
         app.notify(e.message, 'error');
       }
+    };
+    s.retire = async (p) => {
+      if (!window.confirm(`Retire product ${p.productCode}?`)) return;
+      try {
+        await app.services.products.retire(p.productCode);
+        document.getElementById('productDetailDialog').close();
+        app.notify('Product retired.');
+        s.load();
+      } catch (e) { app.notify(e.message, 'error'); }
     };
     s.load();
   }

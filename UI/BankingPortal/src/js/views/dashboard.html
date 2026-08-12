@@ -14,7 +14,9 @@
   </div>
   <div class="mb-metrics" data-bind="foreach:cards">
     <article>
-      <span data-bind="css:tone"></span>
+      <span class="mb-metric-icon" data-bind="css:tone" aria-hidden="true">
+        <i data-bind="css:iconClass"></i>
+      </span>
       <div><small data-bind="text:label"></small><strong data-bind="text:value"></strong></div>
     </article>
   </div>

@@ -12,27 +12,39 @@ define(['knockout', 'appController', 'viewModels/util'], function (ko, app, u) {
     self.cards = ko.pureComputed(() => {
       const d = self.state.data(),
         r = app.session.role();
-      if (r === 'CUSTOMER') return [{ label: 'Secure identity', value: 'Protected', tone: 'blue' }];
+      if (r === 'CUSTOMER')
+        return [
+          {
+            label: 'Secure identity',
+            value: 'Protected',
+            tone: 'blue',
+            iconClass: 'oj-ux-ico-shield',
+          },
+        ];
       return [
         {
           label: r === 'ADMIN' ? 'Platform users' : 'Customers',
           value: r === 'ADMIN' ? d.users.length : d.customers.length,
           tone: 'blue',
+          iconClass: r === 'ADMIN' ? 'oj-ux-ico-contact-group' : 'oj-ux-ico-contacts',
         },
         {
           label: 'KYC attention',
           value: d.customers.filter((c) => ['NEW', 'KYC_PENDING'].includes(c.status)).length,
           tone: 'amber',
+          iconClass: 'oj-ux-ico-shield',
         },
         {
           label: 'Active customers',
           value: d.customers.filter((c) => c.status === 'ACTIVE').length,
           tone: 'soft',
+          iconClass: 'oj-ux-ico-contacts',
         },
         {
           label: 'Active products',
           value: d.products.filter((p) => p.status === 'ACTIVE').length,
           tone: 'indigo',
+          iconClass: 'oj-ux-ico-bank',
         },
       ];
     });
