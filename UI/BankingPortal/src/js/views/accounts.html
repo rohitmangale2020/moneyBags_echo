@@ -1,0 +1,89 @@
+<section class="mb-stack">
+  <div class="mb-heading">
+    <div>
+      <small>CORE BANKING / ACCOUNTS</small>
+      <h1>Account management</h1>
+      <p>Search existing records or open an account against an active product.</p>
+    </div>
+    <oj-button chroming="callToAction" on-oj-action="[[open]]">Open account</oj-button>
+  </div>
+  <div class="mb-search-panel">
+    <div class="mb-segment">
+      <button data-bind="click:()=>mode('customer'),css:{active:mode()==='customer'}">
+        Customer ID</button
+      ><button data-bind="click:()=>mode('number'),css:{active:mode()==='number'}">
+        Account number
+      </button>
+    </div>
+    <oj-input-text placeholder="Enter lookup value" value="{{query}}"></oj-input-text
+    ><oj-button chroming="callToAction" on-oj-action="[[search]]">Search</oj-button>
+  </div>
+  <div class="mb-error" data-bind="visible:state.error,text:state.error"></div>
+  <div class="mb-card-grid" data-bind="foreach:state.data">
+    <article class="mb-card account">
+      <div class="mb-card-top">
+        <div>
+          <small data-bind="text:ownershipType"></small>
+          <h2 data-bind="text:accountNumber"></h2>
+        </div>
+        <span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span>
+      </div>
+      <div class="mb-balance">
+        <small>Available balance</small
+        ><strong data-bind="text:$parent.money(availableBalance,currencyCode)"></strong>
+      </div>
+      <dl>
+        <div>
+          <dt>Account ID</dt>
+          <dd data-bind="text:accountId"></dd>
+        </div>
+        <div>
+          <dt>Customer ID</dt>
+          <dd data-bind="text:customerId"></dd>
+        </div>
+        <div>
+          <dt>Product ID</dt>
+          <dd data-bind="text:productId"></dd>
+        </div>
+        <div>
+          <dt>Opened</dt>
+          <dd data-bind="text:$parent.date(openedAt)"></dd>
+        </div>
+      </dl>
+    </article>
+  </div>
+  <oj-dialog id="accountDialog" dialog-title="Open customer account"
+    ><div slot="body">
+      <div class="mb-info">
+        Accounts Service requires an operator-supplied account number; it does not expose number
+        generation.
+      </div>
+      <div class="mb-error" data-bind="visible:error,text:error"></div>
+      <div class="mb-form">
+        <label class="wide"
+          >Active product<select data-bind="value:form.productId">
+            <option value="">Select product</option>
+            <!-- ko foreach:products -->
+            <option data-bind="value:productId,text:`${productName} · ${productCode}`"></option>
+            <!-- /ko -->
+          </select></label
+        ><oj-input-text label-hint="Customer ID" value="{{form.customerId}}"></oj-input-text
+        ><oj-input-text label-hint="Account number" value="{{form.accountNumber}}"></oj-input-text
+        ><label
+          >Ownership<select data-bind="value:form.ownershipType">
+            <option>INDIVIDUAL</option>
+            <option>JOINT</option>
+            <option>CORPORATE</option>
+            <option>TRUST</option>
+          </select></label
+        ><oj-input-text
+          label-hint="Opening balance"
+          value="{{form.availableBalance}}"
+        ></oj-input-text>
+      </div>
+    </div>
+    <div slot="footer">
+      <oj-button chroming="callToAction" on-oj-action="[[create]]">Open account</oj-button>
+    </div></oj-dialog
+  >
+</section>

@@ -1,0 +1,53 @@
+<section class="mb-stack">
+  <div class="mb-heading">
+    <div>
+      <small>ACCOUNTS / STATEMENTS</small>
+      <h1>Account statements</h1>
+      <p>View debit, credit, balance-after, and transaction references from the ledger.</p>
+    </div>
+    <oj-button on-oj-action="[[download]]" disabled="[[!state.data().length]]"
+      >Download CSV</oj-button
+    >
+  </div>
+  <div class="mb-search-panel statement">
+    <oj-input-text label-hint="Account ID" value="{{accountId}}"></oj-input-text
+    ><label><input type="checkbox" data-bind="checked:monthly" /> Monthly statement</label
+    ><oj-input-text label-hint="Year" value="{{year}}" disabled="[[!monthly()]]"></oj-input-text
+    ><oj-input-text label-hint="Month" value="{{month}}" disabled="[[!monthly()]]"></oj-input-text
+    ><oj-button chroming="callToAction" on-oj-action="[[search]]">Load statement</oj-button>
+  </div>
+  <div class="mb-error" data-bind="visible:state.error,text:state.error"></div>
+  <div class="mb-table" data-bind="visible:state.data().length">
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Transaction ID</th>
+          <th>Entry</th>
+          <th>Debit</th>
+          <th>Credit</th>
+          <th>Balance after</th>
+        </tr>
+      </thead>
+      <tbody data-bind="foreach:state.data">
+        <tr>
+          <td data-bind="text:$parent.date(postedAt)"></td>
+          <td><code data-bind="text:transactionId"></code></td>
+          <td data-bind="text:entryType"></td>
+          <td
+            class="debit"
+            data-bind="text:entryType==='DEBIT'?$parent.money(amount,currencyCode):'—'"
+          ></td>
+          <td
+            class="credit"
+            data-bind="text:entryType==='CREDIT'?$parent.money(amount,currencyCode):'—'"
+          ></td>
+          <td><strong data-bind="text:$parent.money(balanceAfter,currencyCode)"></strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="mb-empty" data-bind="visible:!state.loading()&&!state.error()&&!state.data().length">
+    Enter an account ID to load real statement entries.
+  </div>
+</section>

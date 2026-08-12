@@ -1,0 +1,44 @@
+<section class="mb-login">
+  <div class="mb-login-story">
+    <div class="mb-login-brand"><span>M</span><strong>MoneyBags</strong></div>
+    <div>
+      <small>SECURE BANKING OPERATIONS</small>
+      <h1>One workspace.<br />Every banking moment.</h1>
+      <p>
+        Manage onboarding, products, accounts, transfers, and statements through one role-aware
+        portal.
+      </p>
+    </div>
+    <footer>JWT protected · API Gateway connected</footer>
+  </div>
+  <div class="mb-login-form">
+    <form data-bind="submit:submit">
+      <div class="mb-mobile-brand">MoneyBags</div>
+      <small>WELCOME BACK</small>
+      <h2>Sign in to your workspace</h2>
+      <p>Use the credentials issued by your administrator.</p>
+      <div class="mb-error" data-bind="visible:error"><span data-bind="text:error"></span></div>
+      <oj-input-text
+        label-hint="Username"
+        required
+        value="{{username}}"
+        autocomplete="username"
+      ></oj-input-text
+      ><oj-input-password
+        label-hint="Password"
+        required
+        value="{{password}}"
+        autocomplete="current-password"
+      ></oj-input-password
+      ><oj-button
+        chroming="callToAction"
+        class="mb-full"
+        disabled="[[loading]]"
+        on-oj-action="[[submit]]"
+        ><oj-bind-text
+          value="[[loading()?'Signing in…':'Sign in securely']]"
+        ></oj-bind-text></oj-button
+      ><small class="mb-secure-note">Your session is stored only in this browser tab.</small>
+    </form>
+  </div>
+</section>

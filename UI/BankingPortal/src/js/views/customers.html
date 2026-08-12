@@ -1,0 +1,63 @@
+<section class="mb-stack">
+  <div class="mb-heading">
+    <div>
+      <small>CUSTOMER SERVICE / DIRECTORY</small>
+      <h1>Customer directory</h1>
+      <p>Search CIF profiles and manage supported customer lifecycle actions.</p>
+    </div>
+    <oj-button
+      chroming="callToAction"
+      on-oj-action="[[openOnboarding]]"
+      :style.display="[[isEmployee()?'inline-flex':'none']]"
+      >Onboard customer</oj-button
+    >
+  </div>
+  <oj-input-text
+    class="mb-search"
+    placeholder="Search CIF, name, phone, or email"
+    value="{{query}}"
+  ></oj-input-text>
+  <div class="mb-error" data-bind="visible:state.error">
+    <span data-bind="text:state.error"></span><button data-bind="click:load">Retry</button>
+  </div>
+  <div class="mb-table">
+    <table>
+      <thead>
+        <tr>
+          <th>Customer</th>
+          <th>CIF</th>
+          <th>Status</th>
+          <th>Contact</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody data-bind="foreach:filtered">
+        <tr>
+          <td>
+            <strong data-bind="text:`${firstName} ${lastName||''}`"></strong
+            ><small data-bind="text:occupation||'Occupation not provided'"></small>
+          </td>
+          <td><code data-bind="text:cifNo"></code></td>
+          <td>
+            <span
+              class="mb-badge"
+              data-bind="text:status.replaceAll('_',' '),css:status.toLowerCase()"
+            ></span>
+          </td>
+          <td>
+            <span data-bind="text:phone"></span><small data-bind="text:email||'No email'"></small>
+          </td>
+          <td>
+            <button
+              class="mb-link"
+              data-bind="click:()=>$parent.status($data),text:status==='ACTIVE'?'Deactivate':'Activate'"
+            ></button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="mb-empty" data-bind="visible:!state.loading()&&!filtered().length">
+      No matching customers found.
+    </div>
+  </div>
+</section>

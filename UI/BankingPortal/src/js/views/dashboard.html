@@ -1,0 +1,82 @@
+<section class="mb-stack">
+  <div class="mb-welcome">
+    <div>
+      <small>TODAY'S WORKSPACE</small>
+      <h1>Welcome back, <oj-bind-text value="[[displayName]]"></oj-bind-text>.</h1>
+      <p>Review live banking operations and move priority work forward.</p>
+    </div>
+    <oj-button
+      chroming="callToAction"
+      on-oj-action="[[openOnboarding]]"
+      :style.display="[[isEmployee()?'inline-flex':'none']]"
+      >Onboard customer</oj-button
+    >
+  </div>
+  <div class="mb-metrics" data-bind="foreach:cards">
+    <article>
+      <span data-bind="css:tone"></span>
+      <div><small data-bind="text:label"></small><strong data-bind="text:value"></strong></div>
+    </article>
+  </div>
+  <div class="mb-error" data-bind="visible:state.error">
+    <strong>Dashboard data could not be loaded</strong><span data-bind="text:state.error"></span
+    ><button data-bind="click:load">Retry</button>
+  </div>
+  <oj-bind-if test="[[isCustomer()]]"
+    ><div class="mb-limitation">
+      <span class="oj-ux-ico-shield"></span>
+      <div>
+        <small>PRIVACY SAFEGUARD</small>
+        <h2>Customer records are protected</h2>
+        <p>
+          The backend does not link your authenticated user ID to a Customer/CIF record. This portal
+          will not guess that relationship or expose another customer's data.
+        </p>
+      </div>
+    </div></oj-bind-if
+  ><oj-bind-if test="[[!isCustomer()]]"
+    ><div class="mb-panels">
+      <article class="mb-panel">
+        <small>CUSTOMER LIFECYCLE</small>
+        <h2>Onboarding activity</h2>
+        <div class="mb-status-grid">
+          <div>
+            <span class="mb-badge new">New</span
+            ><strong
+              data-bind="text:state.data().customers.filter(c=>c.status==='NEW').length"
+            ></strong>
+          </div>
+          <div>
+            <span class="mb-badge pending">KYC pending</span
+            ><strong
+              data-bind="text:state.data().customers.filter(c=>c.status==='KYC_PENDING').length"
+            ></strong>
+          </div>
+          <div>
+            <span class="mb-badge verified">Verified</span
+            ><strong
+              data-bind="text:state.data().customers.filter(c=>c.status==='VERIFIED').length"
+            ></strong>
+          </div>
+          <div>
+            <span class="mb-badge active">Active</span
+            ><strong
+              data-bind="text:state.data().customers.filter(c=>c.status==='ACTIVE').length"
+            ></strong>
+          </div>
+        </div>
+      </article>
+      <article class="mb-panel">
+        <small>QUICK ACTIONS</small>
+        <h2>Move work forward</h2>
+        <button class="mb-quick" data-bind="click:openCustomers">
+          Customer directory <span>→</span></button
+        ><button class="mb-quick" data-bind="click:openAccounts">
+          Find account <span>→</span></button
+        ><button class="mb-quick" data-bind="click:openTransactions">
+          Internal transfer <span>→</span>
+        </button>
+      </article>
+    </div></oj-bind-if
+  >
+</section>

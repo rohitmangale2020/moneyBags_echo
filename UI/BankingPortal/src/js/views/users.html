@@ -1,0 +1,106 @@
+<section class="mb-stack">
+  <div class="mb-heading">
+    <div>
+      <small>ADMINISTRATION / USERS</small>
+      <h1>User management</h1>
+      <p>Create credentialed users and maintain their platform access state.</p>
+    </div>
+    <oj-button chroming="callToAction" on-oj-action="[[open]]">Create user</oj-button>
+  </div>
+  <oj-input-text
+    class="mb-search"
+    placeholder="Search username, name, or email"
+    value="{{query}}"
+  ></oj-input-text>
+  <div class="mb-error" data-bind="visible:state.error">
+    <span data-bind="text:state.error"></span><button data-bind="click:load">Retry</button>
+  </div>
+  <div class="mb-table">
+    <table>
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Role</th>
+          <th>Status</th>
+          <th>Contact</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody data-bind="foreach:filtered">
+        <tr>
+          <td>
+            <strong
+              data-bind="text:profile?`${profile.firstName} ${profile.lastName}`:username"
+            ></strong
+            ><small data-bind="text:'@'+username"></small>
+          </td>
+          <td><span class="mb-role" data-bind="text:role"></span></td>
+          <td>
+            <span
+              class="mb-badge"
+              data-bind="text:status.replaceAll('_',' '),css:status.toLowerCase()"
+            ></span>
+          </td>
+          <td>
+            <span data-bind="text:email"></span
+            ><small data-bind="text:profile&&profile.phoneNumber||'No phone'"></small>
+          </td>
+          <td>
+            <button
+              class="mb-link"
+              data-bind="visible:status!=='ACTIVE',click:()=>$parent.status($data,'ACTIVE')"
+            >
+              Activate</button
+            ><button
+              class="mb-link danger"
+              data-bind="visible:status==='ACTIVE',click:()=>$parent.status($data,'DEACTIVATED')"
+            >
+              Deactivate
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="mb-empty" data-bind="visible:!state.loading()&&!filtered().length">
+      No matching users found.
+    </div>
+  </div>
+  <oj-dialog id="userDialog" dialog-title="Create platform user" modality="modal"
+    ><div slot="body">
+      <div class="mb-error" data-bind="visible:error,text:error"></div>
+      <div class="mb-form">
+        <oj-input-text
+          label-hint="First name"
+          required
+          value="{{form().profile.firstName}}"
+        ></oj-input-text
+        ><oj-input-text
+          label-hint="Last name"
+          required
+          value="{{form().profile.lastName}}"
+        ></oj-input-text
+        ><oj-input-text label-hint="Username" required value="{{form().username}}"></oj-input-text
+        ><oj-input-text label-hint="Email" required value="{{form().email}}"></oj-input-text
+        ><oj-input-password
+          label-hint="Temporary password"
+          required
+          value="{{form().password}}"
+        ></oj-input-password
+        ><label
+          >Role<select data-bind="value:form().role">
+            <option>EMPLOYEE</option>
+            <option>CUSTOMER</option>
+            <option>ADMIN</option>
+          </select></label
+        ><oj-input-text label-hint="Phone" value="{{form().profile.phoneNumber}}"></oj-input-text
+        ><oj-input-text
+          label-hint="Country code"
+          value="{{form().profile.countryCode}}"
+        ></oj-input-text>
+      </div>
+    </div>
+    <div slot="footer">
+      <oj-button on-oj-action="[[$data.save]]" chroming="callToAction">Create user</oj-button>
+    </div></oj-dialog
+  >
+</section>

@@ -1,0 +1,90 @@
+<section class="mb-stack">
+  <div class="mb-heading">
+    <div>
+      <small>PAYMENTS / TRANSACTIONS</small>
+      <h1>Transaction support</h1>
+      <p>Initiate idempotent internal transfers and investigate real transaction records.</p>
+    </div>
+    <oj-button chroming="callToAction" on-oj-action="[[open]]">New transfer</oj-button>
+  </div>
+  <div class="mb-info">
+    The backend currently posts internal transfers only. Deposit, withdrawal, payment, and reversal
+    initiation are not exposed.
+  </div>
+  <div class="mb-search-panel">
+    <label
+      >Lookup<select data-bind="value:kind">
+        <option value="debitAccountId">Debit account</option>
+        <option value="creditAccountId">Credit account</option>
+        <option value="transactionRef">Reference</option>
+      </select></label
+    ><oj-input-text placeholder="Account ID or reference" value="{{query}}"></oj-input-text
+    ><oj-button chroming="callToAction" on-oj-action="[[search]]">Search</oj-button>
+  </div>
+  <div class="mb-error" data-bind="visible:state.error,text:state.error"></div>
+  <div class="mb-table" data-bind="visible:state.data().length">
+    <table>
+      <thead>
+        <tr>
+          <th>Reference</th>
+          <th>From / To</th>
+          <th>Amount</th>
+          <th>Status</th>
+          <th>Initiated</th>
+        </tr>
+      </thead>
+      <tbody data-bind="foreach:state.data">
+        <tr>
+          <td><code data-bind="text:transactionRef"></code></td>
+          <td>
+            <span data-bind="text:debitAccountId"></span
+            ><small data-bind="text:`to ${creditAccountId}`"></small>
+          </td>
+          <td><strong data-bind="text:$parent.money(amount,currencyCode)"></strong></td>
+          <td>
+            <span
+              class="mb-badge"
+              data-bind="text:transactionStatus,css:transactionStatus.toLowerCase()"
+            ></span>
+          </td>
+          <td data-bind="text:$parent.date(initiatedAt)"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <oj-dialog id="transferDialog" dialog-title="Internal transfer"
+    ><div slot="body">
+      <div class="mb-error" data-bind="visible:error,text:error"></div>
+      <div class="mb-form">
+        <oj-input-text
+          class="wide"
+          label-hint="Transaction reference"
+          readonly
+          value="{{form.transactionRef}}"
+        ></oj-input-text
+        ><oj-input-text
+          label-hint="Debit account ID"
+          value="{{form.debitAccountId}}"
+        ></oj-input-text
+        ><oj-input-text
+          label-hint="Credit account ID"
+          value="{{form.creditAccountId}}"
+        ></oj-input-text
+        ><oj-input-text label-hint="Amount" value="{{form.amount}}"></oj-input-text
+        ><oj-input-text label-hint="Currency" value="{{form.currencyCode}}"></oj-input-text>
+      </div>
+      <div class="mb-info">
+        This reference makes an identical retry safe; the backend prevents a second debit.
+      </div>
+      <div class="mb-success" data-bind="visible:result">
+        <strong
+          data-bind="text:result()&&`Transfer ${result().transactionStatus.toLowerCase()}`"
+        ></strong
+        ><span data-bind="text:result()&&result().transactionRef"></span>
+      </div>
+    </div>
+    <div slot="footer">
+      <oj-button chroming="callToAction" on-oj-action="[[transfer]]">Submit transfer</oj-button>
+    </div></oj-dialog
+  >
+</section>

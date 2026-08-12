@@ -1,0 +1,121 @@
+<section class="mb-stack">
+  <div class="mb-heading">
+    <div>
+      <small>CATALOGUE / PRODUCTS</small>
+      <h1>Banking products</h1>
+      <p>Configure rates, fees, terms, and availability using Product Service.</p>
+    </div>
+    <div :style.display="[[isAdmin()?'flex':'none']]">
+      <oj-button on-oj-action="[[openType]]">Create product type</oj-button>
+      <oj-button chroming="callToAction" on-oj-action="[[open]]">Create product</oj-button>
+    </div>
+  </div>
+  <div class="mb-error" data-bind="visible:state.error,text:state.error"></div>
+  <div class="mb-card-grid" data-bind="foreach:state.data">
+    <article class="mb-card">
+      <div class="mb-card-top">
+        <span class="mb-card-icon oj-ux-ico-bank"></span
+        ><span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span>
+      </div>
+      <small data-bind="text:productTypeName||productTypeCode"></small>
+      <h2 data-bind="text:productName"></h2>
+      <code data-bind="text:productCode"></code>
+      <p data-bind="text:description||'No description provided.'"></p>
+      <div class="mb-card-stats">
+        <div>
+          <small>Interest</small><strong data-bind="text:`${rate&&rate.interestRate||0}%`"></strong>
+        </div>
+        <div>
+          <small>Min balance</small
+          ><strong data-bind="text:$parent.money(minimumBalance,currency)"></strong>
+        </div>
+        <div>
+          <small>Monthly fee</small
+          ><strong data-bind="text:$parent.money(fee&&fee.monthlyMaintenanceFee,currency)"></strong>
+        </div>
+      </div>
+      <button
+        class="mb-link"
+        data-bind="visible:$parent.isEmployee()&&status!=='RETIRED',click:()=>$parent.status($data),text:status==='ACTIVE'?'Deactivate':'Activate'"
+      ></button>
+    </article>
+  </div>
+  <oj-dialog
+    id="productDialog"
+    class="mb-dialog mb-dialog-wide"
+    dialog-title="Create banking product"
+    cancel-behavior="icon"
+    ><div slot="body">
+      <div class="mb-error" data-bind="visible:error,text:error"></div>
+      <div class="mb-form">
+        <oj-input-text label-hint="Product code" value="{{form().productCode}}"></oj-input-text
+        ><oj-input-text label-hint="Product name" value="{{form().productName}}"></oj-input-text
+        ><label
+          >Product type<select data-bind="value:form().productTypeCode">
+            <option value="">Select type</option>
+            <!-- ko foreach:types -->
+            <option
+              data-bind="value:productTypeCode,text:productTypeName,disable:status!=='ACTIVE'"
+            ></option>
+            <!-- /ko -->
+          </select></label
+        ><oj-input-text label-hint="Currency" value="{{form().currency}}"></oj-input-text
+        ><oj-input-text
+          label-hint="Minimum balance"
+          value="{{form().minimumBalance}}"
+        ></oj-input-text
+        ><oj-input-text
+          label-hint="Maximum balance"
+          value="{{form().maximumBalance}}"
+        ></oj-input-text
+        ><oj-input-text
+          label-hint="Interest rate %"
+          value="{{form().rate.interestRate}}"
+        ></oj-input-text
+        ><oj-input-text
+          label-hint="Monthly fee"
+          value="{{form().fee.monthlyMaintenanceFee}}"
+        ></oj-input-text
+        ><label
+          >Status<select data-bind="value:form().status">
+            <option>INACTIVE</option>
+            <option>ACTIVE</option>
+          </select></label
+        ><label class="wide"
+          >Description<textarea data-bind="value:form().description"></textarea>
+        </label>
+      </div>
+    </div>
+    <div slot="footer" class="mb-dialog-actions">
+      <oj-button on-oj-action="[[close]]">Cancel</oj-button>
+      <oj-button chroming="callToAction" on-oj-action="[[save]]">Create product</oj-button>
+    </div></oj-dialog
+  >
+  <oj-dialog
+    id="productTypeDialog"
+    class="mb-dialog"
+    dialog-title="Create product type"
+    cancel-behavior="icon"
+  >
+    <div slot="body">
+      <div class="mb-error" data-bind="visible:error,text:error"></div>
+      <div class="mb-form">
+        <oj-input-text label-hint="Type code" value="{{typeForm.productTypeCode}}"></oj-input-text>
+        <oj-input-text label-hint="Type name" value="{{typeForm.productTypeName}}"></oj-input-text>
+        <label class="wide"
+          >Description<textarea data-bind="value:typeForm.description"></textarea>
+        </label>
+        <label
+          >Status<select data-bind="value:typeForm.status">
+            <option>ACTIVE</option>
+            <option>INACTIVE</option>
+          </select></label
+        >
+      </div>
+    </div>
+    <div slot="footer" class="mb-dialog-actions">
+      <oj-button on-oj-action="[[closeType]]">Cancel</oj-button>
+      <oj-button chroming="callToAction" on-oj-action="[[saveType]]">Create type</oj-button>
+    </div>
+  </oj-dialog>
+</section>

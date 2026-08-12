@@ -1,0 +1,35 @@
+<section class="mb-stack">
+  <div class="mb-heading">
+    <div>
+      <small>SELF SERVICE</small>
+      <h1>My banking</h1>
+      <p>Your authenticated profile and protected banking relationship.</p>
+    </div>
+  </div>
+  <div class="mb-panel" data-bind="if:profile">
+    <div class="mb-profile">
+      <span class="mb-avatar large" data-bind="text:initials"></span>
+      <div>
+        <h2 data-bind="text:`${profile().profile.firstName} ${profile().profile.lastName}`"></h2>
+        <p data-bind="text:profile().email"></p>
+        <span class="mb-badge active" data-bind="text:profile().status"></span>
+      </div>
+    </div>
+  </div>
+  <div class="mb-limitation">
+    <span class="oj-ux-ico-shield"></span>
+    <div>
+      <small>PRIVACY SAFEGUARD</small>
+      <h2>Customer-to-CIF link is unavailable</h2>
+      <p>
+        The JWT identifies a Users Service record, but the backend exposes no relationship from that
+        user ID to a Customer/CIF. Accounts, transactions, and statements cannot be safely resolved
+        without risking disclosure.
+      </p>
+      <div class="mb-info">
+        Lookup fields are intentionally hidden for customer sessions. Authorization is never
+        bypassed.
+      </div>
+    </div>
+  </div>
+</section>

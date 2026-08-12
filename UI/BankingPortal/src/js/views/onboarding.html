@@ -1,0 +1,214 @@
+<section class="mb-stack">
+  <div class="mb-heading">
+    <div>
+      <small>CUSTOMERS / ONBOARDING</small>
+      <h1>Customer onboarding</h1>
+      <p>Each step advances only after the existing backend accepts it.</p>
+    </div>
+  </div>
+  <ol class="mb-stepper">
+    <li data-bind="css:{active:step()===1,done:step()>1}"><span>1</span>Profile</li>
+    <li data-bind="css:{active:step()===2,done:step()>2}"><span>2</span>Address</li>
+    <li data-bind="css:{active:step()===3,done:step()>3}"><span>3</span>Documents</li>
+    <li data-bind="css:{active:step()===4,done:step()>4}"><span>4</span>KYC</li>
+    <li data-bind="css:{active:step()===5,done:step()>5}"><span>5</span>Review</li>
+    <li data-bind="css:{active:step()===6}"><span>6</span>Account</li>
+  </ol>
+  <div class="mb-error" data-bind="visible:error,text:error"></div>
+  <!-- ko if:step()===1 -->
+  <article class="mb-workflow">
+    <small>STEP 1 OF 6</small>
+    <h2>Customer profile</h2>
+    <p>Customer Service assigns the CIF after creation.</p>
+    <div class="mb-form three">
+      <oj-input-text label-hint="First name" required value="{{profile.firstName}}"></oj-input-text
+      ><oj-input-text label-hint="Last name" value="{{profile.lastName}}"></oj-input-text
+      ><label>Date of birth<input type="date" data-bind="value:profile.dob" /></label
+      ><label
+        >Gender<select data-bind="value:profile.gender">
+          <option>MALE</option>
+          <option>FEMALE</option>
+          <option>OTHER</option>
+        </select></label
+      ><oj-input-text label-hint="Indian mobile" value="{{profile.phone}}"></oj-input-text
+      ><oj-input-text label-hint="Email" value="{{profile.email}}"></oj-input-text
+      ><oj-input-text label-hint="Occupation" value="{{profile.occupation}}"></oj-input-text>
+    </div>
+    <div class="mb-actions">
+      <span></span
+      ><oj-button chroming="callToAction" on-oj-action="[[createProfile]]"
+        >Create profile →</oj-button
+      >
+    </div>
+  </article>
+  <!-- /ko -->
+  <!-- ko if:step()===2 -->
+  <article class="mb-workflow">
+    <div class="mb-record">CIF assigned <strong data-bind="text:customer().cifNo"></strong></div>
+    <small>STEP 2 OF 6</small>
+    <h2>Residential address</h2>
+    <div class="mb-form">
+      <label
+        >Address type<select data-bind="value:address.addressType">
+          <option>CURRENT</option>
+          <option>PERMANENT</option>
+          <option>OFFICE</option>
+        </select></label
+      ><oj-input-text label-hint="Country" value="{{address.country}}"></oj-input-text
+      ><oj-input-text
+        class="wide"
+        label-hint="Address line 1"
+        value="{{address.line1}}"
+      ></oj-input-text
+      ><oj-input-text label-hint="City" value="{{address.city}}"></oj-input-text
+      ><oj-input-text label-hint="State" value="{{address.state}}"></oj-input-text
+      ><oj-input-text label-hint="Pincode" value="{{address.pincode}}"></oj-input-text>
+    </div>
+    <div class="mb-actions">
+      <oj-button on-oj-action="[[back]]">← Back</oj-button
+      ><oj-button chroming="callToAction" on-oj-action="[[saveAddress]]">Save address →</oj-button>
+    </div>
+  </article>
+  <!-- /ko -->
+  <!-- ko if:step()===3 -->
+  <article class="mb-workflow">
+    <small>STEP 3 OF 6</small>
+    <h2>Identity document</h2>
+    <div class="mb-form">
+      <label
+        >Document type<select data-bind="value:document.documentType">
+          <option>PAN</option>
+          <option>AADHAAR</option>
+          <option>PASSPORT</option>
+          <option>DRIVING_LICENSE</option>
+          <option>PHOTO</option>
+          <option>SIGNATURE</option>
+        </select></label
+      ><oj-input-text
+        label-hint="Document number"
+        value="{{document.documentNumber}}"
+      ></oj-input-text
+      ><label>Issue date<input type="date" data-bind="value:document.issueDate" /></label
+      ><label>Expiry date<input type="date" data-bind="value:document.expiryDate" /></label
+      ><label class="mb-file wide"
+        ><strong data-bind="text:file()?file().name:'Choose PDF or image'"></strong
+        ><input type="file" accept="application/pdf,image/*" data-bind="event:{change:choose}"
+      /></label>
+    </div>
+    <div class="mb-actions">
+      <oj-button on-oj-action="[[back]]">← Back</oj-button
+      ><oj-button chroming="callToAction" on-oj-action="[[upload]]">Upload document →</oj-button>
+    </div>
+  </article>
+  <!-- /ko -->
+  <!-- ko if:step()===4 -->
+  <article class="mb-workflow">
+    <small>STEP 4 OF 6</small>
+    <h2>KYC assessment & nominee</h2>
+    <div class="mb-form three">
+      <label
+        >KYC status<select data-bind="value:kyc.kycStatus">
+          <option>PENDING</option>
+          <option>VERIFIED</option>
+          <option>NOT_STARTED</option>
+          <option>REJECTED</option>
+        </select></label
+      ><label>KYC date<input type="date" data-bind="value:kyc.kycDate" /></label
+      ><label
+        >Risk level<select data-bind="value:kyc.riskLevel">
+          <option>LOW</option>
+          <option>MEDIUM</option>
+          <option>HIGH</option>
+        </select></label
+      ><oj-input-text label-hint="Risk score" value="{{kyc.riskScore}}"></oj-input-text
+      ><oj-input-text class="wide" label-hint="Remarks" value="{{kyc.remarks}}"></oj-input-text>
+    </div>
+    <h3>Optional nominee</h3>
+    <div class="mb-form three">
+      <oj-input-text label-hint="Nominee name" value="{{nominee.nomineeName}}"></oj-input-text
+      ><oj-input-text label-hint="Relationship" value="{{nominee.relationship}}"></oj-input-text
+      ><label>Date of birth<input type="date" data-bind="value:nominee.dob" /></label
+      ><oj-input-text label-hint="Mobile" value="{{nominee.phone}}"></oj-input-text
+      ><oj-input-text label-hint="Share %" value="{{nominee.sharePercentage}}"></oj-input-text>
+    </div>
+    <div class="mb-actions">
+      <oj-button on-oj-action="[[back]]">← Back</oj-button
+      ><oj-button chroming="callToAction" on-oj-action="[[saveKyc]]">Save assessment →</oj-button>
+    </div>
+  </article>
+  <!-- /ko -->
+  <!-- ko if:step()===5 -->
+  <article class="mb-workflow review">
+    <span class="mb-success-mark">✓</span><small>STEP 5 OF 6</small>
+    <h2
+      data-bind="text:kycRecord().kycStatus==='VERIFIED'?'KYC verified':'KYC requires attention'"
+    ></h2>
+    <p
+      data-bind="text:kycRecord().kycStatus==='VERIFIED'?'Activate the customer and continue to product selection.':'Activation is intentionally unavailable until KYC is VERIFIED.'"
+    ></p>
+    <div class="mb-review">
+      <div>
+        <small>Customer</small
+        ><strong data-bind="text:`${customer().firstName} ${customer().lastName||''}`"></strong>
+      </div>
+      <div><small>CIF</small><strong data-bind="text:customer().cifNo"></strong></div>
+      <div><small>KYC</small><strong data-bind="text:kycRecord().kycStatus"></strong></div>
+      <div><small>Risk</small><strong data-bind="text:kycRecord().riskLevel"></strong></div>
+    </div>
+    <div class="mb-actions">
+      <oj-button on-oj-action="[[back]]">← Back</oj-button
+      ><oj-button
+        chroming="callToAction"
+        disabled="[[kycRecord().kycStatus!=='VERIFIED']]"
+        on-oj-action="[[activate]]"
+        >Activate & select product →</oj-button
+      >
+    </div>
+  </article>
+  <!-- /ko -->
+  <!-- ko if:step()===6 -->
+  <article class="mb-workflow">
+    <small>STEP 6 OF 6</small>
+    <h2>Open customer account</h2>
+    <div class="mb-info">
+      Accounts Service requires an operator-supplied account number; no generation endpoint exists.
+    </div>
+    <div class="mb-form">
+      <label class="wide"
+        >Active product<select data-bind="value:accountForm.productId">
+          <option value="">Select product</option>
+          <!-- ko foreach:products -->
+          <option
+            data-bind="value:productId,text:`${productName} · ${productCode} · ${currency}`"
+          ></option>
+          <!-- /ko -->
+        </select></label
+      ><oj-input-text
+        label-hint="Approved account number"
+        value="{{accountForm.accountNumber}}"
+      ></oj-input-text
+      ><label
+        >Ownership<select data-bind="value:accountForm.ownershipType">
+          <option>INDIVIDUAL</option>
+          <option>JOINT</option>
+          <option>CORPORATE</option>
+          <option>TRUST</option>
+        </select></label
+      ><oj-input-text
+        label-hint="Opening balance"
+        value="{{accountForm.availableBalance}}"
+      ></oj-input-text>
+    </div>
+    <div class="mb-actions">
+      <span></span
+      ><oj-button chroming="callToAction" on-oj-action="[[openAccount]]">Open account</oj-button>
+    </div>
+    <div class="mb-success" data-bind="visible:account">
+      <strong>Account opened successfully</strong
+      ><span
+        data-bind="text:account()&&`${account().accountNumber} · ${account().accountId}`"
+      ></span>
+    </div>
+  </article>
+  <!-- /ko -->
+</section>
