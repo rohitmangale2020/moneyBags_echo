@@ -9,20 +9,18 @@ spring:
   datasource:
     url: ${DBURL}
     username: ${DBUSER}
-    password: ${DBPASS}
+    password: ${DBPASSWORD}
     driver-class-name: oracle.jdbc.OracleDriver
   jpa:
     hibernate:
-      ddl-auto: ${JPA_DDL_AUTO:update}
+      ddl-auto: ${JPA_DDL_AUTO:validate}
   security:
     oauth2:
       resourceserver:
         jwt:
           issuer-uri: ${JWT_ISSUER:http://localhost:8087}
+
 eureka:
   client:
     service-url:
-      defaultZone: ${EUREKA_DEFAULT_ZONE:http://localhost:8761/eureka/}
-  instance:
-    prefer-ip-address: true
-
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka}

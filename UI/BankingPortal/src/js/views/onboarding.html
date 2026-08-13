@@ -1,0 +1,194 @@
+<section class="mb-stack">
+  <div class="mb-heading">
+    <div>
+      <small>CUSTOMERS / ONBOARDING</small>
+      <h1>Customer onboarding</h1>
+      <p>Create a new customer or resume account opening for an activated customer.</p>
+    </div>
+  </div>
+
+  <article class="mb-resume-panel">
+    <div>
+      <small>RESUME ONBOARDING</small>
+      <h2>Find an existing customer</h2>
+      <p>Find a customer by an approved identifier and open their record for review or update.</p>
+    </div>
+    <div class="mb-resume-search">
+      <label>
+        Find by
+        <select data-bind="value:resumeKind">
+          <option value="cif">CIF number</option>
+          <option value="id">Customer ID</option>
+          <option value="email">Email</option>
+          <option value="phone">Phone</option>
+        </select>
+      </label>
+      <div>
+        <oj-input-text
+          label-hint="Customer lookup value"
+          placeholder="Enter the selected identifier"
+          value="{{resumeValue}}"
+        ></oj-input-text>
+        <small class="mb-field-error" data-bind="visible:fieldErrors().resumeValue,text:fieldErrors().resumeValue"></small>
+      </div>
+      <div class="mb-resume-action"><oj-button chroming="callToAction" disabled="[[busy()]]" on-oj-action="[[resume]]">Open customer</oj-button></div>
+    </div>
+  </article>
+
+  <ol class="mb-stepper">
+    <li data-bind="css:{active:step()===1,done:step()>1}"><span>1</span>Profile</li>
+    <li data-bind="css:{active:step()===2,done:step()>2}"><span>2</span>Address</li>
+    <li data-bind="css:{active:step()===3,done:step()>3}"><span>3</span>Documents</li>
+    <li data-bind="css:{active:step()===4,done:step()>4}"><span>4</span>KYC</li>
+    <li data-bind="css:{active:step()===5,done:step()>5}"><span>5</span>Review</li>
+    <li data-bind="css:{active:step()===6}"><span>6</span>Account</li>
+  </ol>
+
+  <div class="mb-error" data-bind="visible:error"><strong>Check the form</strong><span data-bind="text:error"></span></div>
+
+  <!-- ko if:step()===1 -->
+  <article class="mb-workflow">
+    <small>STEP 1 OF 6</small>
+    <h2>Customer profile</h2>
+    <p>Customer Service generates the CIF only after all required profile values are valid.</p>
+    <div class="mb-form three">
+      <div>
+        <oj-input-text label-hint="First name" required maxlength="100" value="{{profile.firstName}}"></oj-input-text>
+        <small class="mb-field-hint">Required, maximum 100 characters.</small>
+        <small class="mb-field-error" data-bind="visible:fieldErrors().firstName,text:fieldErrors().firstName"></small>
+      </div>
+      <div>
+        <oj-input-text label-hint="Last name" required maxlength="100" value="{{profile.lastName}}"></oj-input-text>
+        <small class="mb-field-hint">Optional, maximum 100 characters.</small>
+        <small class="mb-field-error" data-bind="visible:fieldErrors().lastName,text:fieldErrors().lastName"></small>
+      </div>
+      <div>
+        <oj-input-date label-hint="Date of birth" required value="{{profile.dob}}"></oj-input-date>
+        <small class="mb-field-hint">Required. Must be in the past; a nominee is required for customers under 18.</small>
+        <small class="mb-field-error" data-bind="visible:fieldErrors().dob,text:fieldErrors().dob"></small>
+      </div>
+      <div class="mb-select-field"><label for="customerGender">Gender</label><select id="customerGender" data-bind="value:profile.gender"><option value="">Select gender</option><option value="MALE">Male</option><option value="FEMALE">Female</option><option value="OTHER">Other</option></select><small class="mb-field-error" data-bind="visible:fieldErrors().gender,text:fieldErrors().gender"></small></div>
+      <div>
+        <oj-input-text label-hint="Mobile" required inputmode="numeric" maxlength="10" placeholder="9876543210" value="{{profile.phone}}"></oj-input-text>
+        <small class="mb-field-hint">Enter a 10-digit mobile number.</small>
+        <small class="mb-field-error" data-bind="visible:fieldErrors().phone,text:fieldErrors().phone"></small>
+      </div>
+      <div>
+        <oj-input-text label-hint="Email" type="email" required maxlength="254" placeholder="name@example.com" value="{{profile.email}}"></oj-input-text>
+        <small class="mb-field-error" data-bind="visible:fieldErrors().email,text:fieldErrors().email"></small>
+      </div>
+      <div>
+        <oj-input-text label-hint="Occupation" required maxlength="100" value="{{profile.occupation}}"></oj-input-text>
+        <small class="mb-field-error" data-bind="visible:fieldErrors().occupation,text:fieldErrors().occupation"></small>
+      </div>
+    </div>
+    <div class="mb-actions"><span></span><oj-button chroming="callToAction" disabled="[[busy()]]" on-oj-action="[[createProfile]]">Create profile →</oj-button></div>
+  </article>
+  <!-- /ko -->
+
+  <!-- ko if:step()===2 -->
+  <article class="mb-workflow">
+    <div class="mb-record">CIF assigned <strong data-bind="text:customer().cifNo"></strong></div>
+    <small>STEP 2 OF 6</small>
+    <h2>Residential address</h2>
+    <div class="mb-form three">
+      <div class="mb-select-field"><label for="customerAddressType">Address type</label><select id="customerAddressType" data-bind="value:address.addressType"><option>CURRENT</option><option>PERMANENT</option><option>OFFICE</option></select></div>
+      <div><oj-input-text label-hint="Country" required maxlength="100" value="{{address.country}}"></oj-input-text><small class="mb-field-error" data-bind="visible:fieldErrors().country,text:fieldErrors().country"></small></div>
+      <div class="wide"><oj-input-text label-hint="Address line 1" required maxlength="250" value="{{address.line1}}"></oj-input-text><small class="mb-field-error" data-bind="visible:fieldErrors().line1,text:fieldErrors().line1"></small></div>
+      <div class="wide"><oj-input-text label-hint="Address line 2" maxlength="250" value="{{address.line2}}"></oj-input-text><small class="mb-field-error" data-bind="visible:fieldErrors().line2,text:fieldErrors().line2"></small></div>
+      <div><oj-input-text label-hint="City" required maxlength="100" value="{{address.city}}"></oj-input-text><small class="mb-field-error" data-bind="visible:fieldErrors().city,text:fieldErrors().city"></small></div>
+      <div><oj-input-text label-hint="State" required maxlength="100" value="{{address.state}}"></oj-input-text><small class="mb-field-error" data-bind="visible:fieldErrors().state,text:fieldErrors().state"></small></div>
+      <div><oj-input-text label-hint="Pincode" required inputmode="numeric" maxlength="6" placeholder="560001" value="{{address.pincode}}"></oj-input-text><small class="mb-field-hint">Six digits; cannot begin with zero.</small><small class="mb-field-error" data-bind="visible:fieldErrors().pincode,text:fieldErrors().pincode"></small></div>
+    </div>
+    <div class="mb-actions"><oj-button disabled="[[busy()]]" on-oj-action="[[back]]">← Back</oj-button><oj-button chroming="callToAction" disabled="[[busy()]]" on-oj-action="[[saveAddress]]">Save address →</oj-button></div>
+  </article>
+  <!-- /ko -->
+
+  <!-- ko if:step()===3 -->
+  <article class="mb-workflow">
+    <small>STEP 3 OF 6</small>
+    <h2>Identity document</h2>
+    <div class="mb-form three">
+      <label>Document type<select data-bind="value:document.documentType"><option>PAN</option><option>AADHAAR</option><option>PASSPORT</option><option>DRIVING_LICENSE</option><option>SALARY_SLIP</option><option>PHOTO</option><option>SIGNATURE</option></select></label>
+      <div><oj-input-text label-hint="Document number" required maxlength="100" value="{{document.documentNumber}}"></oj-input-text><small class="mb-field-error" data-bind="visible:fieldErrors().documentNumber,text:fieldErrors().documentNumber"></small></div>
+      <div><oj-input-date label-hint="Issue date" value="{{document.issueDate}}"></oj-input-date><small class="mb-field-hint">Cannot be in the future.</small><small class="mb-field-error" data-bind="visible:fieldErrors().issueDate,text:fieldErrors().issueDate"></small></div>
+      <!-- ko if:documentRequiresExpiry -->
+      <div><oj-input-date label-hint="Expiry date" required value="{{document.expiryDate}}"></oj-input-date><small class="mb-field-error" data-bind="visible:fieldErrors().expiryDate,text:fieldErrors().expiryDate"></small></div>
+      <!-- /ko -->
+      <div class="wide"><label class="mb-file"><strong data-bind="text:file()?file().name:'Choose PDF or image'"></strong><input type="file" accept="application/pdf,image/*" data-bind="event:{change:choose}" /></label><small class="mb-field-error" data-bind="visible:fieldErrors().file,text:fieldErrors().file"></small></div>
+    </div>
+    <div class="mb-actions"><oj-button disabled="[[busy()]]" on-oj-action="[[back]]">← Back</oj-button><oj-button chroming="callToAction" disabled="[[busy()]]" on-oj-action="[[upload]]">Upload document →</oj-button></div>
+  </article>
+  <!-- /ko -->
+
+  <!-- ko if:step()===4 -->
+  <article class="mb-workflow">
+    <small>STEP 4 OF 6</small>
+    <h2>KYC assessment and nominee</h2>
+    <div class="mb-form three">
+      <label>KYC status<select data-bind="value:kyc.kycStatus"><option>PENDING</option><option>VERIFIED</option><option>NOT_STARTED</option><option>REJECTED</option></select></label>
+      <div><oj-input-date label-hint="KYC date" required value="{{kyc.kycDate}}"></oj-input-date><small class="mb-field-error" data-bind="visible:fieldErrors().kycDate,text:fieldErrors().kycDate"></small></div>
+      <div><oj-input-text label-hint="Verified by user ID" readonly value="[[verifiedBy]]"></oj-input-text><small class="mb-field-hint">Automatically taken from the signed-in employee.</small></div>
+      <div class="wide"><oj-input-text label-hint="Remarks" maxlength="500" value="{{kyc.remarks}}"></oj-input-text><small class="mb-field-error" data-bind="visible:fieldErrors().remarks,text:fieldErrors().remarks"></small></div>
+    </div>
+    <h3 data-bind="text:nomineeRequired() ? 'Nominee (required for this minor customer)' : 'Optional nominee'"></h3>
+    <p class="mb-help" data-bind="text:nomineeRequired() ? 'This customer is under 18, so a nominee must be recorded before the assessment can be saved.' : 'Leave every nominee field empty to skip this section. A separate nominee address may be added when available.'"></p>
+    <div class="mb-form three">
+      <div><oj-input-text label-hint="Nominee name" maxlength="150" value="{{nominee.nomineeName}}"></oj-input-text><small class="mb-field-error" data-bind="visible:fieldErrors().nomineeName,text:fieldErrors().nomineeName"></small></div>
+      <div class="mb-select-field"><label for="nomineeRelationship">Relationship</label><select id="nomineeRelationship" data-bind="value:nominee.relationship"><option value="">Select relationship</option><option value="Legal guardian">Legal guardian</option><option value="Parent">Parent</option><option value="Spouse">Spouse</option><option value="Child">Child</option><option value="Sibling">Sibling</option><option value="Other">Other</option></select><small class="mb-field-error" data-bind="visible:fieldErrors().relationship,text:fieldErrors().relationship"></small></div>
+      <div><oj-input-date label-hint="Nominee date of birth" value="{{nominee.dob}}"></oj-input-date><small class="mb-field-error" data-bind="visible:fieldErrors().nomineeDob,text:fieldErrors().nomineeDob"></small></div>
+      <div><oj-input-text label-hint="Mobile" inputmode="numeric" maxlength="10" value="{{nominee.phone}}"></oj-input-text><small class="mb-field-error" data-bind="visible:fieldErrors().nomineePhone,text:fieldErrors().nomineePhone"></small></div>
+      <div><oj-input-text label-hint="Share percentage" value="{{nominee.sharePercentage}}"></oj-input-text><small class="mb-field-hint">Between 0.01 and 100.</small><small class="mb-field-error" data-bind="visible:fieldErrors().sharePercentage,text:fieldErrors().sharePercentage"></small></div>
+    </div>
+    <h3 class="mb-subsection">Nominee address</h3>
+    <p class="mb-help">Optional. If you start the nominee address, complete all required address fields.</p>
+    <div class="mb-form three mb-nominee-address">
+      <div class="mb-select-field"><label for="nomineeAddressType">Address type</label><select id="nomineeAddressType" data-bind="value:nominee.addressType"><option>CURRENT</option><option>PERMANENT</option><option>OFFICE</option></select></div>
+      <div><oj-input-text label-hint="Country" maxlength="100" value="{{nominee.country}}"></oj-input-text><small class="mb-field-error" data-bind="visible:fieldErrors().nomineeCountry,text:fieldErrors().nomineeCountry"></small></div>
+      <div><oj-input-text label-hint="Address line 1" maxlength="250" value="{{nominee.line1}}"></oj-input-text><small class="mb-field-error" data-bind="visible:fieldErrors().nomineeLine1,text:fieldErrors().nomineeLine1"></small></div>
+      <div class="wide"><oj-input-text label-hint="Address line 2" maxlength="250" value="{{nominee.line2}}"></oj-input-text><small class="mb-field-error" data-bind="visible:fieldErrors().nomineeLine2,text:fieldErrors().nomineeLine2"></small></div>
+      <div><oj-input-text label-hint="City" maxlength="100" value="{{nominee.city}}"></oj-input-text><small class="mb-field-error" data-bind="visible:fieldErrors().nomineeCity,text:fieldErrors().nomineeCity"></small></div>
+      <div><oj-input-text label-hint="State" maxlength="100" value="{{nominee.state}}"></oj-input-text><small class="mb-field-error" data-bind="visible:fieldErrors().nomineeState,text:fieldErrors().nomineeState"></small></div>
+      <div><oj-input-text label-hint="Pincode" inputmode="numeric" maxlength="6" value="{{nominee.pincode}}"></oj-input-text><small class="mb-field-error" data-bind="visible:fieldErrors().nomineePincode,text:fieldErrors().nomineePincode"></small></div>
+    </div>
+    <div class="mb-actions"><oj-button disabled="[[busy()]]" on-oj-action="[[back]]">← Back</oj-button><oj-button chroming="callToAction" disabled="[[busy()]]" on-oj-action="[[saveKyc]]">Save assessment →</oj-button></div>
+  </article>
+  <!-- /ko -->
+
+  <!-- ko if:step()===5 -->
+  <article class="mb-workflow review">
+    <span class="mb-success-mark">✓</span>
+    <small>STEP 5 OF 6</small>
+    <h2>Onboarding details saved</h2>
+    <p>The customer must now be reviewed and activated from Customer Management. Account opening remains separate and can be resumed here after activation.</p>
+    <div class="mb-review">
+      <div><small>Customer</small><strong data-bind="text:`${customer().firstName} ${customer().lastName||''}`"></strong></div>
+      <div><small>CIF</small><strong data-bind="text:customer().cifNo"></strong></div>
+      <div><small>KYC</small><strong data-bind="text:kycRecord().kycStatus"></strong></div>
+      <div><small>Verified by</small><strong data-bind="text:kycRecord().verifiedBy||verifiedBy()"></strong></div>
+    </div>
+    <div class="mb-info">Next: open Customers, manage this CIF, verify the KYC record, and activate the customer. Then return here and use “Resume onboarding”.</div>
+    <div class="mb-actions"><oj-button on-oj-action="[[back]]">← Back</oj-button><oj-button chroming="callToAction" on-oj-action="[[finishOnboarding]]">Finish and manage customer →</oj-button></div>
+  </article>
+  <!-- /ko -->
+
+  <!-- ko if:step()===6 -->
+  <article class="mb-workflow">
+    <div class="mb-record">Active customer <strong data-bind="text:customer().cifNo"></strong></div>
+    <small>STEP 6 OF 6</small>
+    <h2>Open customer account</h2>
+    <div class="mb-info">Accounts Service requires an operator-supplied account number; no number-generation endpoint exists.</div>
+    <div class="mb-form three">
+      <div class="wide">
+        <label>Active product<select data-bind="value:accountForm.productId"><option value="">Select product</option><!-- ko foreach:products --><option data-bind="value:productId,text:`${productName} · ${productCode} · ${currency}`"></option><!-- /ko --></select></label>
+        <small class="mb-field-error" data-bind="visible:fieldErrors().productId,text:fieldErrors().productId"></small>
+      </div>
+      <div><oj-input-text label-hint="Approved account number" required maxlength="24" value="{{accountForm.accountNumber}}"></oj-input-text><small class="mb-field-hint">Required, maximum 24 characters.</small><small class="mb-field-error" data-bind="visible:fieldErrors().accountNumber,text:fieldErrors().accountNumber"></small></div>
+      <label>Ownership<select data-bind="value:accountForm.ownershipType"><option>INDIVIDUAL</option><option>JOINT</option><option>CORPORATE</option><option>TRUST</option></select></label>
+      <div><oj-input-text label-hint="Opening balance" value="{{accountForm.availableBalance}}"></oj-input-text><small class="mb-field-hint">Zero or a positive amount.</small><small class="mb-field-error" data-bind="visible:fieldErrors().availableBalance,text:fieldErrors().availableBalance"></small></div>
+    </div>
+    <div class="mb-actions"><span></span><oj-button chroming="callToAction" disabled="[[busy()||!!account()]]" on-oj-action="[[openAccount]]">Open account</oj-button></div>
+    <div class="mb-success" data-bind="visible:account"><strong>Account opened successfully</strong><span data-bind="text:account()&&`${account().accountNumber} · ${account().accountId}`"></span></div>
+  </article>
+  <!-- /ko -->
+</section>

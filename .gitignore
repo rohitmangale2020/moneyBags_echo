@@ -2,5 +2,8 @@
 **/target/
 .idea/
 *.iml
-
+logs/
+postman/
+uploads/
+UI/BankingPortal/node_modules/
 AGENTS.md

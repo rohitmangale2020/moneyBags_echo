@@ -6,19 +6,15 @@ spring:
 security-service:
   issuer: ${JWT_ISSUER:http://localhost:8087}
   audience: ${JWT_AUDIENCE:banking-api}
-  access-token-ttl: ${JWT_ACCESS_TOKEN_TTL:PT15M}
-  users-url: ${USERS_SERVICE_URL:http://USERS-SERVICE}
+  access-token-ttl: ${JWT_ACCESS_TOKEN_TTL:P1D}
+  users-url: ${USERS_SERVICE_URL:http://users-service}
   jwt-private-key: ${JWT_PRIVATE_KEY:}
   jwt-public-key: ${JWT_PUBLIC_KEY:}
   key-id: ${JWT_KEY_ID:banking-dev-key}
+
 eureka:
   client:
     service-url:
-      defaultZone: ${EUREKA_DEFAULT_ZONE:http://localhost:8761/eureka/}
-  instance:
-    prefer-ip-address: true
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka}
+    register-with-eureka: true
+    fetch-registry: true

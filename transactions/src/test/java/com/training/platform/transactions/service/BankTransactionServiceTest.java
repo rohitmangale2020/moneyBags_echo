@@ -6,9 +6,16 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.training.platform.transactions.entity.BankTransaction;
+import com.training.platform.transactions.entity.TransactionStatus;
+import com.training.platform.transactions.entity.TransactionType;
 import com.training.platform.transactions.repository.BankTransactionRepository;
+import com.training.platform.transactions.repository.AccountStatementRepository;
+import com.training.platform.transactions.repository.TransactionEventOutboxRepository;
+import com.training.platform.transactions.client.AccountsClient;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.Optional;
+import java.math.BigDecimal;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,10 +25,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class BankTransactionServiceTest {
     @Mock private BankTransactionRepository transactionRepository;
+    @Mock private AccountStatementRepository statementRepository;
+    @Mock private TransactionEventOutboxRepository outboxRepository;
+    @Mock private AccountsClient accountsClient;
     @Mock private BankTransaction transaction;
     private BankTransactionService transactionService;
 
-    @BeforeEach void setUp() { transactionService = new BankTransactionService(transactionRepository); }
+    @BeforeEach void setUp() {
+        transactionService = new BankTransactionService(transactionRepository, statementRepository,
+                outboxRepository, accountsClient, new ObjectMapper());
+    }
 
     @Test void returnsTransactionWhenReferenceExists() {
         when(transactionRepository.findByTransactionRef("TXN-1")).thenReturn(Optional.of(transaction));
@@ -33,9 +46,9 @@ class BankTransactionServiceTest {
         assertThrows(EntityNotFoundException.class, () -> transactionService.getByReference("missing"));
     }
 
-    @Test void savesTransactionWhenInitiating() {
-        when(transactionRepository.save(transaction)).thenReturn(transaction);
-        assertSame(transaction, transactionService.initiate(transaction));
-        verify(transactionRepository).save(transaction);
+    @Test void rejectsTransferWithoutBothAccounts() {
+        when(transaction.getTransactionType()).thenReturn(TransactionType.TRANSFER);
+        when(transaction.getTransactionRef()).thenReturn("TXN-1");
+        assertThrows(IllegalArgumentException.class, () -> transactionService.initiate(transaction));
     }
 }

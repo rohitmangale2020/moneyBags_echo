@@ -1,12 +1,33 @@
 server:
-  port: 8083
+  port: ${SERVER_PORT:8090}
+
 spring:
   application:
     name: products-service
+
   datasource:
-    url: ${DB_URL:jdbc:mysql://localhost:3306/products_db}
-    username: ${DB_USER:root}
-    password: ${DB_PASSWORD:}
+
+    url: ${DBURL}
+    username: ${DBUSER}
+    password: ${DBPASSWORD}
+
+    driver-class-name: oracle.jdbc.OracleDriver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        default_schema: ECHO
+
+  flyway:
+    schemas: ECHO
+    default-schema: ECHO
+    baseline-on-migrate: true
+    baseline-version: 0
+    enabled: true
+
   security:
     oauth2:
       resourceserver:
@@ -24,3 +45,6 @@ management:
       exposure:
         include: health,info
 
+app:
+  cors:
+    allowed-origins: ${PRODUCT_UI_ORIGINS:http://localhost:8000,http://localhost:8001,http://localhost:8002,http://localhost:8082}

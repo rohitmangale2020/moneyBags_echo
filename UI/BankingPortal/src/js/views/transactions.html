@@ -1,0 +1,108 @@
+<section class="mb-stack">
+  <div class="mb-heading">
+    <div>
+      <small>PAYMENTS / TRANSACTIONS</small>
+      <h1>Transactions</h1>
+      <p>Post transfers, deposits, and withdrawals, then inspect the resulting records.</p>
+    </div>
+    <oj-button chroming="callToAction" on-oj-action="[[open]]">New transaction</oj-button>
+  </div>
+
+  <div class="mb-search-panel">
+    <label>Lookup
+      <select data-bind="value:kind">
+        <option value="debitAccountId">Debit account</option>
+        <option value="creditAccountId">Credit account</option>
+      </select>
+    </label>
+    <oj-input-text placeholder="Account ID" value="{{query}}"></oj-input-text>
+    <oj-button chroming="callToAction" on-oj-action="[[search]]">Search</oj-button>
+  </div>
+
+  <div class="mb-error" data-bind="visible:state.error,text:state.error"></div>
+  <div class="mb-table" data-bind="visible:state.data().length">
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Account movement</th>
+          <th>Amount</th>
+          <th>Status</th>
+          <th>Initiated</th>
+        </tr>
+      </thead>
+      <tbody data-bind="foreach:state.data">
+        <tr>
+          <td><strong data-bind="text:transactionType"></strong></td>
+          <td>
+            <span data-bind="text:debitAccountId || 'Bank credit'"></span>
+            <small data-bind="text:creditAccountId ? `to ${creditAccountId}` : 'withdrawal'"></small>
+          </td>
+          <td><strong data-bind="text:$parent.money(amount,currencyCode)"></strong></td>
+          <td><span class="mb-badge" data-bind="text:transactionStatus,css:transactionStatus.toLowerCase()"></span></td>
+          <td data-bind="text:$parent.date(initiatedAt)"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="mb-empty" data-bind="visible:!state.data().length && !state.loading()">
+    Search by account to view transactions, or create a new transaction.
+  </div>
+
+  <oj-dialog id="transactionDialog" class="mb-dialog" dialog-title="Post transaction" cancel-behavior="icon">
+    <div slot="body" class="mb-stack">
+      <div>
+        <small>TRANSACTION TYPE</small>
+        <h2 data-bind="text:operationTitle"></h2>
+      </div>
+
+      <div class="mb-segment">
+        <button data-bind="click:selectOperation.bind(null,'TRANSFER'),css:{active:operation()==='TRANSFER'}">Transfer</button>
+        <button data-bind="click:selectOperation.bind(null,'DEPOSIT'),css:{active:operation()==='DEPOSIT'}">Deposit</button>
+        <button data-bind="click:selectOperation.bind(null,'WITHDRAWAL'),css:{active:operation()==='WITHDRAWAL'}">Withdraw</button>
+        <button data-bind="click:selectOperation.bind(null,'SELF_TRANSFER'),css:{active:operation()==='SELF_TRANSFER'}">Self transfer</button>
+      </div>
+
+      <div class="mb-error" data-bind="visible:error,text:error"></div>
+
+      <div class="mb-form" data-bind="visible:isInternalTransfer">
+        <oj-input-text label-hint="Debit account ID" value="{{form.debitAccountId}}"></oj-input-text>
+        <oj-input-text label-hint="Credit account ID" value="{{form.creditAccountId}}"></oj-input-text>
+      </div>
+
+      <div class="mb-form" data-bind="visible:isSingleAccount">
+        <oj-input-text class="wide" label-hint="Account ID" value="{{form.accountId}}"></oj-input-text>
+      </div>
+
+      <div class="mb-stack" data-bind="visible:isSelfTransfer">
+        <div class="mb-search-panel">
+          <oj-input-text label-hint="Customer ID" value="{{form.customerId}}"></oj-input-text>
+          <span></span>
+          <oj-button on-oj-action="[[loadCustomerAccounts]]" disabled="[[loadingAccounts]]">Load accounts</oj-button>
+        </div>
+        <div class="mb-form" data-bind="visible:accounts().length">
+          <label>From account
+            <select data-bind="value:form.fromAccountId,options:accounts,optionsText:accountLabel,optionsValue:'accountId'"></select>
+          </label>
+          <label>To account
+            <select data-bind="value:form.toAccountId,options:accounts,optionsText:accountLabel,optionsValue:'accountId'"></select>
+          </label>
+        </div>
+      </div>
+
+      <div class="mb-form">
+        <oj-input-text label-hint="Amount" value="{{form.amount}}"></oj-input-text>
+        <oj-input-text label-hint="Currency" value="{{form.currencyCode}}"></oj-input-text>
+      </div>
+
+      <div class="mb-info">
+        Every submission uses a hidden idempotency reference, so retrying the same request cannot post balances twice.
+      </div>
+    </div>
+    <div slot="footer" class="mb-dialog-actions">
+      <oj-button on-oj-action="[[close]]" disabled="[[busy]]">Cancel</oj-button>
+      <oj-button chroming="callToAction" on-oj-action="[[submit]]" disabled="[[busy]]">Post transaction</oj-button>
+    </div>
+  </oj-dialog>
+</section>

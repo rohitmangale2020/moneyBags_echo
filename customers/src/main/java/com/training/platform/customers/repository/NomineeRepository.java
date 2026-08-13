@@ -12,6 +12,8 @@ public interface NomineeRepository extends JpaRepository<NomineeEntity, Long> {
 
     Optional<NomineeEntity> findByNomineeIdAndCustomerCustomerId(Long nomineeId, Long customerId);
 
+    boolean existsByCustomerCustomerIdAndStatusIgnoreCase(Long customerId, String status);
+
     boolean existsByCustomerCustomerIdAndNomineeNameIgnoreCaseAndRelationTypeIgnoreCaseAndStatusIgnoreCase(
             Long customerId,
             String nomineeName,

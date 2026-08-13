@@ -1,3 +1,5 @@
+
+
 server:
   port: 8081
 
@@ -7,13 +9,13 @@ spring:
       enabled: false
   datasource:
     url: ${DBURL}
-    username: ${DBUSER}
+    username: ${DBUSERNAME}
     password: ${DBPASSWORD}
     driver-class-name: oracle.jdbc.OracleDriver
   jpa:
     open-in-view: false
     hibernate:
-      ddl-auto: update
+      ddl-auto: ${JPA_DDL_AUTO:update}
     database-platform: org.hibernate.dialect.OracleDialect
     show-sql: true
   data:
@@ -21,12 +23,21 @@ spring:
       pageable:
         default-page-size: 20
         max-page-size: 100
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${JWT_ISSUER:http://localhost:8087}
+  application:
+    name: users-service
 
 eureka:
   client:
     register-with-eureka: true
     service-url:
-      defaultZone: http://localhost:8761/eureka
+      defaultZone: ${EUREKA_DEFAULT_ZONE:http://localhost:8761/eureka}
+  instance:
+    prefer-ip-address: true
 
 management:
   endpoints:
@@ -58,7 +69,8 @@ logging:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
   file:
-    name: users/logs/usersDevLogs.log
+    name: logs/usersDevLogs.log
   logback:
     rollingpolicy:
       max-file-size: 20MB
+
