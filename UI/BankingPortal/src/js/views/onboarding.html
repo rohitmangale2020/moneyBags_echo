@@ -225,13 +225,18 @@
     <div class="mb-actions">
       <span></span>
 
-      <oj-button
-              chroming="callToAction"
-              disabled="[[busy()]]"
-              on-oj-action="[[createProfile]]"
-      >
-        Create profile →
-      </oj-button>
+      <div class="mb-action-group">
+        <oj-button
+                chroming="callToAction"
+                disabled="[[busy()||profileSaved()]]"
+                on-oj-action="[[createProfile]]"
+        >
+          Create profile →
+        </oj-button>
+        <!-- ko if:profileSaved -->
+        <oj-button chroming="callToAction" disabled="[[busy()]]" on-oj-action="[[nextFromProfile]]">Next</oj-button>
+        <!-- /ko -->
+      </div>
     </div>
   </article>
   <!-- /ko -->
@@ -363,13 +368,18 @@
         ← Back
       </oj-button>
 
-      <oj-button
-              chroming="callToAction"
-              disabled="[[busy()]]"
-              on-oj-action="[[saveAddress]]"
-      >
-        Save address →
-      </oj-button>
+      <div class="mb-action-group">
+        <oj-button
+                chroming="callToAction"
+                disabled="[[busy()||addressSaved()]]"
+                on-oj-action="[[saveAddress]]"
+        >
+          Save address →
+        </oj-button>
+        <!-- ko if:addressSaved -->
+        <oj-button chroming="callToAction" disabled="[[busy()]]" on-oj-action="[[nextFromAddress]]">Next</oj-button>
+        <!-- /ko -->
+      </div>
 
     </div>
   </article>
@@ -398,9 +408,10 @@
         </select>
       </label>
 
+      <!-- ko if:documentRequiresNumber -->
       <div>
         <oj-input-text
-                label-hint="Document number"
+                label-hint="[[document.documentType()==='PAN' ? 'PAN number (AAAAA0000A)' : document.documentType()==='AADHAAR' ? 'Aadhaar number (12 digits)' : 'Document number']]"
                 required
                 maxlength="100"
                 value="{{document.documentNumber}}"
@@ -411,7 +422,9 @@
                 data-bind="visible:fieldErrors().documentNumber,text:fieldErrors().documentNumber"
         ></small>
       </div>
+      <!-- /ko -->
 
+      <!-- ko if:documentShowsIssueDate -->
       <div>
         <oj-input-date
                 label-hint="Issue date"
@@ -427,6 +440,7 @@
                 data-bind="visible:fieldErrors().issueDate,text:fieldErrors().issueDate"
         ></small>
       </div>
+      <!-- /ko -->
 
       <!-- ko if:documentRequiresExpiry -->
       <div>
@@ -464,6 +478,12 @@
 
     </div>
 
+    <div class="mb-info mb-document-count" data-bind="visible:uploadedDocumentCount()">
+      <span>Number of documents uploaded</span>
+      <strong data-bind="text:uploadedDocumentCount"></strong>
+      <span>Upload another or continue to KYC.</span>
+    </div>
+
     <div class="mb-actions">
 
       <oj-button
@@ -471,6 +491,10 @@
               on-oj-action="[[back]]"
       >
         ← Back
+      </oj-button>
+
+      <oj-button chroming="callToAction" disabled="[[busy()]]" on-oj-action="[[skipDocuments]]">
+        <span data-bind="text:uploadedDocuments().length ? 'Continue to KYC' : 'Skip for now'"></span>
       </oj-button>
 
       <oj-button
@@ -786,10 +810,7 @@
 
     <h2>Onboarding details saved</h2>
 
-    <p>
-      The customer must now be reviewed and activated from Customer Management.
-      Account opening remains separate and can be resumed here after activation.
-    </p>
+    <p data-bind="text:canProceedToAccount() ? 'KYC is verified and this customer is active. Continue to account opening when ready.' : 'The customer must now be reviewed and activated from Customer Management. Account opening can be resumed after verified KYC and activation.'"></p>
 
     <div class="mb-review">
 
@@ -819,8 +840,7 @@
 
     </div>
 
-    <div class="mb-info">
-      Next: open Customers, manage this CIF, verify the KYC record, and activate the customer.
+    <div class="mb-info" data-bind="text:canProceedToAccount() ? 'You may now proceed to account opening, or finish and manage the customer record.' : 'Next: open Customers, manage this CIF, verify the KYC record, and activate the customer. Then return here and use Resume onboarding.'">
       Then return here and use “Resume onboarding”.
     </div>
 
@@ -829,6 +849,10 @@
       <oj-button on-oj-action="[[back]]">
         ← Back
       </oj-button>
+
+      <!-- ko if:canProceedToAccount -->
+      <oj-button chroming="callToAction" on-oj-action="[[proceedToAccount]]">Proceed to account opening</oj-button>
+      <!-- /ko -->
 
       <oj-button
               chroming="callToAction"

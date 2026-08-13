@@ -1,6 +1,7 @@
 package com.training.platform.customers.service.impl;
 
 import com.training.platform.customers.constants.CustomerStatus;
+import com.training.platform.customers.constants.KycStatusType;
 import com.training.platform.customers.dto.CustomerRequest;
 import com.training.platform.customers.dto.CustomerResponse;
 import com.training.platform.customers.entity.CustomerEntity;
@@ -9,6 +10,7 @@ import com.training.platform.customers.exception.DuplicateResourceException;
 import com.training.platform.customers.exception.ResourceNotFoundException;
 import com.training.platform.customers.mapper.CustomerMapper;
 import com.training.platform.customers.repository.CustomerRepository;
+import com.training.platform.customers.repository.KycRepository;
 import com.training.platform.customers.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,7 @@ import java.util.stream.Collectors;
 public class CustomerServiceImpl implements CustomerService {
 
     private final CustomerRepository customerRepository;
+    private final KycRepository kycRepository;
     private final CustomerMapper customerMapper;
 
     @Override
@@ -110,6 +113,13 @@ public class CustomerServiceImpl implements CustomerService {
         CustomerEntity customer = customerRepository.findById(customerId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Customer not found with id: " + customerId));
+
+        boolean kycVerified = kycRepository.findByCustomerCustomerId(customerId)
+                .map(kyc -> kyc.getKycStatus() == KycStatusType.VERIFIED)
+                .orElse(false);
+        if (!kycVerified) {
+            throw new BadRequestException("Customer cannot be activated until KYC is verified");
+        }
 
         customer.setStatus(CustomerStatus.ACTIVE);
         return customerMapper.toResponse(customerRepository.save(customer));

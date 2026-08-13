@@ -28,13 +28,25 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton', 'ojs/ojd
     s.error = ko.observable('');
     s.fieldErrors = ko.observable({});
     s.customer = ko.observable(null);
+    s.profileSaved = ko.observable(false);
+    s.addressSaved = ko.observable(false);
+    s.uploadedDocuments = ko.observableArray([]);
+    s.uploadedDocumentCount = ko.pureComputed(() => s.uploadedDocuments().length);
     s.kycRecord = ko.observable(null);
     s.products = ko.observableArray([]);
     s.account = ko.observable(null);
+    s.resumedOnboarding = ko.observable(false);
     s.file = ko.observable(null);
     s.resumeKind = ko.observable('cif');
     s.resumeValue = ko.observable('');
     s.verifiedBy = ko.pureComputed(() => String(app.session.userId() || ''));
+    s.canProceedToAccount = ko.pureComputed(() =>
+      s.resumedOnboarding()
+      && s.customer()
+      && s.customer().status === 'ACTIVE'
+      && s.kycRecord()
+      && s.kycRecord().kycStatus === 'VERIFIED',
+    );
 
     s.profile = {
       firstName: ko.observable(''),
@@ -94,10 +106,18 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton', 'ojs/ojd
     s.nomineeRequired.subscribe((minor) => {
       if (minor && !text(s.nominee.relationship())) s.nominee.relationship('Legal guardian');
     });
+    s.documentRequiresNumber = ko.pureComputed(() =>
+      !['PHOTO', 'SIGNATURE', 'SALARY_SLIP'].includes(s.document.documentType()),
+    );
+    s.documentShowsIssueDate = ko.pureComputed(() =>
+      ['PASSPORT', 'DRIVING_LICENSE'].includes(s.document.documentType()),
+    );
     s.documentRequiresExpiry = ko.pureComputed(() =>
       ['PASSPORT', 'DRIVING_LICENSE'].includes(s.document.documentType()),
     );
     s.document.documentType.subscribe(() => {
+      if (!s.documentRequiresNumber()) s.document.documentNumber('');
+      if (!s.documentShowsIssueDate()) s.document.issueDate('');
       if (!s.documentRequiresExpiry()) {
         s.document.expiryDate('');
         const errors = Object.assign({}, s.fieldErrors());
@@ -135,6 +155,9 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton', 'ojs/ojd
       s.clearErrors();
       s.step(Math.max(1, s.step() - 1));
     };
+    s.nextFromProfile = () => { s.clearErrors(); s.step(2); };
+    s.nextFromAddress = () => { s.clearErrors(); s.step(3); };
+    s.skipDocuments = () => { s.clearErrors(); s.step(4); };
     s.goCustomers = () => app.go('customers');
 
     s.validateProfile = () => {
@@ -179,6 +202,8 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton', 'ojs/ojd
       );
       if (result) {
         s.customer(result);
+        s.resumedOnboarding(false);
+        s.profileSaved(true);
         s.step(2);
       }
     };
@@ -200,7 +225,10 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton', 'ojs/ojd
         () => app.services.customers.address(s.customer().customerId, values),
         'Address saved.',
       );
-      if (result) s.step(3);
+      if (result) {
+        s.addressSaved(true);
+        s.step(3);
+      }
     };
 
     s.choose = (_, event) => {
@@ -209,21 +237,24 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton', 'ojs/ojd
     };
     s.upload = async () => {
       const e = {};
-      const number = text(s.document.documentNumber());
-      if (!number) e.documentNumber = 'Document number is required.';
+      const type = s.document.documentType();
+      const number = text(s.document.documentNumber()).toUpperCase();
+      if (s.documentRequiresNumber() && !number) e.documentNumber = 'Document number is required.';
       else if (number.length > 100) e.documentNumber = 'Document number cannot exceed 100 characters.';
+      else if (type === 'PAN' && !/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(number)) e.documentNumber = 'Enter a PAN in the format AAAAA0000A.';
+      else if (type === 'AADHAAR' && !/^[2-9][0-9]{3}[0-9]{4}[0-9]{4}$/.test(number)) e.documentNumber = 'Enter a valid 12-digit Aadhaar number.';
       if (!s.file()) e.file = 'Choose a PDF or image to upload.';
-      if (s.document.issueDate() && !dateValue(s.document.issueDate())) e.issueDate = 'Enter a valid issue date.';
-      else if (s.document.issueDate() && s.document.issueDate() > today()) e.issueDate = 'Issue date cannot be in the future.';
+      if (s.documentShowsIssueDate() && s.document.issueDate() && !dateValue(s.document.issueDate())) e.issueDate = 'Enter a valid issue date.';
+      else if (s.documentShowsIssueDate() && s.document.issueDate() > today()) e.issueDate = 'Issue date cannot be in the future.';
       if (s.documentRequiresExpiry() && !s.document.expiryDate()) e.expiryDate = 'Expiry date is required for this document type.';
       else if (s.documentRequiresExpiry() && !dateValue(s.document.expiryDate())) e.expiryDate = 'Enter a valid expiry date.';
       else if (s.documentRequiresExpiry() && s.document.expiryDate() <= today()) e.expiryDate = 'Expiry date must be in the future.';
       else if (s.documentRequiresExpiry() && s.document.issueDate() && s.document.expiryDate() < s.document.issueDate()) e.expiryDate = 'Expiry date cannot be earlier than the issue date.';
       if (!s.setErrors(e)) return;
       const payload = {
-        documentType: s.document.documentType(),
-        documentNumber: number,
-        issueDate: s.document.issueDate() || null,
+        documentType: type,
+        documentNumber: s.documentRequiresNumber() ? number : null,
+        issueDate: s.documentShowsIssueDate() ? s.document.issueDate() || null : null,
         expiryDate: s.documentRequiresExpiry() ? s.document.expiryDate() : null,
         status: 'UPLOADED',
         verifiedBy: null,
@@ -235,7 +266,14 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton', 'ojs/ojd
         () => app.services.customers.document(s.customer().customerId, s.file(), payload),
         'Document uploaded.',
       );
-      if (result) s.step(4);
+      if (result) {
+        s.uploadedDocuments.push(result);
+        s.document.documentNumber('');
+        s.document.issueDate('');
+        s.document.expiryDate('');
+        s.file(null);
+        s.clearErrors();
+      }
     };
 
     s.saveKyc = async () => {
@@ -320,6 +358,15 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton', 'ojs/ojd
       app.notify('Onboarding details saved. Activate the verified customer from Customer Management.');
       app.go('customers');
     };
+    s.proceedToAccount = async () => {
+      if (!s.canProceedToAccount()) return;
+      const products = await s.run(() => app.services.products.list());
+      if (!products) return;
+      s.products(products.filter((product) => product.status === 'ACTIVE'));
+      if (!s.products().length) return s.setErrors({ resumeValue: 'No active banking products are available for account opening.' });
+      s.account(null);
+      s.step(6);
+    };
 
     s.resume = async () => {
       const value = text(s.resumeValue());
@@ -333,6 +380,8 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton', 'ojs/ojd
       const existing = await s.run(() => calls[s.resumeKind()](value));
       if (!existing) return;
       s.customer(existing);
+      s.resumedOnboarding(true);
+      s.profileSaved(true);
       Object.keys(s.profile).forEach((key) => s.profile[key](existing[key] || ''));
       const records = await s.run(() => Promise.allSettled([
         app.services.customers.addresses(existing.customerId),
@@ -352,18 +401,11 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton', 'ojs/ojd
           if (savedNominee[key] !== undefined && savedNominee[key] !== null) s.nominee[key](savedNominee[key]);
         });
       }
+      s.addressSaved(addresses.length > 0);
+      s.uploadedDocuments(documents);
       if (!addresses.length) s.step(2);
       else if (!documents.length) s.step(3);
       else if (!kyc) s.step(4);
-      else if (kyc.kycStatus === 'VERIFIED' && existing.status === 'ACTIVE') {
-        const products = await s.run(() => app.services.products.list());
-        if (!products) return;
-        s.products(products.filter((product) => product.status === 'ACTIVE'));
-        if (!s.products().length) return s.setErrors({ resumeValue: 'No active banking products are available for account opening.' });
-        s.kycRecord(kyc);
-        s.account(null);
-        s.step(6);
-      }
       else {
         s.kycRecord(kyc);
         s.step(5);
@@ -372,6 +414,9 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton', 'ojs/ojd
     };
 
     s.openAccount = async () => {
+      if (!s.kycRecord() || s.kycRecord().kycStatus !== 'VERIFIED' || s.customer().status !== 'ACTIVE') {
+        return s.setErrors({ productId: 'An account can be opened only after the customer is active and KYC is verified.' });
+      }
       const e = {};
       const product = s.products().find((item) => String(item.productId) === String(s.accountForm.productId()));
       const accountNumber = text(s.accountForm.accountNumber());

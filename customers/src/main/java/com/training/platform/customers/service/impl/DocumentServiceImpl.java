@@ -2,6 +2,8 @@ package com.training.platform.customers.service.impl;
 
 import com.training.platform.customers.dto.DocumentRequest;
 import com.training.platform.customers.dto.DocumentResponse;
+import com.training.platform.customers.constants.DocumentStatusType;
+import com.training.platform.customers.constants.DocumentType;
 import com.training.platform.customers.entity.CustomerEntity;
 import com.training.platform.customers.entity.DocumentEntity;
 import com.training.platform.customers.exception.BadRequestException;
@@ -43,6 +45,7 @@ public class DocumentServiceImpl implements DocumentService {
         if (file == null || file.isEmpty()) {
             throw new BadRequestException("Document file is required");
         }
+        normalizeAndValidate(requestDto);
 
         String savedPath = saveFile(customerId, file);
 
@@ -95,6 +98,7 @@ public class DocumentServiceImpl implements DocumentService {
             String savedPath = saveFile(customerId, file);
             document.setFilePath(savedPath);
         }
+        normalizeAndValidate(requestDto);
 
         document.setDocumentType(requestDto.getDocumentType());
         document.setDocumentNumber(requestDto.getDocumentNumber());
@@ -130,6 +134,37 @@ public class DocumentServiceImpl implements DocumentService {
         } catch (IOException e) {
             throw new BadRequestException("Failed to store document file: " + e.getMessage());
         }
+    }
+
+    private void normalizeAndValidate(DocumentRequest request) {
+        DocumentType type = request.getDocumentType();
+        String number = request.getDocumentNumber() == null ? "" : request.getDocumentNumber().trim().toUpperCase();
+        boolean numberRequired = type != DocumentType.PHOTO
+                && type != DocumentType.SIGNATURE
+                && type != DocumentType.SALARY_SLIP;
+        if (numberRequired && number.isBlank()) {
+            throw new BadRequestException("Document number is required for " + type);
+        }
+        if (type == DocumentType.PAN && !number.matches("[A-Z]{5}[0-9]{4}[A-Z]")) {
+            throw new BadRequestException("PAN must use the format AAAAA0000A");
+        }
+        if (type == DocumentType.AADHAAR && !number.matches("[2-9][0-9]{11}")) {
+            throw new BadRequestException("Aadhaar must be a valid 12-digit number");
+        }
+        request.setDocumentNumber(numberRequired ? number : null);
+
+        boolean hasDates = type == DocumentType.PASSPORT || type == DocumentType.DRIVING_LICENSE;
+        if (!hasDates) {
+            request.setIssueDate(null);
+            request.setExpiryDate(null);
+        } else if (request.getExpiryDate() == null) {
+            throw new BadRequestException("Expiry date is required for " + type);
+        } else if (!request.getExpiryDate().isAfter(java.time.LocalDate.now())) {
+            throw new BadRequestException("Expiry date must not be in the past");
+        } else if (request.getIssueDate() != null && request.getExpiryDate().isBefore(request.getIssueDate())) {
+            throw new BadRequestException("Expiry date cannot be earlier than issue date");
+        }
+        if (request.getStatus() == null) request.setStatus(DocumentStatusType.UPLOADED);
     }
 
     private DocumentResponse toResponse(DocumentEntity entity) {
