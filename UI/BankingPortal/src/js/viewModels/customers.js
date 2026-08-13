@@ -55,6 +55,7 @@ define([
     s.kycForm = ko.observable(kycBlank());
     s.documentForm = ko.observable(documentBlank());
     s.nomineeForm = ko.observable(nomineeBlank());
+    s.includeNomineeAddress = ko.observable(false);
     s.documentFile = ko.observable(null);
     s.error = ko.observable('');
     s.date = u.date;
@@ -179,7 +180,7 @@ define([
           ? await app.services.customers.getNominee(s.selected().customerId, x.nomineeId)
           : null;
         const form = Object.assign(nomineeBlank(), value || {});
-        form.includeAddress = Boolean(value && value.address);
+        s.includeNomineeAddress(Boolean(value && value.address));
         form.address = Object.assign(addressBlank(), (value && value.address) || {});
         s.nomineeForm(form);
         document.getElementById('nomineeDialog').open();
@@ -188,9 +189,15 @@ define([
       }
     };
     s.saveNominee = async () => {
-      const raw = ko.toJS(s.nomineeForm()), nomineeId = raw.nomineeId, d = clean({ nomineeName: raw.nomineeName, relationship: raw.relationship, relationType: raw.relationType, dob: raw.dob, phone: raw.phone, address: raw.includeAddress ? clean({ addressType: raw.address.addressType, line1: raw.address.line1, line2: raw.address.line2, city: raw.address.city, state: raw.address.state, country: raw.address.country, pincode: raw.address.pincode }) : null, sharePercentage: raw.sharePercentage, status: raw.status, updatedBy: raw.updatedBy, startDate: raw.startDate, endDate: raw.endDate }), id = s.selected().customerId;
+      const raw = ko.toJS(s.nomineeForm()), nomineeId = raw.nomineeId, d = clean({ nomineeName: raw.nomineeName, relationship: raw.relationship, relationType: raw.relationType, dob: raw.dob, phone: raw.phone, address: s.includeNomineeAddress() ? clean({ addressType: raw.address.addressType, line1: raw.address.line1, line2: raw.address.line2, city: raw.address.city, state: raw.address.state, country: raw.address.country, pincode: raw.address.pincode }) : null, sharePercentage: raw.sharePercentage, status: raw.status, updatedBy: raw.updatedBy, startDate: raw.startDate, endDate: raw.endDate }), id = s.selected().customerId;
       d.sharePercentage = Number(d.sharePercentage);
       if (!d.nomineeName || d.sharePercentage <= 0 || d.sharePercentage > 100) return s.error('Enter a nominee name and share between 0.01 and 100.');
+      const allocatedShare = (s.detailState.data().nominees || [])
+        .filter((nominee) => nominee.nomineeId !== nomineeId && String(nominee.status || '').toUpperCase() === 'ACTIVE')
+        .reduce((total, nominee) => total + Number(nominee.sharePercentage || 0), 0);
+      if (String(d.status || '').toUpperCase() === 'ACTIVE' && allocatedShare + d.sharePercentage > 100.000001) {
+        return s.error(`Nominee share cannot exceed 100%. ${allocatedShare.toFixed(2)}% is already allocated.`);
+      }
       if (d.phone && !/^[6-9][0-9]{9}$/.test(d.phone)) return s.error('Nominee phone must be a valid 10-digit Indian mobile number.');
       if (d.dob && new Date(d.dob) >= new Date()) return s.error('Nominee date of birth must be in the past.');
       if (d.address && (!d.address.line1 || !d.address.city || !d.address.state || !d.address.country || !/^[1-9][0-9]{5}$/.test(d.address.pincode || ''))) return s.error('Complete the nominee address and enter a valid six-digit pincode.');
@@ -198,6 +205,15 @@ define([
       catch (e) { s.error(e.message); }
     };
     s.closeNominee = async (x) => { try { await app.services.customers.closeNominee(s.selected().customerId, x.nomineeId); app.notify('Nominee closed.'); await s.loadDetail(s.selected()); } catch (e) { app.notify(e.message, 'error'); } };
+    s.deleteNominee = async (x) => {
+      try {
+        await app.services.customers.deleteNominee(s.selected().customerId, x.nomineeId);
+        app.notify('Nominee deleted.');
+        await s.loadDetail(s.selected());
+      } catch (e) {
+        app.notify(e.message, 'error');
+      }
+    };
     s.close = (id) => document.getElementById(id).close();
     s.load().then(async () => {
       const customerId = app.customerToManage && app.customerToManage();

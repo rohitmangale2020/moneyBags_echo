@@ -16,4 +16,6 @@ public interface NomineeService {
     NomineeResponseDto updateNominee(Long customerId, Long nomineeId, NomineeRequestDto requestDto);
 
     NomineeResponseDto closeNominee(Long customerId, Long nomineeId);
+
+    void deleteNominee(Long customerId, Long nomineeId);
 }

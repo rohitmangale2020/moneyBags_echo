@@ -938,6 +938,30 @@ body:not(:has(#navDrawer)) .mb-content {
   background: #fafcff;
 }
 
+.mb-nominee-address-toggle {
+  display: flex !important;
+  align-items: center;
+  gap: 9px;
+  padding: 12px 14px;
+  border: 1px solid #dce5f4;
+  border-radius: 9px;
+  background: #fafcff;
+  color: #314c7d !important;
+}
+
+.mb-nominee-address-toggle input {
+  width: 16px;
+  min-height: 16px;
+  margin: 0;
+}
+
+.mb-nominee-address-form {
+  padding: 18px;
+  border: 1px solid #dce5f4;
+  border-radius: 12px;
+  background: #fafcff;
+}
+
 .mb-form oj-input-date,
 .mb-form oj-input-text {
   width: 100%;
