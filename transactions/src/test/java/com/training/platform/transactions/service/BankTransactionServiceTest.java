@@ -14,6 +14,7 @@ import com.training.platform.transactions.repository.TransactionEventOutboxRepos
 import com.training.platform.transactions.client.AccountsClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
+import java.util.List;
 import java.util.Optional;
 import java.math.BigDecimal;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,6 +45,14 @@ class BankTransactionServiceTest {
     @Test void throwsWhenReferenceDoesNotExist() {
         when(transactionRepository.findByTransactionRef("missing")).thenReturn(Optional.empty());
         assertThrows(EntityNotFoundException.class, () -> transactionService.getByReference("missing"));
+    }
+
+    @Test void returnsAllTransactionsNewestFirstFromRepository() {
+        List<BankTransaction> transactions = List.of(transaction);
+        when(transactionRepository.findAllByOrderByInitiatedAtDesc()).thenReturn(transactions);
+
+        assertSame(transactions, transactionService.getAllTransactions());
+        verify(transactionRepository).findAllByOrderByInitiatedAtDesc();
     }
 
     @Test void rejectsTransferWithoutBothAccounts() {

@@ -6,11 +6,19 @@ define([
   'ojs/ojbutton',
   'ojs/ojdialog',
 ], function (ko, app, u) {
+  const timestamp = (value) => {
+    const parsed = Date.parse(value || '');
+    return Number.isNaN(parsed) ? 0 : parsed;
+  };
+
   function VM() {
     const s = this;
     s.state = u.state([]);
-    s.mode = ko.observable('customer');
     s.query = ko.observable('');
+    s.statusFilter = ko.observable('ALL');
+    s.ownershipFilter = ko.observable('ALL');
+    s.currencyFilter = ko.observable('ALL');
+    s.sortBy = ko.observable('opened-desc');
     s.products = ko.observableArray([]);
     s.editingId = ko.observable(null);
     s.error = ko.observable('');
@@ -26,17 +34,47 @@ define([
     };
     s.money = u.money;
     s.date = u.date;
-    s.search = () => {
-      if (!s.query()) return;
-      s.state
-        .run(() =>
-          s.mode() === 'customer'
-            ? app.services.accounts.customer(s.query())
-            : s.mode() === 'number'
-              ? app.services.accounts.number(s.query())
-              : app.services.accounts.get(s.query()).then((x) => [x]),
-        )
-        .catch(() => null);
+    s.currencies = ko.pureComputed(() =>
+      Array.from(new Set(s.state.data().map((account) => account.currencyCode).filter(Boolean))).sort(),
+    );
+    s.filteredAccounts = ko.pureComputed(() => {
+      const query = s.query().trim().toLowerCase();
+      const accounts = s.state.data().filter((account) => {
+        const searchable = [
+          account.accountNumber,
+          account.accountId,
+          account.customerId,
+          account.productId,
+        ].map((value) => String(value || '').toLowerCase()).join(' ');
+        return (!query || searchable.includes(query))
+          && (s.statusFilter() === 'ALL' || account.status === s.statusFilter())
+          && (s.ownershipFilter() === 'ALL' || account.ownershipType === s.ownershipFilter())
+          && (s.currencyFilter() === 'ALL' || account.currencyCode === s.currencyFilter());
+      });
+      const sorters = {
+        'opened-desc': (a, b) => timestamp(b.openedAt) - timestamp(a.openedAt),
+        'opened-asc': (a, b) => timestamp(a.openedAt) - timestamp(b.openedAt),
+        'balance-desc': (a, b) => Number(b.availableBalance || 0) - Number(a.availableBalance || 0),
+        'balance-asc': (a, b) => Number(a.availableBalance || 0) - Number(b.availableBalance || 0),
+        'number-asc': (a, b) => String(a.accountNumber || '').localeCompare(String(b.accountNumber || '')),
+        'number-desc': (a, b) => String(b.accountNumber || '').localeCompare(String(a.accountNumber || '')),
+      };
+      return accounts.slice().sort(sorters[s.sortBy()] || sorters['opened-desc']);
+    });
+    s.resultSummary = ko.pureComputed(() => {
+      const shown = s.filteredAccounts().length;
+      const total = s.state.data().length;
+      return shown === total
+        ? `${total} account${total === 1 ? '' : 's'}`
+        : `${shown} of ${total} accounts`;
+    });
+    s.load = () => s.state.run(() => app.services.accounts.list()).catch(() => null);
+    s.clearFilters = () => {
+      s.query('');
+      s.statusFilter('ALL');
+      s.ownershipFilter('ALL');
+      s.currencyFilter('ALL');
+      s.sortBy('opened-desc');
     };
     s.open = async () => {
       s.editingId(null);
@@ -90,17 +128,17 @@ define([
           availableBalance: Number(s.form.availableBalance()),
           closedAt: s.form.closedAt() || null,
         };
-        const r = s.editingId()
-          ? await app.services.accounts.update(s.editingId(), payload)
-          : await app.services.accounts.create(payload);
+        if (s.editingId()) await app.services.accounts.update(s.editingId(), payload);
+        else await app.services.accounts.create(payload);
         document.getElementById('accountDialog').close();
-        s.state.data([r]);
         app.notify(s.editingId() ? 'Account updated.' : 'Account opened successfully.');
+        await s.load();
       } catch (e) {
         s.error(e.message);
       }
     };
     s.close = () => document.getElementById('accountDialog').close();
+    s.load();
   }
   return VM;
 });

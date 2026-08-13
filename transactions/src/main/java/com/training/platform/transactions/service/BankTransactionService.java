@@ -59,6 +59,10 @@ public class BankTransactionService {
                 .orElseThrow(() -> new EntityNotFoundException("Transaction not found: " + transactionRef));
     }
 
+    public List<BankTransaction> getAllTransactions() {
+        return transactionRepository.findAllByOrderByInitiatedAtDesc();
+    }
+
     public List<BankTransaction> getDebitAccountTransactions(String accountId) { return transactionRepository.findByDebitAccountId(accountId); }
     public List<BankTransaction> getCreditAccountTransactions(String accountId) { return transactionRepository.findByCreditAccountId(accountId); }
 

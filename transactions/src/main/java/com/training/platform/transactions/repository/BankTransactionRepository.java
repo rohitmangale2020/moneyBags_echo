@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface BankTransactionRepository extends JpaRepository<BankTransaction, String> {
+    List<BankTransaction> findAllByOrderByInitiatedAtDesc();
     Optional<BankTransaction> findByTransactionRef(String transactionRef);
     List<BankTransaction> findByDebitAccountId(String debitAccountId);
     List<BankTransaction> findByCreditAccountId(String creditAccountId);

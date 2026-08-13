@@ -18,9 +18,13 @@ import com.training.platform.transactions.service.BankTransactionService;
 import jakarta.persistence.EntityNotFoundException;
 import java.math.BigDecimal;
 import java.util.List;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -33,6 +37,12 @@ class TransactionControllerTest {
         transactionService = mock(BankTransactionService.class);
         mockMvc = MockMvcBuilders.standaloneSetup(new TransactionController(transactionService))
                 .setControllerAdvice(new ApiExceptionHandler()).build();
+        authenticateUser();
+    }
+
+    @AfterEach
+    void clearSecurityContext() {
+        SecurityContextHolder.clearContext();
     }
 
     @Test
@@ -57,6 +67,21 @@ class TransactionControllerTest {
     }
 
     @Test
+    void getsAllTransactionsWhenNoFilterIsProvided() throws Exception {
+        BankTransaction first = transaction("TXN-1");
+        BankTransaction second = transaction("TXN-2");
+        when(transactionService.getAllTransactions()).thenReturn(List.of(first, second));
+
+        mockMvc.perform(get("/api/transactions"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].transactionRef").value("TXN-1"))
+                .andExpect(jsonPath("$[1].transactionRef").value("TXN-2"));
+
+        verify(transactionService).getAllTransactions();
+    }
+
+    @Test
     void createsAndUpdatesTransaction() throws Exception {
         BankTransaction transaction = transaction("TXN-1");
         when(transactionService.initiate(any(BankTransaction.class))).thenReturn(transaction);
@@ -71,8 +96,7 @@ class TransactionControllerTest {
     }
 
     @Test
-    void rejectsMissingSearchCriteriaAndInvalidPayload() throws Exception {
-        mockMvc.perform(get("/api/transactions")).andExpect(status().isBadRequest());
+    void rejectsInvalidPayload() throws Exception {
         mockMvc.perform(post("/api/transactions").contentType(MediaType.APPLICATION_JSON).content("{}"))
                 .andExpect(status().isBadRequest());
     }
@@ -100,5 +124,13 @@ class TransactionControllerTest {
     private String requestBody() {
         return "{\"transactionRef\":\"TXN-1\",\"transactionType\":\"TRANSFER\",\"transactionStatus\":\"INITIATED\","
                 + "\"debitAccountId\":\"account-1\",\"creditAccountId\":\"account-2\",\"amount\":10.00,\"currencyCode\":\"INR\"}";
+    }
+
+    private void authenticateUser() {
+        Jwt jwt = mock(Jwt.class);
+        when(jwt.getClaim("userId")).thenReturn(1L);
+        JwtAuthenticationToken authentication = mock(JwtAuthenticationToken.class);
+        when(authentication.getToken()).thenReturn(jwt);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 }

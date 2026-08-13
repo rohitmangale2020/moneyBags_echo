@@ -64,6 +64,7 @@ define(['services/apiClient'], function (api) {
       retire: (c) => api.delete(`/api/v1/products/${e(c)}`),
     },
     accounts: {
+      list: () => api.get('/api/accounts'),
       customer: (id) => api.get(`/api/accounts?customerId=${e(id)}`),
       number: (v) => api.get(`/api/accounts?accountNumber=${e(v)}`),
       get: (id) => api.get(`/api/accounts/${e(id)}`),
@@ -71,6 +72,7 @@ define(['services/apiClient'], function (api) {
       update: (id, d) => api.put(`/api/accounts/${e(id)}`, d),
     },
     transactions: {
+      list: () => api.get('/api/transactions'),
       find: (k, v) => api.get(`/api/transactions?${k}=${e(v)}`),
       get: (id) => api.get(`/api/transactions/${e(id)}`),
       transfer: (d) => api.post('/api/transactions', d),

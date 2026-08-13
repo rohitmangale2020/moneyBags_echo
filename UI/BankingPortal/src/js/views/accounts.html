@@ -3,23 +3,48 @@
     <div>
       <small>CORE BANKING / ACCOUNTS</small>
       <h1>Account management</h1>
-      <p>Search existing records or open an account against an active product.</p>
+      <p>Review every account, narrow the directory, or open an account against an active product.</p>
     </div>
     <oj-button chroming="callToAction" on-oj-action="[[open]]">Open account</oj-button>
   </div>
-  <div class="mb-search-panel">
-    <div class="mb-segment">
-      <button data-bind="click:()=>mode('customer'),css:{active:mode()==='customer'}">
-        Customer ID</button
-      ><button data-bind="click:()=>mode('number'),css:{active:mode()==='number'}">
-        Account number
-      </button><button data-bind="click:()=>mode('id'),css:{active:mode()==='id'}">Account ID</button>
+  <div class="mb-filter-panel mb-filter-panel-accounts">
+    <label class="mb-filter-search">Search accounts
+      <input type="search" placeholder="Account, customer, product, or ID" data-bind="value:query,valueUpdate:'input'" />
+    </label>
+    <label>Status
+      <select data-bind="value:statusFilter">
+        <option value="ALL">All statuses</option><option>ACTIVE</option><option>INACTIVE</option>
+        <option>DORMANT</option><option>FROZEN</option><option>CLOSED</option>
+      </select>
+    </label>
+    <label>Ownership
+      <select data-bind="value:ownershipFilter">
+        <option value="ALL">All ownerships</option><option>INDIVIDUAL</option><option>JOINT</option>
+        <option>CORPORATE</option><option>TRUST</option>
+      </select>
+    </label>
+    <label>Currency
+      <select data-bind="value:currencyFilter">
+        <option value="ALL">All currencies</option>
+        <!-- ko foreach:currencies --><option data-bind="value:$data,text:$data"></option><!-- /ko -->
+      </select>
+    </label>
+    <label>Sort by
+      <select data-bind="value:sortBy">
+        <option value="opened-desc">Newest opened</option><option value="opened-asc">Oldest opened</option>
+        <option value="balance-desc">Highest balance</option><option value="balance-asc">Lowest balance</option>
+        <option value="number-asc">Account number A-Z</option><option value="number-desc">Account number Z-A</option>
+      </select>
+    </label>
+    <div class="mb-filter-actions">
+      <button type="button" class="mb-link" data-bind="click:clearFilters">Clear filters</button>
+      <oj-button on-oj-action="[[load]]" disabled="[[state.loading]]">Refresh</oj-button>
     </div>
-    <oj-input-text placeholder="Enter lookup value" value="{{query}}"></oj-input-text
-    ><oj-button chroming="callToAction" on-oj-action="[[search]]">Search</oj-button>
   </div>
-  <div class="mb-error" data-bind="visible:state.error,text:state.error"></div>
-  <div class="mb-card-grid" data-bind="foreach:state.data">
+  <div class="mb-list-meta"><strong data-bind="text:resultSummary"></strong><span>Filters update instantly</span></div>
+  <div class="mb-error" data-bind="visible:state.error"><span data-bind="text:state.error"></span><button data-bind="click:load">Retry</button></div>
+  <div class="mb-loading" data-bind="visible:state.loading">Loading accounts...</div>
+  <div class="mb-card-grid" data-bind="foreach:filteredAccounts,visible:filteredAccounts().length">
     <article class="mb-card account">
       <div class="mb-card-top">
         <div>
@@ -52,6 +77,9 @@
       </dl>
       <button class="mb-link" data-bind="click:()=>$parent.edit($data)">Edit account</button>
     </article>
+  </div>
+  <div class="mb-empty" data-bind="visible:!state.loading()&&!filteredAccounts().length">
+    No accounts match the selected filters.
   </div>
   <oj-dialog id="accountDialog" dialog-title="Open customer account"
     ><div slot="body">

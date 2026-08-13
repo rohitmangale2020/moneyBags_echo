@@ -14,6 +14,7 @@ import com.training.platform.accounts.repository.AccountRepository;
 import com.training.platform.accounts.repository.AccountStatusHistoryRepository;
 import com.training.platform.accounts.repository.AccountTransferOperationRepository;
 import jakarta.persistence.EntityNotFoundException;
+import java.util.List;
 import java.util.Optional;
 import java.math.BigDecimal;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,6 +46,14 @@ class AccountServiceTest {
     @Test void throwsWhenIdDoesNotExist() {
         when(accountRepository.findById("missing")).thenReturn(Optional.empty());
         assertThrows(EntityNotFoundException.class, () -> accountService.getById("missing"));
+    }
+
+    @Test void returnsAllAccountsNewestFirstFromRepository() {
+        List<Account> accounts = List.of(account);
+        when(accountRepository.findAllByOrderByCreatedAtDesc()).thenReturn(accounts);
+
+        assertSame(accounts, accountService.getAllAccounts());
+        verify(accountRepository).findAllByOrderByCreatedAtDesc();
     }
 
     @Test void savesAccountWhenCreating() {

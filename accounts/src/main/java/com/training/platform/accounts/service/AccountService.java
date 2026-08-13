@@ -53,6 +53,10 @@ public class AccountService {
                 .orElseThrow(() -> new EntityNotFoundException("Account not found: " + accountNumber));
     }
 
+    public List<Account> getAllAccounts() {
+        return accountRepository.findAllByOrderByCreatedAtDesc();
+    }
+
     public List<Account> getByCustomerId(String customerId) { return accountRepository.findByCustomerId(customerId); }
 
     @Transactional

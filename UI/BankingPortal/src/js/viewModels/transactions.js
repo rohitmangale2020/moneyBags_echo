@@ -6,11 +6,21 @@ define([
   'ojs/ojbutton',
   'ojs/ojdialog',
 ], function (ko, app, u) {
+  const timestamp = (value) => {
+    const parsed = Date.parse(value || '');
+    return Number.isNaN(parsed) ? 0 : parsed;
+  };
+
   function VM() {
     const s = this;
     s.state = u.state([]);
-    s.kind = ko.observable('debitAccountId');
     s.query = ko.observable('');
+    s.typeFilter = ko.observable('ALL');
+    s.statusFilter = ko.observable('ALL');
+    s.currencyFilter = ko.observable('ALL');
+    s.dateFrom = ko.observable('');
+    s.dateTo = ko.observable('');
+    s.sortBy = ko.observable('initiated-desc');
     s.error = ko.observable('');
     s.operation = ko.observable('TRANSFER');
     s.busy = ko.observable(false);
@@ -46,12 +56,57 @@ define([
     s.accountLabel = (account) =>
       `${account.accountNumber} · ${account.currencyCode} · ${u.money(account.availableBalance, account.currencyCode)}`;
 
-    s.search = () => {
-      if (!s.query().trim()) {
-        s.state.error('Enter an account ID to search.');
-        return Promise.resolve();
-      }
-      return s.state.run(() => app.services.transactions.find(s.kind(), s.query().trim())).catch(() => null);
+    s.currencies = ko.pureComputed(() =>
+      Array.from(new Set(s.state.data().map((transaction) => transaction.currencyCode).filter(Boolean))).sort(),
+    );
+    s.filteredTransactions = ko.pureComputed(() => {
+      const query = s.query().trim().toLowerCase();
+      const from = s.dateFrom() ? new Date(`${s.dateFrom()}T00:00:00`).getTime() : null;
+      const to = s.dateTo() ? new Date(`${s.dateTo()}T23:59:59.999`).getTime() : null;
+      const transactions = s.state.data().filter((transaction) => {
+        const searchable = [
+          transaction.transactionRef,
+          transaction.transactionId,
+          transaction.debitAccountId,
+          transaction.creditAccountId,
+          transaction.initiatedByCustomerId,
+          transaction.externalBeneficiary,
+        ].map((value) => String(value || '').toLowerCase()).join(' ');
+        const initiated = timestamp(transaction.initiatedAt);
+        return (!query || searchable.includes(query))
+          && (s.typeFilter() === 'ALL' || transaction.transactionType === s.typeFilter())
+          && (s.statusFilter() === 'ALL' || transaction.transactionStatus === s.statusFilter())
+          && (s.currencyFilter() === 'ALL' || transaction.currencyCode === s.currencyFilter())
+          && (from === null || initiated >= from)
+          && (to === null || initiated <= to);
+      });
+      const sorters = {
+        'initiated-desc': (a, b) => timestamp(b.initiatedAt) - timestamp(a.initiatedAt),
+        'initiated-asc': (a, b) => timestamp(a.initiatedAt) - timestamp(b.initiatedAt),
+        'amount-desc': (a, b) => Number(b.amount || 0) - Number(a.amount || 0),
+        'amount-asc': (a, b) => Number(a.amount || 0) - Number(b.amount || 0),
+        'reference-asc': (a, b) => String(a.transactionRef || '').localeCompare(String(b.transactionRef || '')),
+        'reference-desc': (a, b) => String(b.transactionRef || '').localeCompare(String(a.transactionRef || '')),
+      };
+      return transactions.slice().sort(sorters[s.sortBy()] || sorters['initiated-desc']);
+    });
+    s.resultSummary = ko.pureComputed(() => {
+      const shown = s.filteredTransactions().length;
+      const total = s.state.data().length;
+      return shown === total
+        ? `${total} transaction${total === 1 ? '' : 's'}`
+        : `${shown} of ${total} transactions`;
+    });
+    s.statusClass = (status) => String(status || '').toLowerCase();
+    s.load = () => s.state.run(() => app.services.transactions.list()).catch(() => null);
+    s.clearFilters = () => {
+      s.query('');
+      s.typeFilter('ALL');
+      s.statusFilter('ALL');
+      s.currencyFilter('ALL');
+      s.dateFrom('');
+      s.dateTo('');
+      s.sortBy('initiated-desc');
     };
 
     s.selectOperation = (operation) => {
@@ -185,6 +240,7 @@ define([
         s.busy(false);
       }
     };
+    s.load();
   }
   return VM;
 });

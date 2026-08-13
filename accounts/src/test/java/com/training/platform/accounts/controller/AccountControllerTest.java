@@ -18,9 +18,13 @@ import com.training.platform.accounts.service.AccountService;
 import jakarta.persistence.EntityNotFoundException;
 import java.math.BigDecimal;
 import java.util.List;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -33,6 +37,12 @@ class AccountControllerTest {
         accountService = mock(AccountService.class);
         mockMvc = MockMvcBuilders.standaloneSetup(new AccountController(accountService))
                 .setControllerAdvice(new ApiExceptionHandler()).build();
+        authenticateUser();
+    }
+
+    @AfterEach
+    void clearSecurityContext() {
+        SecurityContextHolder.clearContext();
     }
 
     @Test
@@ -62,6 +72,21 @@ class AccountControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].accountNumber").value("ACC-1"));
+    }
+
+    @Test
+    void getsAllAccountsWhenNoFilterIsProvided() throws Exception {
+        Account first = account("ACC-1", "customer-1");
+        Account second = account("ACC-2", "customer-2");
+        when(accountService.getAllAccounts()).thenReturn(List.of(first, second));
+
+        mockMvc.perform(get("/api/accounts"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].accountNumber").value("ACC-1"))
+                .andExpect(jsonPath("$[1].accountNumber").value("ACC-2"));
+
+        verify(accountService).getAllAccounts();
     }
 
     @Test
@@ -101,5 +126,13 @@ class AccountControllerTest {
     private String requestBody() {
         return "{\"accountNumber\":\"ACC-1\",\"customerId\":\"customer-1\",\"productId\":\"product-1\","
                 + "\"ownershipType\":\"INDIVIDUAL\",\"status\":\"ACTIVE\",\"currencyCode\":\"INR\",\"availableBalance\":10.00}";
+    }
+
+    private void authenticateUser() {
+        Jwt jwt = mock(Jwt.class);
+        when(jwt.getClaim("userId")).thenReturn(1L);
+        JwtAuthenticationToken authentication = mock(JwtAuthenticationToken.class);
+        when(authentication.getToken()).thenReturn(jwt);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 }
