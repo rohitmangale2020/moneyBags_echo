@@ -3,51 +3,82 @@
     <div>
       <small>ACCOUNTS / STATEMENTS</small>
       <h1>Account statements</h1>
-      <p>View debit, credit, balance-after, and transaction references from the ledger.</p>
+      <p>View account activity, descriptions, withdrawals, deposits, and closing balances.</p>
     </div>
-    <div class="mb-heading-actions"><oj-button on-oj-action="[[download]]" disabled="[[!state.data().length]]">Download CSV</oj-button><oj-button chroming="callToAction" on-oj-action="[[openRecord]]">Record entry</oj-button></div>
+    <oj-button on-oj-action="[[download]]" disabled="[[!filteredStatements().length]]">Download CSV</oj-button>
   </div>
-  <div class="mb-search-panel mb-id-search"><oj-input-text label-hint="Statement ID" value="{{statementId}}"></oj-input-text><oj-button on-oj-action="[[getById]]">Find entry by ID</oj-button></div>
-  <div class="mb-search-panel statement">
-    <oj-input-text label-hint="Account ID" value="{{accountId}}"></oj-input-text
-    ><label><input type="checkbox" data-bind="checked:monthly" /> Monthly statement</label
-    ><oj-input-text label-hint="Year" value="{{year}}" disabled="[[!monthly()]]"></oj-input-text
-    ><oj-input-text label-hint="Month" value="{{month}}" disabled="[[!monthly()]]"></oj-input-text
-    ><oj-button chroming="callToAction" on-oj-action="[[search]]">Load statement</oj-button>
+
+  <div class="mb-filter-panel mb-filter-panel-statements">
+    <label class="mb-filter-search">Account ID
+      <input type="search" placeholder="Required account ID" data-bind="value:accountId,valueUpdate:'input'" />
+    </label>
+    <label>Movement
+      <select data-bind="value:entryType">
+        <option value="ALL">All movements</option>
+        <option value="DEBIT">Withdrawals / debits</option>
+        <option value="CREDIT">Deposits / credits</option>
+      </select>
+    </label>
+    <label>Channel
+      <select data-bind="value:channel">
+        <option value="ALL">All channels</option>
+        <option value="WITHDRAWAL">Withdrawal</option>
+        <option value="DEPOSIT">Deposit</option>
+        <option value="SELF_TRANSFER">Self transfer</option>
+        <option value="INTERNAL_TRANSFER">Internal transfer</option>
+      </select>
+    </label>
+    <label>From date<input type="date" data-bind="value:fromDate" /></label>
+    <label>To date<input type="date" data-bind="value:toDate" /></label>
+    <label>Sort by
+      <select data-bind="value:sortBy">
+        <option value="posted-desc">Newest first</option>
+        <option value="posted-asc">Oldest first</option>
+        <option value="withdrawal-desc">Largest withdrawal</option>
+        <option value="deposit-desc">Largest deposit</option>
+      </select>
+    </label>
+    <div class="mb-filter-actions">
+      <oj-button chroming="outlined" on-oj-action="[[currentMonth]]">Current month</oj-button>
+      <oj-button chroming="outlined" on-oj-action="[[clearFilters]]">Clear filters</oj-button>
+      <oj-button chroming="callToAction" on-oj-action="[[search]]" disabled="[[state.loading]]">Load statement</oj-button>
+    </div>
+  </div>
+
+  <div class="mb-list-meta" data-bind="visible:state.data().length">
+    <strong data-bind="text:resultSummary"></strong>
+    <span data-bind="text:`${fromDate()} to ${toDate()}`"></span>
   </div>
   <div class="mb-error" data-bind="visible:state.error,text:state.error"></div>
-  <div class="mb-table" data-bind="visible:state.data().length">
+  <div class="mb-loading" data-bind="visible:state.loading">Loading statement...</div>
+
+  <div class="mb-table mb-statements-table" data-bind="visible:filteredStatements().length">
     <table>
       <thead>
         <tr>
           <th>Date</th>
-          <th>Transaction ID</th>
-          <th>Entry</th>
-          <th>Debit</th>
-          <th>Credit</th>
-          <th>Balance after</th>
+          <th>Description</th>
+          <th>Reference</th>
+          <th>Channel</th>
+          <th>Withdrawal</th>
+          <th>Deposit</th>
+          <th>Closing balance</th>
         </tr>
       </thead>
-      <tbody data-bind="foreach:state.data">
+      <tbody data-bind="foreach:filteredStatements">
         <tr>
           <td data-bind="text:$parent.date(postedAt)"></td>
-          <td><code data-bind="text:transactionId"></code></td>
-          <td data-bind="text:entryType"></td>
-          <td
-            class="debit"
-            data-bind="text:entryType==='DEBIT'?$parent.money(amount,currencyCode):'—'"
-          ></td>
-          <td
-            class="credit"
-            data-bind="text:entryType==='CREDIT'?$parent.money(amount,currencyCode):'—'"
-          ></td>
-          <td><strong data-bind="text:$parent.money(balanceAfter,currencyCode)"></strong></td>
+          <td data-bind="text:description || ''"></td>
+          <td><strong data-bind="text:transactionRef || ''"></strong><small data-bind="text:transactionId || ''"></small></td>
+          <td data-bind="text:channel || ''"></td>
+          <td class="debit" data-bind="text:$parent.displayMoney(withdrawalAmount,currencyCode)"></td>
+          <td class="credit" data-bind="text:$parent.displayMoney(depositAmount,currencyCode)"></td>
+          <td><strong data-bind="text:$parent.displayMoney(closingBalance,currencyCode)"></strong></td>
         </tr>
       </tbody>
     </table>
   </div>
-  <div class="mb-empty" data-bind="visible:!state.loading()&&!state.error()&&!state.data().length">
-    Enter an account ID to load real statement entries.
+  <div class="mb-empty" data-bind="visible:!state.loading()&&!state.error()&&!filteredStatements().length">
+    Enter an account ID to load this month's statement, or change the date range and filters.
   </div>
-  <oj-dialog id="statementDialog" class="mb-dialog" dialog-title="Record statement entry" cancel-behavior="icon"><div slot="body"><div class="mb-info">Normal transfers already create debit and credit entries automatically. Use this operation only when an authorized workflow requires a direct record.</div><div class="mb-error" data-bind="visible:error,text:error"></div><div class="mb-form"><oj-input-text label-hint="Transaction ID" required value="{{form.transactionId}}"></oj-input-text><oj-input-text label-hint="Account ID" required value="{{form.accountId}}"></oj-input-text><label>Entry type<select data-bind="value:form.entryType"><option>DEBIT</option><option>CREDIT</option></select></label><oj-input-text label-hint="Amount" value="{{form.amount}}"></oj-input-text><oj-input-text label-hint="Currency" value="{{form.currencyCode}}"></oj-input-text><oj-input-text label-hint="Balance after" value="{{form.balanceAfter}}"></oj-input-text></div></div><div slot="footer" class="mb-dialog-actions"><oj-button on-oj-action="[[close]]">Cancel</oj-button><oj-button chroming="callToAction" on-oj-action="[[record]]">Record entry</oj-button></div></oj-dialog>
 </section>

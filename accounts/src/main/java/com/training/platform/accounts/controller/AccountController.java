@@ -40,7 +40,7 @@ public class AccountController {
                                       @RequestParam(required = false) String accountNumber) {
         if (customerId != null) return accountService.getByCustomerId(customerId).stream().map(AccountResponse::from).toList();
         if (accountNumber != null) return List.of(AccountResponse.from(accountService.getByAccountNumber(accountNumber)));
-        throw new IllegalArgumentException("Provide customerId or accountNumber");
+        return accountService.getAllAccounts().stream().map(AccountResponse::from).toList();
     }
 
     @PostMapping

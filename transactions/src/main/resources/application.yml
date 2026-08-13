@@ -26,6 +26,8 @@ spring:
 services:
   accounts:
     base-url: ${ACCOUNTS_SERVICE_URL:http://accounts-service}
+  customers:
+    base-url: ${CUSTOMERS_SERVICE_URL:http://customers-service}
 
 eureka:
   client:

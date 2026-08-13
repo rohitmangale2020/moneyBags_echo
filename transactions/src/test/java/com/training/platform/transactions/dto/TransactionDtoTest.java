@@ -80,6 +80,7 @@ class TransactionDtoTest {
         transaction.setDebitAccountId("account-a");
         transaction.setCreditAccountId("account-b");
         transaction.setExternalBeneficiary("Beneficiary");
+        transaction.setDescription("INTERNAL TRANSFER FROM A TO B");
         transaction.setAmount(new BigDecimal("100.00"));
         transaction.setCurrencyCode("INR");
         transaction.setFeeAmount(new BigDecimal("2.00"));
@@ -98,6 +99,7 @@ class TransactionDtoTest {
         assertEquals("account-a", response.debitAccountId());
         assertEquals("account-b", response.creditAccountId());
         assertEquals("Beneficiary", response.externalBeneficiary());
+        assertEquals("INTERNAL TRANSFER FROM A TO B", response.description());
         assertEquals(new BigDecimal("100.00"), response.amount());
         assertEquals("INR", response.currencyCode());
         assertEquals(new BigDecimal("2.00"), response.feeAmount());
@@ -112,6 +114,8 @@ class TransactionDtoTest {
         LocalDateTime postedAt = LocalDateTime.of(2025, 2, 3, 11, 30);
         BankTransaction transaction = new BankTransaction();
         ReflectionTestUtils.setField(transaction, "transactionId", "txn-1");
+        transaction.setTransactionRef("REF-1");
+        transaction.setTransactionType(TransactionType.DEPOSIT);
         AccountStatement statement = new AccountStatement();
         ReflectionTestUtils.setField(statement, "statementId", "statement-1");
         ReflectionTestUtils.setField(statement, "postedAt", postedAt);
@@ -119,14 +123,20 @@ class TransactionDtoTest {
         statement.setAccountId("account-1");
         statement.setEntryType(StatementEntryType.CREDIT);
         statement.setAmount(new BigDecimal("50.00"));
+        statement.setDescription("DEPOSIT BY ROHIT MANGALE | REF REF-1");
+        statement.setDepositAmount(new BigDecimal("50.00"));
         statement.setCurrencyCode("INR");
         statement.setBalanceAfter(new BigDecimal("1050.00"));
+        statement.setClosingBalance(new BigDecimal("1050.00"));
 
         StatementResponse response = StatementResponse.from(statement);
 
         assertEquals("statement-1", response.statementId());
         assertEquals("txn-1", response.transactionId());
         assertEquals("account-1", response.accountId());
+        assertEquals("DEPOSIT BY ROHIT MANGALE | REF REF-1", response.description());
+        assertEquals(new BigDecimal("50.00"), response.depositAmount());
+        assertEquals(new BigDecimal("1050.00"), response.closingBalance());
         assertEquals(StatementEntryType.CREDIT, response.entryType());
         assertEquals(new BigDecimal("50.00"), response.amount());
         assertEquals("INR", response.currencyCode());

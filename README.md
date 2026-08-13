@@ -47,3 +47,19 @@ mvn -pl users spring-boot:run
 Start the services in this order: `users`, `security-service`, then
 `api-gateway-service`. For example, run `mvn -pl security-service
 spring-boot:run` after the users service is available.
+
+## Accounts and statements
+
+New accounts receive an immutable, unique 12-digit numeric account number. Existing
+legacy account numbers remain valid and are not rewritten during account updates.
+
+The transactions service stores generated transaction descriptions and richer statement
+entries (`description`, `withdrawalAmount`, `depositAmount`, and `closingBalance`). Legacy
+statement rows keep these added fields null. Search an account's current month by default:
+
+```text
+GET /api/statements?accountId=<id>
+```
+
+Optional filters are `fromDate`, `toDate`, `entryType`, and `channel`. Supported channels
+are `WITHDRAWAL`, `DEPOSIT`, `SELF_TRANSFER`, and `INTERNAL_TRANSFER`.

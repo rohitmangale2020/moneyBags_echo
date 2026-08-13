@@ -38,7 +38,7 @@ public class TransactionController {
         if (transactionRef != null) return List.of(TransactionResponse.from(transactionService.getByReference(transactionRef)));
         if (debitAccountId != null) return transactionService.getDebitAccountTransactions(debitAccountId).stream().map(TransactionResponse::from).toList();
         if (creditAccountId != null) return transactionService.getCreditAccountTransactions(creditAccountId).stream().map(TransactionResponse::from).toList();
-        throw new IllegalArgumentException("Provide transactionRef, debitAccountId, or creditAccountId");
+        return transactionService.getAllTransactions().stream().map(TransactionResponse::from).toList();
     }
 
     @PostMapping

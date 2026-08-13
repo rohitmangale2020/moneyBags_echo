@@ -64,6 +64,7 @@ define(['services/apiClient'], function (api) {
       retire: (c) => api.delete(`/api/v1/products/${e(c)}`),
     },
     accounts: {
+      list: () => api.get('/api/accounts'),
       customer: (id) => api.get(`/api/accounts?customerId=${e(id)}`),
       number: (v) => api.get(`/api/accounts?accountNumber=${e(v)}`),
       get: (id) => api.get(`/api/accounts/${e(id)}`),
@@ -71,14 +72,22 @@ define(['services/apiClient'], function (api) {
       update: (id, d) => api.put(`/api/accounts/${e(id)}`, d),
     },
     transactions: {
+      list: () => api.get('/api/transactions'),
       find: (k, v) => api.get(`/api/transactions?${k}=${e(v)}`),
       get: (id) => api.get(`/api/transactions/${e(id)}`),
       transfer: (d) => api.post('/api/transactions', d),
       update: (id, d) => api.put(`/api/transactions/${e(id)}`, d),
     },
     statements: {
-      account: (id) => api.get(`/api/statements?accountId=${e(id)}`),
-      get: (id) => api.get(`/api/statements/${e(id)}`),
+      search: (id, filters = {}) => {
+        const params = new URLSearchParams({ accountId: id });
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value !== null && value !== undefined && value !== '' && value !== 'ALL') {
+            params.set(key, value);
+          }
+        });
+        return api.get(`/api/statements?${params.toString()}`);
+      },
       monthly: (id, y, m) =>
         api.get(`/api/statements/monthly?accountId=${e(id)}&year=${y}&month=${m}`),
       record: (d) => api.post('/api/statements', d),

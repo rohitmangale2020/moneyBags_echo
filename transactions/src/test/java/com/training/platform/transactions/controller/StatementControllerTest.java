@@ -15,6 +15,7 @@ import com.training.platform.transactions.entity.StatementEntryType;
 import com.training.platform.transactions.service.AccountStatementService;
 import java.math.BigDecimal;
 import java.util.List;
+import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -36,11 +37,15 @@ class StatementControllerTest {
     void getsAndFindsStatements() throws Exception {
         AccountStatement statement = statement();
         when(statementService.getById("statement-1")).thenReturn(statement);
-        when(statementService.getByAccountId("account-1")).thenReturn(List.of(statement));
+        when(statementService.search(org.mockito.ArgumentMatchers.eq("account-1"),
+                any(LocalDate.class), any(LocalDate.class),
+                org.mockito.ArgumentMatchers.isNull(), org.mockito.ArgumentMatchers.isNull()))
+                .thenReturn(List.of(statement));
 
         mockMvc.perform(get("/api/statements/statement-1"))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.statementId").value("statement-1"));
-        mockMvc.perform(get("/api/statements").param("accountId", "account-1"))
+        mockMvc.perform(get("/api/statements").param("accountId", "account-1")
+                        .param("fromDate", "2026-08-01").param("toDate", "2026-08-31"))
                 .andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(1)));
     }
 
@@ -59,6 +64,8 @@ class StatementControllerTest {
     private AccountStatement statement() {
         BankTransaction transaction = mock(BankTransaction.class);
         when(transaction.getTransactionId()).thenReturn("transaction-1");
+        when(transaction.getTransactionRef()).thenReturn("REF-1");
+        when(transaction.getTransactionType()).thenReturn(com.training.platform.transactions.entity.TransactionType.WITHDRAWAL);
         AccountStatement statement = mock(AccountStatement.class);
         when(statement.getStatementId()).thenReturn("statement-1");
         when(statement.getTransaction()).thenReturn(transaction);

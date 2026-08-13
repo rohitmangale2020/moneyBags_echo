@@ -17,6 +17,7 @@ import com.training.platform.accounts.repository.AccountStatusHistoryRepository;
 import com.training.platform.accounts.repository.AccountTransferOperationRepository;
 import jakarta.persistence.EntityNotFoundException;
 import java.math.BigDecimal;
+import java.security.SecureRandom;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +27,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(readOnly = true)
 public class AccountService {
+    private static final int ACCOUNT_NUMBER_LENGTH = 12;
+    private static final long ACCOUNT_NUMBER_BOUND = 1_000_000_000_000L;
+    private static final int ACCOUNT_NUMBER_ATTEMPTS = 20;
+    private static final SecureRandom ACCOUNT_NUMBER_RANDOM = new SecureRandom();
     private final AccountRepository accountRepository;
     private final AccountHolderRepository accountHolderRepository;
     private final AccountStatusHistoryRepository accountStatusHistoryRepository;
@@ -53,10 +58,15 @@ public class AccountService {
                 .orElseThrow(() -> new EntityNotFoundException("Account not found: " + accountNumber));
     }
 
+    public List<Account> getAllAccounts() {
+        return accountRepository.findAllByOrderByCreatedAtDesc();
+    }
+
     public List<Account> getByCustomerId(String customerId) { return accountRepository.findByCustomerId(customerId); }
 
     @Transactional
     public Account create(Account account) {
+        account.setAccountNumber(generateAccountNumber());
         validate(account);
         Account savedAccount = accountRepository.save(account);
         accountHolderRepository.save(AccountHolder.primaryHolder(savedAccount));
@@ -67,7 +77,8 @@ public class AccountService {
     @Transactional
     public Account update(String accountId, Account account) {
         Account existing = getById(accountId);
-        existing.setAccountNumber(account.getAccountNumber());
+        // Account numbers are immutable. This also preserves legacy, non-numeric
+        // numbers while every newly opened account uses the numeric format.
         existing.setCustomerId(account.getCustomerId());
         existing.setProductId(account.getProductId());
         existing.setOwnershipType(account.getOwnershipType());
@@ -186,7 +197,9 @@ public class AccountService {
     }
 
     private AccountAdjustmentResponse response(AccountBalanceOperation operation) {
+        Account account = getById(operation.getAccountId());
         return new AccountAdjustmentResponse(operation.getTransactionRef(), operation.getAccountId(),
+                account.getAccountNumber(), account.getCustomerId(),
                 operation.getAdjustmentType(), operation.getBalanceAfter(), operation.getProcessedAt());
     }
 
@@ -209,9 +222,21 @@ public class AccountService {
     }
 
     private AccountTransferResponse response(AccountTransferOperation operation) {
+        Account debitAccount = getById(operation.getDebitAccountId());
+        Account creditAccount = getById(operation.getCreditAccountId());
         return new AccountTransferResponse(operation.getTransactionRef(), operation.getDebitAccountId(),
-                operation.getCreditAccountId(), operation.getDebitBalanceAfter(),
+                operation.getCreditAccountId(), debitAccount.getAccountNumber(), creditAccount.getAccountNumber(),
+                debitAccount.getCustomerId(), creditAccount.getCustomerId(), operation.getDebitBalanceAfter(),
                 operation.getCreditBalanceAfter(), operation.getProcessedAt());
+    }
+
+    private String generateAccountNumber() {
+        for (int attempt = 0; attempt < ACCOUNT_NUMBER_ATTEMPTS; attempt++) {
+            String candidate = String.format("%0" + ACCOUNT_NUMBER_LENGTH + "d",
+                    ACCOUNT_NUMBER_RANDOM.nextLong(ACCOUNT_NUMBER_BOUND));
+            if (!accountRepository.existsByAccountNumber(candidate)) return candidate;
+        }
+        throw new IllegalStateException("Unable to generate a unique account number");
     }
 
     private void validateTransferRequest(AccountTransferRequest request) {

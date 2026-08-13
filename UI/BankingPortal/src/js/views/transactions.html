@@ -3,51 +3,84 @@
     <div>
       <small>PAYMENTS / TRANSACTIONS</small>
       <h1>Transactions</h1>
-      <p>Post transfers, deposits, and withdrawals, then inspect the resulting records.</p>
+      <p>Review every posting, filter the transaction history, or submit a new transaction.</p>
     </div>
     <oj-button chroming="callToAction" on-oj-action="[[open]]">New transaction</oj-button>
   </div>
 
-  <div class="mb-search-panel">
-    <label>Lookup
-      <select data-bind="value:kind">
-        <option value="debitAccountId">Debit account</option>
-        <option value="creditAccountId">Credit account</option>
+  <div class="mb-filter-panel mb-filter-panel-transactions">
+    <label class="mb-filter-search">Search transactions
+      <input type="search" placeholder="Reference, transaction, account, or customer ID" data-bind="value:query,valueUpdate:'input'" />
+    </label>
+    <label>Type
+      <select data-bind="value:typeFilter">
+        <option value="ALL">All types</option><option>TRANSFER</option><option>DEPOSIT</option><option>WITHDRAWAL</option>
+        <option>PAYMENT</option><option>REVERSAL</option>
       </select>
     </label>
-    <oj-input-text placeholder="Account ID" value="{{query}}"></oj-input-text>
-    <oj-button chroming="callToAction" on-oj-action="[[search]]">Search</oj-button>
+    <label>Status
+      <select data-bind="value:statusFilter">
+        <option value="ALL">All statuses</option><option>INITIATED</option><option>PROCESSING</option>
+        <option>PENDING_APPROVAL</option><option>COMPLETED</option><option>FAILED</option>
+        <option>REVERSED</option><option>CANCELLED</option>
+      </select>
+    </label>
+    <label>Currency
+      <select data-bind="value:currencyFilter">
+        <option value="ALL">All currencies</option>
+        <!-- ko foreach:currencies --><option data-bind="value:$data,text:$data"></option><!-- /ko -->
+      </select>
+    </label>
+    <label>From date<input type="date" data-bind="value:dateFrom" /></label>
+    <label>To date<input type="date" data-bind="value:dateTo" /></label>
+    <label>Sort by
+      <select data-bind="value:sortBy">
+        <option value="initiated-desc">Newest initiated</option><option value="initiated-asc">Oldest initiated</option>
+        <option value="amount-desc">Highest amount</option><option value="amount-asc">Lowest amount</option>
+        <option value="reference-asc">Reference A-Z</option><option value="reference-desc">Reference Z-A</option>
+      </select>
+    </label>
+    <div class="mb-filter-actions">
+      <button type="button" class="mb-link" data-bind="click:clearFilters">Clear filters</button>
+      <oj-button on-oj-action="[[load]]" disabled="[[state.loading]]">Refresh</oj-button>
+    </div>
   </div>
 
-  <div class="mb-error" data-bind="visible:state.error,text:state.error"></div>
-  <div class="mb-table" data-bind="visible:state.data().length">
+  <div class="mb-list-meta"><strong data-bind="text:resultSummary"></strong><span>Filters update instantly</span></div>
+  <div class="mb-error" data-bind="visible:state.error"><span data-bind="text:state.error"></span><button data-bind="click:load">Retry</button></div>
+  <div class="mb-loading" data-bind="visible:state.loading">Loading transactions...</div>
+  <div class="mb-table" data-bind="visible:filteredTransactions().length">
     <table>
       <thead>
         <tr>
+          <th>Reference</th>
           <th>Type</th>
           <th>Account movement</th>
+          <th>Description</th>
           <th>Amount</th>
           <th>Status</th>
           <th>Initiated</th>
         </tr>
       </thead>
-      <tbody data-bind="foreach:state.data">
+      <tbody data-bind="foreach:filteredTransactions">
         <tr>
+          <td><strong data-bind="text:transactionRef"></strong><small data-bind="text:transactionId"></small></td>
           <td><strong data-bind="text:transactionType"></strong></td>
           <td>
             <span data-bind="text:debitAccountId || 'Bank credit'"></span>
             <small data-bind="text:creditAccountId ? `to ${creditAccountId}` : 'withdrawal'"></small>
           </td>
+          <td data-bind="text:description || ''"></td>
           <td><strong data-bind="text:$parent.money(amount,currencyCode)"></strong></td>
-          <td><span class="mb-badge" data-bind="text:transactionStatus,css:transactionStatus.toLowerCase()"></span></td>
+          <td><span class="mb-badge" data-bind="text:transactionStatus,css:$parent.statusClass(transactionStatus)"></span></td>
           <td data-bind="text:$parent.date(initiatedAt)"></td>
         </tr>
       </tbody>
     </table>
   </div>
 
-  <div class="mb-empty" data-bind="visible:!state.data().length && !state.loading()">
-    Search by account to view transactions, or create a new transaction.
+  <div class="mb-empty" data-bind="visible:!filteredTransactions().length && !state.loading()">
+    No transactions match the selected filters.
   </div>
 
   <oj-dialog id="transactionDialog" class="mb-dialog" dialog-title="Post transaction" cancel-behavior="icon">

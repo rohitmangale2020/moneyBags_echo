@@ -31,6 +31,7 @@ public class BankTransaction {
     @Column(name = "debit_account_id", length = 36) private String debitAccountId;
     @Column(name = "credit_account_id", length = 36) private String creditAccountId;
     @Column(name = "external_beneficiary", length = 200) private String externalBeneficiary;
+    @Column(length = 500) private String description;
     @Column(nullable = false, precision = 19, scale = 4) private BigDecimal amount;
     @Column(name = "currency_code", nullable = false, length = 3) private String currencyCode;
     @Column(name = "fee_amount", nullable = false, precision = 19, scale = 4) private BigDecimal feeAmount = BigDecimal.ZERO;
@@ -53,6 +54,7 @@ public class BankTransaction {
     public String getDebitAccountId() { return debitAccountId; }
     public String getCreditAccountId() { return creditAccountId; }
     public String getExternalBeneficiary() { return externalBeneficiary; }
+    public String getDescription() { return description; }
     public BigDecimal getAmount() { return amount; }
     public String getCurrencyCode() { return currencyCode; }
     public BigDecimal getFeeAmount() { return feeAmount; }
@@ -69,6 +71,7 @@ public class BankTransaction {
     public void setDebitAccountId(String debitAccountId) { this.debitAccountId = debitAccountId; }
     public void setCreditAccountId(String creditAccountId) { this.creditAccountId = creditAccountId; }
     public void setExternalBeneficiary(String externalBeneficiary) { this.externalBeneficiary = externalBeneficiary; }
+    public void setDescription(String description) { this.description = description; }
     public void setAmount(BigDecimal amount) { this.amount = amount; }
     public void setCurrencyCode(String currencyCode) { this.currencyCode = currencyCode; }
     public void setFeeAmount(BigDecimal feeAmount) { this.feeAmount = feeAmount; }
