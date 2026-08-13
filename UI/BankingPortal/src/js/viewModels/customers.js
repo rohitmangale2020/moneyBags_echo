@@ -108,9 +108,15 @@ define([
     s.saveCustomer = async () => {
       const raw = ko.toJS(s.form()), d = clean({ firstName: raw.firstName, lastName: raw.lastName, dob: raw.dob, gender: raw.gender, phone: raw.phone, email: raw.email, occupation: raw.occupation });
       if (!d.firstName || !d.dob || !d.gender || !d.phone) return s.error('First name, birth date, gender, and phone are required.');
-      if (!/^[6-9][0-9]{9}$/.test(d.phone)) return s.error('Phone must be a valid 10-digit Indian mobile number.');
-      if (new Date(d.dob) >= new Date()) return s.error('Date of birth must be in the past.');
-      if (d.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email)) return s.error('Enter a valid email address.');
+      if (!/^[6-9][0-9]{9}$/.test(d.phone))
+        return s.error('Phone must be a valid 10-digit mobile number.');
+
+      if (new Date(d.dob) >= new Date())
+        return s.error('Date of birth must be in the past.');
+
+      if (d.email && !/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/.test(d.email))
+        return s.error('Enter a valid email address.');
+
       try {
         const value = await app.services.customers.update(s.selected().customerId, d);
         s.selected(value);
