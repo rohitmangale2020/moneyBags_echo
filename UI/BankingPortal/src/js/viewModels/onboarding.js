@@ -153,10 +153,14 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton', 'ojs/ojd
       else if (s.profile.dob() >= today()) e.dob = 'Date of birth must be in the past.';
       else if (ageInYears(s.profile.dob()) > 120) e.dob = 'Enter a realistic date of birth.';
       if (!s.profile.gender()) e.gender = 'Select a gender.';
+
+
       if (!phone) e.phone = 'Mobile number is required.';
-      else if (!/^[6-9][0-9]{9}$/.test(phone)) e.phone = 'Enter a valid 10-digit mobile number.';
+      else if (!/^[6-9][0-9]{9}$/.test(e.phone))
+      return s.error('Phone must be a valid 10-digit mobile number.');
       if (!email) e.email = 'Email address is required.';
-      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) e.email = 'Enter a valid email address, for example name@example.com.';
+      else if (e.email && !/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/.test(d.email))
+        return s.error('Enter a valid email address.');
       else if (email.length > 254) e.email = 'Email cannot exceed 254 characters.';
       if (!occupation) e.occupation = 'Occupation is required.';
       else if (occupation.length > 100) e.occupation = 'Occupation cannot exceed 100 characters.';
