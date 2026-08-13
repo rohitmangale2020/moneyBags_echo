@@ -2,11 +2,14 @@ define([
   'knockout',
   'appController',
   'viewModels/util',
+  'ojs/ojarraydataprovider',
   'ojs/ojinputtext',
   'ojs/ojselectsingle',
+  'ojs/ojdatetimepicker',
   'ojs/ojbutton',
   'ojs/ojdialog',
-], function (ko, app, u) {
+  'ojs/ojtable',
+], function (ko, app, u, ArrayDataProvider) {
   function blank() {
     return {
       username: '',
@@ -31,11 +34,44 @@ define([
   function VM() {
     const s = this;
     s.state = u.state([]);
+    s.roleOptions = new ArrayDataProvider(
+      [
+        { value: 'ADMIN', label: 'Admin' },
+        { value: 'EMPLOYEE', label: 'Employee' },
+        { value: 'CUSTOMER', label: 'Customer' },
+      ],
+      { keyAttributes: 'value' },
+    );
     s.query = ko.observable('');
     s.form = ko.observable(blank());
     s.editingId = ko.observable(null);
     s.password = ko.observable('');
     s.error = ko.observable('');
+    s.detailState = u.state(null);
+    s.detailColumns = [
+      { headerText: 'Field', field: 'field' },
+      { headerText: 'Value', field: 'value' },
+    ];
+    s.detailDataProvider = ko.pureComputed(() =>
+      new ArrayDataProvider(s.detailState.data() || [], {
+        keyAttributes: 'field',
+      }),
+    );
+    s.canViewDetails = (user) =>
+      ['ACTIVE', 'PENDING_VERIFICATION'].includes(user.status);
+    s.statusRank = (status) =>
+      ({ ACTIVE: 0, PENDING_VERIFICATION: 1, DEACTIVATED: 2 }[status] ?? 3);
+    s.toDetailRow = (user) => {
+      const profile = user.profile || {};
+      const display = (value) => (value === null || value === undefined || value === '' ? 'Not provided' : value);
+      return [
+        ['User ID', user.id], ['Username', user.username], ['Email', user.email], ['Role', user.role],
+        ['Status', user.status && user.status.replaceAll('_', ' ')], ['First name', profile.firstName],
+        ['Middle name', profile.middleName], ['Last name', profile.lastName], ['Phone', profile.phoneNumber],
+        ['Date of birth', profile.dateOfBirth], ['Country', profile.countryCode], ['Address line 1', profile.addressLine1],
+        ['Address line 2', profile.addressLine2], ['City', profile.city], ['State', profile.state], ['Postal code', profile.postalCode],
+      ].map(([field, value]) => ({ field, value: display(value) }));
+    };
     s.filtered = ko.pureComputed(() => {
       const q = s.query().toLowerCase();
       return s.state
@@ -46,6 +82,16 @@ define([
             `${x.username} ${x.email} ${x.profile && x.profile.firstName}`
               .toLowerCase()
               .includes(q),
+        )
+        .sort((a, b) =>
+          s.statusRank(a.status) - s.statusRank(b.status) ||
+          String(a.username || '').localeCompare(String(b.username || '')),
+        )
+        .map((x) =>
+          Object.assign({}, x, {
+            detailsAvailable: s.canViewDetails(x),
+            openDetails: () => s.openDetails(x),
+          }),
         );
     });
     s.validate = (data, needsPassword) => {
@@ -66,6 +112,15 @@ define([
       s.error('');
       document.getElementById('userDialog').open();
     };
+    s.openDetails = async (user) => {
+      if (!s.canViewDetails(user)) return;
+      s.detailState.data(null);
+      document.getElementById('userDetailsDialog').open();
+      await s.detailState
+        .run(async () => s.toDetailRow(await app.services.users.get(user.id)))
+        .catch(() => null);
+    };
+    s.closeDetails = () => document.getElementById('userDetailsDialog').close();
     s.edit = async (x) => {
       s.error('');
       try { x = await app.services.users.get(x.id); } catch (e) { return app.notify(e.message, 'error'); }

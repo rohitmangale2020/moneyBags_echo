@@ -939,7 +939,8 @@ body:not(:has(#navDrawer)) .mb-content {
 }
 
 .mb-form oj-input-date,
-.mb-form oj-input-text {
+.mb-form oj-input-text,
+.mb-form oj-select-single {
   width: 100%;
 }
 
