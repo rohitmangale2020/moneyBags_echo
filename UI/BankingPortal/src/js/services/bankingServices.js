@@ -51,6 +51,7 @@ define(['services/apiClient'], function (api) {
       getNominee: (id, nomineeId) => api.get(`/api/customers/${e(id)}/nominees/${e(nomineeId)}`),
       updateNominee: (id, nomineeId, d) => api.put(`/api/customers/${e(id)}/nominees/${e(nomineeId)}`, d),
       closeNominee: (id, nomineeId) => api.patch(`/api/customers/${e(id)}/nominees/${e(nomineeId)}/close`),
+      deleteNominee: (id, nomineeId) => api.delete(`/api/customers/${e(id)}/nominees/${e(nomineeId)}`),
     },
     products: {
       list: () => api.get('/api/v1/products'),

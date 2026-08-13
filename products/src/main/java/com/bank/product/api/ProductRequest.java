@@ -11,7 +11,7 @@ public record ProductRequest(
     @DecimalMin(value = "0.00", inclusive = true) BigDecimal minimumBalance,
     @DecimalMin(value = "0.00", inclusive = true) BigDecimal maximumBalance,
     @NotBlank @Pattern(regexp = "[A-Z]{3}") String currency,
-    @NotBlank @Pattern(regexp = "ACTIVE|INACTIVE") String status,
+    @NotBlank @Pattern(regexp = "ACTIVE|RETIRED") String status,
     @NotNull @Valid RateRequest rate,
     @NotNull @Valid TermRequest term,
     @NotNull @Valid FeeRequest fee

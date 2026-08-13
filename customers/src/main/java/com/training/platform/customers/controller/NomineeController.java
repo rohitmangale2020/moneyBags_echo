@@ -57,4 +57,13 @@ public class NomineeController {
     ) {
         return ResponseEntity.ok(nomineeService.closeNominee(customerId, nomineeId));
     }
+
+    @DeleteMapping("/{nomineeId}")
+    public ResponseEntity<Void> deleteNominee(
+            @PathVariable Long customerId,
+            @PathVariable Long nomineeId
+    ) {
+        nomineeService.deleteNominee(customerId, nomineeId);
+        return ResponseEntity.noContent().build();
+    }
 }

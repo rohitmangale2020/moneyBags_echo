@@ -40,13 +40,40 @@
           <div class="mb-resource-list" data-bind="foreach:detailState.data().documents"><article><strong data-bind="text:`${documentType} · ${documentNumber}`"></strong><span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span><button class="mb-link" data-bind="click:()=>$parent.openDocument($data)">Update</button></article></div><div class="mb-empty compact" data-bind="visible:!detailState.data().documents.length">No documents.</div>
         </section>
         <section class="mb-resource-card"><div class="mb-resource-head"><div><small>RELATIONSHIPS</small><h3>Nominees and holders</h3></div><button class="mb-link" data-bind="click:()=>openNominee(null)">Add nominee</button></div>
-          <div class="mb-resource-list" data-bind="foreach:detailState.data().nominees"><article><strong data-bind="text:nomineeName"></strong><span data-bind="text:`${relationType} · ${sharePercentage||0}%`"></span><div><button class="mb-link" data-bind="click:()=>$parent.openNominee($data)">Edit</button><button class="mb-link danger" data-bind="visible:status!=='CLOSED',click:()=>$parent.closeNominee($data)">Close</button></div></article></div><div class="mb-empty compact" data-bind="visible:!detailState.data().nominees.length">No nominees.</div>
+          <div class="mb-resource-list" data-bind="foreach:detailState.data().nominees"><article><strong data-bind="text:nomineeName"></strong><span data-bind="text:`${relationType} · ${sharePercentage||0}%`"></span><div><button class="mb-link" data-bind="click:()=>$parent.openNominee($data)">Edit</button><button class="mb-link danger" data-bind="visible:status!=='CLOSED',click:()=>$parent.closeNominee($data)">Close</button><button class="mb-link danger" data-bind="click:()=>$parent.deleteNominee($data)">Delete</button></div></article></div><div class="mb-empty compact" data-bind="visible:!detailState.data().nominees.length">No nominees.</div>
         </section>
       </div>
     </div>
   </oj-dialog>
 
-  <oj-dialog id="customerEditDialog" class="mb-dialog mb-dialog-wide" dialog-title="Edit customer profile" cancel-behavior="icon"><div slot="body"><div class="mb-error" data-bind="visible:error,text:error"></div><div class="mb-form three"><oj-input-text label-hint="First name" required value="{{form().firstName}}"></oj-input-text><oj-input-text label-hint="Last name" value="{{form().lastName}}"></oj-input-text><label>Date of birth<input type="date" data-bind="value:form().dob" /></label><label>Gender<select data-bind="value:form().gender"><option>MALE</option><option>FEMALE</option><option>OTHER</option></select></label><oj-input-text label-hint="Phone" required value="{{form().phone}}"></oj-input-text><oj-input-text label-hint="Email" value="{{form().email}}"></oj-input-text><oj-input-text label-hint="Occupation" value="{{form().occupation}}"></oj-input-text></div></div><div slot="footer" class="mb-dialog-actions"><oj-button on-oj-action="[[$data.close.bind(null,'customerEditDialog')]]">Cancel</oj-button><oj-button chroming="callToAction" on-oj-action="[[saveCustomer]]">Save profile</oj-button></div></oj-dialog>
+  <oj-dialog id="customerEditDialog" class="mb-dialog mb-dialog-wide" dialog-title="Edit customer profile" cancel-behavior="icon"><div slot="body"><div class="mb-error" data-bind="visible:error,text:error"></div><div class="mb-form three"><oj-input-text label-hint="First name" required value="{{form().firstName}}"></oj-input-text><oj-input-text label-hint="Last name" value="{{form().lastName}}"></oj-input-text><label>Date of birth<input type="date" data-bind="value:form().dob" /></label><label>Gender<select data-bind="value:form().gender"><option>MALE</option><option>FEMALE</option><option>OTHER</option></select></label>
+    <div>
+      <div style="display:grid; grid-template-columns:80px minmax(0,1fr); gap:8px; align-items:flex-end; width:100%;">
+
+        <div style="width:80px;">
+          <oj-input-text
+                  label-hint="Code"
+                  value="+91"
+                  disabled
+                  style="width:100%;">
+          </oj-input-text>
+        </div>
+
+        <div style="min-width:0; width:100%;">
+          <oj-input-text
+                  label-hint="Phone"
+                  required
+                  inputmode="numeric"
+                  maxlength="10"
+                  placeholder="9876543210"
+                  value="{{form().phone}}"
+                  style="width:100%;">
+          </oj-input-text>
+        </div>
+
+      </div>
+    </div>
+    <oj-input-text label-hint="Email" value="{{form().email}}"></oj-input-text><oj-input-text label-hint="Occupation" value="{{form().occupation}}"></oj-input-text></div></div><div slot="footer" class="mb-dialog-actions"><oj-button on-oj-action="[[$data.close.bind(null,'customerEditDialog')]]">Cancel</oj-button><oj-button chroming="callToAction" on-oj-action="[[saveCustomer]]">Save profile</oj-button></div></oj-dialog>
 
   <oj-dialog id="addressDialog" class="mb-dialog" dialog-title="Customer address" cancel-behavior="icon"><div slot="body"><div class="mb-error" data-bind="visible:error,text:error"></div><div class="mb-form"><label>Address type<select data-bind="value:addressForm().addressType"><option>CURRENT</option><option>PERMANENT</option><option>OFFICE</option></select></label><oj-input-text label-hint="Address line 1" required value="{{addressForm().line1}}"></oj-input-text><oj-input-text label-hint="Address line 2" value="{{addressForm().line2}}"></oj-input-text><oj-input-text label-hint="City" required value="{{addressForm().city}}"></oj-input-text><oj-input-text label-hint="State" required value="{{addressForm().state}}"></oj-input-text><oj-input-text label-hint="Country" required value="{{addressForm().country}}"></oj-input-text><oj-input-text label-hint="Pincode" required value="{{addressForm().pincode}}"></oj-input-text></div></div><div slot="footer" class="mb-dialog-actions"><oj-button on-oj-action="[[$data.close.bind(null,'addressDialog')]]">Cancel</oj-button><oj-button chroming="callToAction" on-oj-action="[[saveAddress]]">Save address</oj-button></div></oj-dialog>
 
@@ -59,17 +86,41 @@
       <div class="mb-error" data-bind="visible:error,text:error"></div>
       <div class="mb-form three">
         <oj-input-text label-hint="Name" required value="{{nomineeForm().nomineeName}}"></oj-input-text>
-        <oj-input-text label-hint="Relationship" value="{{nomineeForm().relationship}}"></oj-input-text>
+        <label>Relationship<select data-bind="value:nomineeForm().relationship"><option value="">Select relationship</option><option>Legal guardian</option><option>Parent</option><option>Spouse</option><option>Child</option><option>Sibling</option><option>Other</option></select></label>
         <label>Relation type<select data-bind="value:nomineeForm().relationType"><option>NOMINEE</option><option>JOIN_HOLDER</option><option>GUARDIAN</option><option>AUTHORIZED_SIGNATORY</option></select></label>
         <label>Status<select data-bind="value:nomineeForm().status"><option>ACTIVE</option><option>INACTIVE</option><option>PENDING</option><option>CLOSED</option></select></label>
         <label>Date of birth<input type="date" data-bind="value:nomineeForm().dob" /></label>
-        <oj-input-text label-hint="Phone" value="{{nomineeForm().phone}}"></oj-input-text>
+        <div>
+          <div style="display:grid; grid-template-columns:80px minmax(0,1fr); gap:8px; align-items:end; width:100%;">
+
+            <div style="width:80px;">
+              <oj-input-text
+                      label-hint="Code"
+                      value="+91"
+                      disabled
+                      style="width:100%;">
+              </oj-input-text>
+            </div>
+
+            <div style="min-width:0; width:100%;">
+              <oj-input-text
+                      label-hint="Phone"
+                      inputmode="numeric"
+                      maxlength="10"
+                      placeholder="9876543210"
+                      value="{{nomineeForm().phone}}"
+                      style="width:100%;">
+              </oj-input-text>
+            </div>
+
+          </div>
+        </div>
         <oj-input-text label-hint="Share percentage" value="{{nomineeForm().sharePercentage}}"></oj-input-text>
         <label>Start date<input type="date" data-bind="value:nomineeForm().startDate" /></label>
         <label>End date<input type="date" data-bind="value:nomineeForm().endDate" /></label>
-        <label class="wide"><input type="checkbox" data-bind="checked:nomineeForm().includeAddress" /> Include nominee address</label>
+        <label class="wide mb-nominee-address-toggle"><input type="checkbox" data-bind="checked:includeNomineeAddress" /> Add a separate address for this nominee</label>
       </div>
-      <div class="mb-form three mb-subsection" data-bind="visible:nomineeForm().includeAddress">
+      <div class="mb-form three mb-subsection mb-nominee-address-form" data-bind="visible:includeNomineeAddress">
         <label>Address type<select data-bind="value:nomineeForm().address.addressType"><option>CURRENT</option><option>PERMANENT</option><option>OFFICE</option></select></label>
         <oj-input-text label-hint="Address line 1" value="{{nomineeForm().address.line1}}"></oj-input-text>
         <oj-input-text label-hint="Address line 2" value="{{nomineeForm().address.line2}}"></oj-input-text>

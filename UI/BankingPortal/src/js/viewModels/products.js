@@ -15,7 +15,7 @@ define([
       minimumBalance: 0,
       maximumBalance: null,
       currency: 'INR',
-      status: 'INACTIVE',
+      status: 'ACTIVE',
       rate: { interestRate: 0 },
       term: {
         tenureMonths: null,
@@ -35,11 +35,12 @@ define([
     s.state = u.state([]);
     s.types = ko.observableArray([]);
     s.form = ko.observable(blank());
+    s.formType = ko.observable('');
     s.editingCode = ko.observable(null);
     s.selected = ko.observable(null);
     s.history = ko.observableArray([]);
-    s.statusTarget = ko.observable(null);
-    s.statusReason = ko.observable('');
+    s.activeProducts = ko.pureComputed(() => s.state.data().filter((product) => product.status === 'ACTIVE'));
+    s.retiredProducts = ko.pureComputed(() => s.state.data().filter((product) => product.status === 'RETIRED'));
     s.typeForm = {
       productTypeCode: ko.observable(''),
       productTypeName: ko.observable(''),
@@ -48,6 +49,35 @@ define([
     };
     s.error = ko.observable('');
     s.money = u.money;
+    s.selectedProductType = ko.pureComputed(() => s.formType());
+    s.isFixedDeposit = ko.pureComputed(() => s.selectedProductType() === 'FD');
+    s.isRecurringDeposit = ko.pureComputed(() => s.selectedProductType() === 'RD');
+    s.isTermDeposit = ko.pureComputed(() => s.isFixedDeposit() || s.isRecurringDeposit());
+    s.isCreditCard = ko.pureComputed(() => s.selectedProductType() === 'CREDIT_CARD');
+    s.hasProductType = ko.pureComputed(() => !!s.selectedProductType());
+    s.isInterestBearing = ko.pureComputed(() => ['SAVINGS', 'SALARY', 'FD', 'RD'].includes(s.selectedProductType()));
+    s.formType.subscribe((typeCode) => {
+      const product = s.form();
+      product.productTypeCode = typeCode;
+      if (typeCode !== 'FD' && typeCode !== 'RD') {
+        product.term.tenureMonths = null; product.term.lockInPeriod = null;
+        product.term.maturityInstruction = null; product.term.prematureWithdrawalAllowed = null;
+      }
+      if (typeCode !== 'RD') {
+        product.term.installmentAmount = null; product.term.installmentFrequency = null;
+      }
+      if (typeCode === 'CREDIT_CARD') {
+        product.minimumBalance = null; product.maximumBalance = null;
+      }
+      s.form.valueHasMutated();
+    });
+    s.productIcon = (product) => {
+      const icons = {
+        SAVINGS: 'mb-product-icon-savings', CURRENT: 'mb-product-icon-current', SALARY: 'mb-product-icon-salary',
+        FD: 'mb-product-icon-fixed-deposit', RD: 'mb-product-icon-recurring-deposit', CREDIT_CARD: 'mb-product-icon-credit-card',
+      };
+      return icons[product.productTypeCode] || 'mb-product-icon-generic';
+    };
     s.load = () =>
       s.state
         .run(async () => {
@@ -62,6 +92,7 @@ define([
     s.open = () => {
       s.editingCode(null);
       s.form(blank());
+      s.formType('');
       s.error('');
       document.getElementById('productDialog').open();
     };
@@ -84,6 +115,7 @@ define([
       }
     };
     s.edit = () => {
+      if (s.selected().status === 'RETIRED') return app.notify('Retired products cannot be edited.', 'warning');
       const d = ko.toJS(s.selected());
       s.editingCode(d.productCode);
       s.form(Object.assign(blank(), d, {
@@ -91,6 +123,7 @@ define([
         term: Object.assign(blank().term, d.term || {}),
         fee: Object.assign({ monthlyMaintenanceFee: 0 }, d.fee || {}),
       }));
+      s.formType(d.productTypeCode);
       document.getElementById('productDialog').open();
     };
     s.close = (id) => document.getElementById(typeof id === 'string' ? id : 'productDialog').close();
@@ -116,9 +149,9 @@ define([
     s.save = async () => {
       const raw = ko.toJS(s.form());
       const d = {
-        productCode: raw.productCode, productName: raw.productName, productTypeCode: raw.productTypeCode,
+        productCode: raw.productCode, productName: raw.productName, productTypeCode: s.formType(),
         description: raw.description, minimumBalance: raw.minimumBalance, maximumBalance: raw.maximumBalance,
-        currency: raw.currency, status: raw.status,
+        currency: 'INR', status: raw.status,
         rate: Object.assign({ interestRate: 0 }, raw.rate), term: Object.assign({}, raw.term),
         fee: Object.assign({ monthlyMaintenanceFee: 0 }, raw.fee),
       };
@@ -138,35 +171,16 @@ define([
         const value = s.editingCode()
           ? await app.services.products.update(s.editingCode(), d)
           : await app.services.products.create(d);
+        const wasEditing = !!s.editingCode();
         document.getElementById('productDialog').close();
-        if (s.editingCode()) s.selected(value);
-        app.notify(s.editingCode() ? 'Product updated.' : 'Product created.');
+        if (wasEditing) {
+          s.selected(value);
+          s.history(await app.services.products.history(value.productCode));
+        }
+        app.notify(wasEditing ? 'Product updated.' : 'Product created.');
         s.load();
       } catch (e) {
         s.error(e.message);
-      }
-    };
-    s.openStatus = (p) => {
-      s.statusTarget(p);
-      s.statusReason('');
-      s.error('');
-      document.getElementById('productStatusDialog').open();
-    };
-    s.status = async () => {
-      const p = s.statusTarget();
-      const v = p.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
-      if (!s.statusReason().trim()) return s.error('A status-change reason is required.');
-      try {
-        const value = await app.services.products.status(p.productCode, v, s.statusReason().trim());
-        document.getElementById('productStatusDialog').close();
-        if (s.selected() && s.selected().productCode === p.productCode) {
-          s.selected(value);
-          s.history(await app.services.products.history(p.productCode));
-        }
-        app.notify(`Product marked ${v.toLowerCase()}.`);
-        s.load();
-      } catch (e) {
-        app.notify(e.message, 'error');
       }
     };
     s.retire = async (p) => {
