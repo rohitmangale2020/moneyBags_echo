@@ -166,6 +166,50 @@ define([
       () => new ArrayDataProvider(self.navItems(), { keyAttributes: "path" }),
     );
     self.go = (p) => router.go({ path: p });
+    const savedCustomerContext = (() => {
+      try { return JSON.parse(sessionStorage.getItem('moneybags.activeCustomer') || 'null'); } catch (_) { return null; }
+    })();
+    self.activeCustomer = ko.observable(savedCustomerContext);
+    self.activeAccountId = ko.observable(
+      sessionStorage.getItem('moneybags.activeAccountId')
+      || (savedCustomerContext && savedCustomerContext.activeAccountId ? String(savedCustomerContext.activeAccountId) : ''),
+    );
+    self.hasActiveCustomer = ko.pureComputed(() => !!self.activeCustomer());
+    self.activeCustomerLabel = ko.pureComputed(() => {
+      const customer = self.activeCustomer();
+      return customer ? `${customer.name} · ${customer.cifNo}` : '';
+    });
+    self.setActiveCustomer = (customer) => {
+      if (!customer || !customer.customerId) return;
+      const context = {
+        customerId: String(customer.customerId),
+        cifNo: customer.cifNo || 'CIF pending',
+        name: [customer.firstName, customer.lastName].filter(Boolean).join(' ') || 'Customer',
+        status: customer.status || '',
+      };
+      self.activeCustomer(context);
+      self.activeAccountId('');
+      sessionStorage.removeItem('moneybags.activeAccountId');
+      sessionStorage.setItem('moneybags.activeCustomer', JSON.stringify(context));
+    };
+    self.setActiveAccount = (accountId) => {
+      const customer = self.activeCustomer();
+      if (!accountId) return;
+      const activeAccountId = String(accountId);
+      self.activeAccountId(activeAccountId);
+      sessionStorage.setItem('moneybags.activeAccountId', activeAccountId);
+      if (customer) {
+        const context = { ...customer, activeAccountId };
+        self.activeCustomer(context);
+        sessionStorage.setItem('moneybags.activeCustomer', JSON.stringify(context));
+      }
+    };
+    self.clearActiveCustomer = () => {
+      self.activeCustomer(null);
+      self.activeAccountId('');
+      sessionStorage.removeItem('moneybags.activeCustomer');
+      sessionStorage.removeItem('moneybags.activeAccountId');
+    };
     self.customerToManage = ko.observable(null);
     self.openCustomer = (customerId) => {
       self.customerToManage(String(customerId));

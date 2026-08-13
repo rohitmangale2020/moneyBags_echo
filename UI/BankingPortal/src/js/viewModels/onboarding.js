@@ -202,6 +202,7 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton', 'ojs/ojd
       );
       if (result) {
         s.customer(result);
+        app.setActiveCustomer(result);
         s.resumedOnboarding(false);
         s.profileSaved(true);
         s.step(2);
@@ -380,6 +381,7 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton', 'ojs/ojd
       const existing = await s.run(() => calls[s.resumeKind()](value));
       if (!existing) return;
       s.customer(existing);
+      app.setActiveCustomer(existing);
       s.resumedOnboarding(true);
       s.profileSaved(true);
       Object.keys(s.profile).forEach((key) => s.profile[key](existing[key] || ''));

@@ -93,6 +93,7 @@ define([
     s.loadDetail = async (customer) => {
       const id = customer.customerId;
       s.selected(await app.services.customers.get(id));
+      app.setActiveCustomer(s.selected());
       return s.detailState.run(async () => {
         const results = await Promise.allSettled([
           app.services.customers.addresses(id),

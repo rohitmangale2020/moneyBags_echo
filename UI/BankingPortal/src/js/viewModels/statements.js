@@ -24,7 +24,7 @@ define([
     const s = this;
     const initialRange = currentMonthRange();
     s.state = u.state([]);
-    s.accountId = ko.observable('');
+    s.accountId = ko.observable(app.activeAccountId ? app.activeAccountId() : '');
     s.entryType = ko.observable('ALL');
     s.channel = ko.observable('ALL');
     s.fromDate = ko.observable(initialRange.from);
@@ -32,6 +32,25 @@ define([
     s.sortBy = ko.observable('posted-desc');
     s.money = u.money;
     s.date = u.date;
+    s.activeCustomer = app.activeCustomer;
+    s.hasActiveCustomer = app.hasActiveCustomer;
+    s.activeAccountId = app.activeAccountId;
+    s.customerAccounts = ko.observableArray([]);
+
+    s.loadActiveCustomerAccounts = async () => {
+      if (!s.hasActiveCustomer()) return;
+      try {
+        const accounts = (await app.services.accounts.customer(s.activeCustomer().customerId))
+          .filter((account) => account.status === 'ACTIVE');
+        s.customerAccounts(accounts);
+        const preferredAccount = accounts.find(
+          (account) => String(account.accountId) === String(s.activeAccountId()),
+        ) || accounts[0];
+        if (preferredAccount) s.accountId(String(preferredAccount.accountId));
+      } catch (_) {
+        s.customerAccounts([]);
+      }
+    };
 
     s.filteredStatements = ko.pureComputed(() => {
       const sorters = {
@@ -50,7 +69,7 @@ define([
     });
 
     s.search = () => {
-      const accountId = s.accountId().trim();
+      const accountId = String(s.accountId() || '').trim();
       if (!accountId) return Promise.resolve(s.state.error('Account ID is required.'));
       if (!s.fromDate() || !s.toDate()) {
         return Promise.resolve(s.state.error('Select both from and to dates.'));
@@ -105,6 +124,11 @@ define([
       link.click();
       URL.revokeObjectURL(link.href);
     };
+
+    s.accountId.subscribe((accountId) => {
+      if (s.hasActiveCustomer() && accountId) app.setActiveAccount(accountId);
+    });
+    s.loadActiveCustomerAccounts();
   }
   return VM;
 });

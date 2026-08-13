@@ -3,7 +3,7 @@
     <div class="mb-account-intro">
       <small>CORE BANKING / ACCOUNTS</small>
       <h1>Account management</h1>
-      <p>Review every account, narrow the directory, or open an account against an active product.</p>
+      <p data-bind="text:hasActiveCustomer() ? `Accounts for ${activeCustomer().name}. Open accounts are automatically linked to this customer.` : 'Review every account, narrow the directory, or open an account against an active product.'"></p>
     </div>
     <oj-button class="mb-open-account" chroming="callToAction" on-oj-action="[[open]]">Open account</oj-button>
   </div>

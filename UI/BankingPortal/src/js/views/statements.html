@@ -12,6 +12,11 @@
     <label class="mb-filter-search">Account ID
       <input type="search" placeholder="Required account ID" data-bind="value:accountId,valueUpdate:'input'" />
     </label>
+    <!-- ko if:hasActiveCustomer() -->
+    <label>Active customer account
+      <select data-bind="value:accountId,options:customerAccounts,optionsText:'accountNumber',optionsValue:'accountId'"></select>
+    </label>
+    <!-- /ko -->
     <label>Movement
       <select data-bind="value:entryType">
         <option value="ALL">All movements</option>

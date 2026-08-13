@@ -1017,6 +1017,24 @@ body:not(:has(#navDrawer)) .mb-content {
   box-shadow: var(--mb-shadow-sm);
 }
 
+.mb-customer-context {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 18px 32px -10px;
+  padding: 11px 16px;
+  border: 1px solid #cbd8f3;
+  border-radius: 10px;
+  background: #f4f7fe;
+}
+
+.mb-customer-context small,
+.mb-customer-context strong { display: block; }
+.mb-customer-context small { color: #64769b; font-size: 10px; font-weight: 750; letter-spacing: .06em; }
+.mb-customer-context strong { margin-top: 3px; color: #243e76; font-size: 13px; }
+.mb-customer-context > div:last-child { display: flex; gap: 8px; }
+
 .mb-resume-panel h2 {
   margin: 5px 0 7px;
   font-size: 19px;

@@ -22,6 +22,8 @@ define([
     s.products = ko.observableArray([]);
     s.editingId = ko.observable(null);
     s.error = ko.observable('');
+    s.activeCustomer = app.activeCustomer;
+    s.hasActiveCustomer = app.hasActiveCustomer;
     s.form = {
       accountNumber: ko.observable(''),
       customerId: ko.observable(''),
@@ -40,12 +42,14 @@ define([
     s.filteredAccounts = ko.pureComputed(() => {
       const query = s.query().trim().toLowerCase();
       const accounts = s.state.data().filter((account) => {
+        const inCustomerContext = !s.hasActiveCustomer()
+          || String(account.customerId) === String(s.activeCustomer().customerId);
         const searchable = [
           account.accountNumber,
           account.customerName,
           account.productName,
         ].map((value) => String(value || '').toLowerCase()).join(' ');
-        return (!query || searchable.includes(query))
+        return inCustomerContext && (!query || searchable.includes(query))
           && (s.statusFilter() === 'ALL' || account.status === s.statusFilter())
           && (s.ownershipFilter() === 'ALL' || account.ownershipType === s.ownershipFilter())
           && (s.currencyFilter() === 'ALL' || account.currencyCode === s.currencyFilter());
@@ -108,7 +112,7 @@ define([
       s.editingId(null);
       s.error('');
       s.form.accountNumber('');
-      s.form.customerId('');
+      s.form.customerId(s.hasActiveCustomer() ? s.activeCustomer().customerId : '');
       s.form.productId('');
       s.form.ownershipType('INDIVIDUAL');
       s.form.availableBalance(0);
