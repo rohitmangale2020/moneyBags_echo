@@ -40,7 +40,7 @@
           <div class="mb-resource-list" data-bind="foreach:detailState.data().documents"><article><strong data-bind="text:`${documentType} · ${documentNumber}`"></strong><span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span><button class="mb-link" data-bind="click:()=>$parent.openDocument($data)">Update</button></article></div><div class="mb-empty compact" data-bind="visible:!detailState.data().documents.length">No documents.</div>
         </section>
         <section class="mb-resource-card"><div class="mb-resource-head"><div><small>RELATIONSHIPS</small><h3>Nominees and holders</h3></div><button class="mb-link" data-bind="click:()=>openNominee(null)">Add nominee</button></div>
-          <div class="mb-resource-list" data-bind="foreach:detailState.data().nominees"><article><strong data-bind="text:nomineeName"></strong><span data-bind="text:`${relationType} · ${sharePercentage||0}%`"></span><div><button class="mb-link" data-bind="click:()=>$parent.openNominee($data)">Edit</button><button class="mb-link danger" data-bind="visible:status!=='CLOSED',click:()=>$parent.closeNominee($data)">Close</button></div></article></div><div class="mb-empty compact" data-bind="visible:!detailState.data().nominees.length">No nominees.</div>
+          <div class="mb-resource-list" data-bind="foreach:detailState.data().nominees"><article><strong data-bind="text:nomineeName"></strong><span data-bind="text:`${relationType} · ${sharePercentage||0}%`"></span><div><button class="mb-link" data-bind="click:()=>$parent.openNominee($data)">Edit</button><button class="mb-link danger" data-bind="visible:status!=='CLOSED',click:()=>$parent.closeNominee($data)">Close</button><button class="mb-link danger" data-bind="click:()=>$parent.deleteNominee($data)">Delete</button></div></article></div><div class="mb-empty compact" data-bind="visible:!detailState.data().nominees.length">No nominees.</div>
         </section>
       </div>
     </div>
@@ -86,7 +86,7 @@
       <div class="mb-error" data-bind="visible:error,text:error"></div>
       <div class="mb-form three">
         <oj-input-text label-hint="Name" required value="{{nomineeForm().nomineeName}}"></oj-input-text>
-        <oj-input-text label-hint="Relationship" value="{{nomineeForm().relationship}}"></oj-input-text>
+        <label>Relationship<select data-bind="value:nomineeForm().relationship"><option value="">Select relationship</option><option>Legal guardian</option><option>Parent</option><option>Spouse</option><option>Child</option><option>Sibling</option><option>Other</option></select></label>
         <label>Relation type<select data-bind="value:nomineeForm().relationType"><option>NOMINEE</option><option>JOIN_HOLDER</option><option>GUARDIAN</option><option>AUTHORIZED_SIGNATORY</option></select></label>
         <label>Status<select data-bind="value:nomineeForm().status"><option>ACTIVE</option><option>INACTIVE</option><option>PENDING</option><option>CLOSED</option></select></label>
         <label>Date of birth<input type="date" data-bind="value:nomineeForm().dob" /></label>
@@ -118,9 +118,9 @@
         <oj-input-text label-hint="Share percentage" value="{{nomineeForm().sharePercentage}}"></oj-input-text>
         <label>Start date<input type="date" data-bind="value:nomineeForm().startDate" /></label>
         <label>End date<input type="date" data-bind="value:nomineeForm().endDate" /></label>
-        <label class="wide"><input type="checkbox" data-bind="checked:nomineeForm().includeAddress" /> Include nominee address</label>
+        <label class="wide mb-nominee-address-toggle"><input type="checkbox" data-bind="checked:includeNomineeAddress" /> Add a separate address for this nominee</label>
       </div>
-      <div class="mb-form three mb-subsection" data-bind="visible:nomineeForm().includeAddress">
+      <div class="mb-form three mb-subsection mb-nominee-address-form" data-bind="visible:includeNomineeAddress">
         <label>Address type<select data-bind="value:nomineeForm().address.addressType"><option>CURRENT</option><option>PERMANENT</option><option>OFFICE</option></select></label>
         <oj-input-text label-hint="Address line 1" value="{{nomineeForm().address.line1}}"></oj-input-text>
         <oj-input-text label-hint="Address line 2" value="{{nomineeForm().address.line2}}"></oj-input-text>

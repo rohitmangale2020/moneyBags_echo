@@ -62,6 +62,8 @@ public class NomineeServiceImpl implements NomineeService {
             );
         }
 
+        validateActiveShareAllocation(customerId, null, requestDto.getSharePercentage(), status);
+
         NomineeEntity entity = new NomineeEntity();
         entity.setCustomer(customer);
         entity.setNomineeName(requestDto.getNomineeName());
@@ -115,6 +117,9 @@ public class NomineeServiceImpl implements NomineeService {
             throw new BadRequestException("Relation type is required");
         }
 
+        String updatedStatus = requestDto.getStatus() == null ? nominee.getStatus() : requestDto.getStatus();
+        validateActiveShareAllocation(customerId, nomineeId, requestDto.getSharePercentage(), updatedStatus);
+
         nominee.setNomineeName(requestDto.getNomineeName());
         nominee.setRelationship(requestDto.getRelationship());
         nominee.setRelationType(requestDto.getRelationType());
@@ -122,7 +127,7 @@ public class NomineeServiceImpl implements NomineeService {
         nominee.setPhone(requestDto.getPhone());
         updateAddress(nominee, requestDto.getAddress());
         nominee.setSharePercentage(requestDto.getSharePercentage());
-        nominee.setStatus(requestDto.getStatus() == null ? nominee.getStatus() : requestDto.getStatus());
+        nominee.setStatus(updatedStatus);
         nominee.setUpdatedBy(CurrentUser.id());
         nominee.setUpdatedAt(LocalDateTime.now());
         nominee.setStartDate(requestDto.getStartDate() != null ? requestDto.getStartDate() : nominee.getStartDate());
@@ -142,6 +147,14 @@ public class NomineeServiceImpl implements NomineeService {
         nominee.setUpdatedAt(LocalDateTime.now());
 
         return toResponse(nomineeRepository.save(nominee));
+    }
+
+    @Override
+    public void deleteNominee(Long customerId, Long nomineeId) {
+        NomineeEntity nominee = nomineeRepository.findByNomineeIdAndCustomerCustomerId(nomineeId, customerId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Nominee not found with id " + nomineeId + " for customer " + customerId));
+        nomineeRepository.delete(nominee);
     }
 
     private NomineeResponseDto toResponse(NomineeEntity entity) {
@@ -211,6 +224,32 @@ public class NomineeServiceImpl implements NomineeService {
         }
         if (requestDto.pincode() == null || requestDto.pincode().isBlank()) {
             throw new BadRequestException("Address pincode is required");
+        }
+    }
+
+    private void validateActiveShareAllocation(
+            Long customerId,
+            Long nomineeIdToExclude,
+            Double requestedShare,
+            String status) {
+        if (!"ACTIVE".equalsIgnoreCase(status)) {
+            return;
+        }
+        if (requestedShare == null || requestedShare <= 0 || requestedShare > 100) {
+            throw new BadRequestException("Nominee share percentage must be between 0.01 and 100.");
+        }
+
+        double allocatedShare = nomineeRepository.findByCustomerCustomerId(customerId).stream()
+                .filter(nominee -> nomineeIdToExclude == null || !nomineeIdToExclude.equals(nominee.getNomineeId()))
+                .filter(nominee -> "ACTIVE".equalsIgnoreCase(nominee.getStatus()))
+                .map(NomineeEntity::getSharePercentage)
+                .filter(share -> share != null)
+                .mapToDouble(Double::doubleValue)
+                .sum();
+
+        if (allocatedShare + requestedShare > 100.000001d) {
+            throw new BadRequestException(
+                    String.format("Nominee share cannot exceed 100%%. %.2f%% is already allocated.", allocatedShare));
         }
     }
 }
