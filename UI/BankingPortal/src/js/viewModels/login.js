@@ -5,6 +5,7 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton'], functio
     this.loading = ko.observable(false);
     this.error = ko.observable('');
     this.submit = async () => {
+      if (this.loading()) return;
       if (!this.username().trim() || !this.password())
         return this.error('Enter your username and password.');
       this.loading(true);
@@ -19,6 +20,15 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton'], functio
       } finally {
         this.loading(false);
       }
+    };
+    this.submitOnEnter = (viewModel, event) => {
+      if (event.key !== 'Enter') return true;
+      event.preventDefault();
+      event.stopPropagation();
+      if (event.currentTarget && typeof event.currentTarget.rawValue === 'string')
+        this.password(event.currentTarget.rawValue);
+      this.submit();
+      return false;
     };
   }
   return VM;
