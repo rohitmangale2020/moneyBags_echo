@@ -31,7 +31,10 @@ public class ProductService {
 
     public ProductResponse create(ProductRequest request) {
         if (products.findByProductCode(request.productCode()).isPresent()) throw new IllegalArgumentException("Product code already exists");
-        Product product = new Product(); apply(product, request); product = products.save(product); saveConfiguration(product, request); return toResponse(product);
+        if (!"ACTIVE".equals(request.status())) throw new IllegalArgumentException("New products must be created with ACTIVE status");
+        Product product = new Product(); apply(product, request); product = products.save(product); saveConfiguration(product, request);
+        recordHistory(product, "NEW", "ACTIVE", "Product created");
+        return toResponse(product);
     }
     @Transactional(readOnly = true) public List<ProductResponse> findAll(Authentication authentication) {
         boolean staff = authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_EMPLOYEE"));
@@ -53,30 +56,45 @@ public class ProductService {
     public ProductResponse update(String productCode, ProductRequest request) {
         Product product = getByCode(productCode);
         if (!product.getProductCode().equals(request.productCode())) throw new IllegalArgumentException("Product code cannot be changed after creation");
-        apply(product, request); product = products.save(product); saveConfiguration(product, request); return toResponse(product);
+        if (!product.getStatus().equals(request.status())) throw new IllegalArgumentException("Product status can only be changed by retiring the product");
+        apply(product, request); product = products.save(product); saveConfiguration(product, request);
+        recordHistory(product, product.getStatus(), product.getStatus(), "Product details updated");
+        return toResponse(product);
     }
     public ProductResponse updateStatus(String productCode, StatusRequest request) {
         Product product = getByCode(productCode);
-        if ("RETIRED".equals(product.getStatus())) throw new IllegalArgumentException("A retired product cannot be reactivated or deactivated");
+        if ("RETIRED".equals(product.getStatus())) throw new IllegalArgumentException("A retired product cannot be changed");
         String previousStatus = product.getStatus(); product.setStatus(request.status()); product = products.save(product);
-        ProductStatusHistory history = new ProductStatusHistory(); history.setProduct(product); history.setPreviousStatus(previousStatus); history.setNewStatus(request.status()); history.setChangeReason(request.reason()); statusHistory.save(history);
+        recordHistory(product, previousStatus, request.status(), request.reason());
         return toResponse(product);
     }
-    public void retire(String productCode) { Product product = getByCode(productCode); product.setStatus("RETIRED"); products.save(product); }
+    public void retire(String productCode) {
+        Product product = getByCode(productCode);
+        if ("RETIRED".equals(product.getStatus())) throw new IllegalArgumentException("Product is already retired");
+        String previousStatus = product.getStatus();
+        product.setStatus("RETIRED");
+        product = products.save(product);
+        recordHistory(product, previousStatus, "RETIRED", "Product retired");
+    }
 
     private Product get(Long id) { return products.findById(id).orElseThrow(() -> new EntityNotFoundException("Product " + id + " was not found")); }
     private Product getByCode(String productCode) { return products.findByProductCode(productCode).orElseThrow(() -> new EntityNotFoundException("Product code " + productCode + " was not found")); }
     @Transactional(readOnly = true) public List<ProductStatusHistoryResponse> statusHistory(String productCode) {
         return statusHistory.findByProductProductIdOrderByChangedDateDesc(getByCode(productCode).getProductId()).stream().map(history -> new ProductStatusHistoryResponse(history.getPreviousStatus(), history.getNewStatus(), history.getChangeReason(), history.getChangedDate(), history.getChangedBy())).toList();
     }
+    private void recordHistory(Product product, String previousStatus, String newStatus, String reason) {
+        ProductStatusHistory history = new ProductStatusHistory();
+        history.setProduct(product); history.setPreviousStatus(previousStatus); history.setNewStatus(newStatus);
+        history.setChangeReason(reason); statusHistory.save(history);
+    }
     private void apply(Product p, ProductRequest r) {
         if (r.minimumBalance() != null && r.maximumBalance() != null && r.minimumBalance().compareTo(r.maximumBalance()) > 0) throw new IllegalArgumentException("Minimum balance cannot exceed maximum balance");
         ProductType type = productTypes.findById(r.productTypeCode()).orElseThrow(() -> new EntityNotFoundException("Product type " + r.productTypeCode() + " was not found"));
-        if (!"ACTIVE".equals(type.getStatus())) throw new IllegalArgumentException("Selected product type is inactive");
+        if (!"ACTIVE".equals(type.getStatus())) throw new IllegalArgumentException("Selected product type is retired");
         validateConfiguration(r);
         p.setProductCode(r.productCode()); p.setProductName(r.productName()); p.setProductType(type); p.setDescription(r.description());
         p.setMinimumBalance("CREDIT_CARD".equals(r.productTypeCode()) ? null : r.minimumBalance());
-        p.setMaximumBalance("CREDIT_CARD".equals(r.productTypeCode()) ? null : r.maximumBalance()); p.setCurrency(r.currency()); p.setStatus(r.status());
+        p.setMaximumBalance("CREDIT_CARD".equals(r.productTypeCode()) ? null : r.maximumBalance()); p.setCurrency("INR"); p.setStatus(r.status());
     }
     private void validateConfiguration(ProductRequest request) {
         String type = request.productTypeCode();

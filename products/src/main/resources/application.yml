@@ -27,6 +27,9 @@ spring:
     baseline-on-migrate: true
     baseline-version: 0
     enabled: true
+    # The shared ECHO schema contains an earlier V5 migration whose source file
+    # is absent from this repository. Keep validating all present migrations.
+    ignore-migration-patterns: "*:missing"
 
   security:
     oauth2:

@@ -14,7 +14,7 @@ public class ProductTypeController {
     @GetMapping public List<ProductType> findAll() { return productTypes.findAll(); }
     @PostMapping @PreAuthorize("hasRole('ADMIN')") public ResponseEntity<ProductType> create(@Valid @RequestBody ProductTypeRequest request) {
         if (productTypes.existsById(request.productTypeCode())) throw new IllegalArgumentException("Product type code already exists");
-        ProductType type = new ProductType(); type.setProductTypeCode(request.productTypeCode()); type.setProductTypeName(request.productTypeName()); type.setDescription(request.description()); type.setStatus(request.status());
+        ProductType type = new ProductType(); type.setProductTypeCode(request.productTypeCode()); type.setProductTypeName(request.productTypeName()); type.setDescription(request.description()); type.setStatus("ACTIVE");
         return ResponseEntity.status(HttpStatus.CREATED).body(productTypes.save(type));
     }
 }
