@@ -1,0 +1,2 @@
+define(['exports', './logger-00b673c5'], (function(o,t){"use strict";const e=["http:","https:","mailto:","tel:","sms:"],r=new Set(e),l=e.join(", ");o.getSafeHref=function(o,e="JET Link"){if(null==o)return;const n=o.trim();try{const o=new URL(n,"http://localhost").protocol.toLowerCase();return r.has(o)?n:void t.warn(`${e}: href was blocked because protocol "${o}" is not allowed. Allowed protocols are ${l}.`)}catch{return void t.warn(`${e}: href was blocked because it could not be parsed. Allowed protocols are ${l}.`)}}}));
+//# sourceMappingURL=safeHref-e764caa8.js.map

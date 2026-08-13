@@ -1,0 +1,2 @@
+define(['exports', 'preact/hooks', './useTooltipControlled-e7021312'], (function(o,t,e){"use strict";o.useTabBarItemTooltip=({label:o,isDisabled:l,position:i})=>{const[n,s]=t.useState(!1),{tooltipProps:a,tooltipContent:p}=e.useTooltipControlled({isOpen:n,isDisabled:l,position:i,focusStrategy:"logical",text:o,onToggle:({value:o})=>{s(o)}}),{onLogicalFocus:r,onLogicalBlur:u,...c}=a;return{tooltipContent:p,tooltipEventHandlerProps:c,onLogicalFocus:r,onLogicalBlur:u}}}));
+//# sourceMappingURL=useTabBarItemTooltip-6c6fb512.js.map
