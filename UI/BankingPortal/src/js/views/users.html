@@ -27,7 +27,7 @@
         </tr>
       </thead>
       <tbody data-bind="foreach:filtered">
-        <tr>
+        <tr data-bind="click:openDetails,css:{'mb-clickable-row':detailsAvailable,'mb-static-row':!detailsAvailable},attr:{tabindex:detailsAvailable?0:-1,'aria-label':detailsAvailable?'View details for '+username:null}">
           <td>
             <strong
               data-bind="text:profile?`${profile.firstName} ${profile.lastName}`:username"
@@ -46,19 +46,24 @@
             ><small data-bind="text:profile&&profile.phoneNumber||'No phone'"></small>
           </td>
           <td>
-            <button class="mb-link" data-bind="click:()=>$parent.edit($data)">Edit</button>
-            <button class="mb-link" data-bind="click:()=>$parent.openPassword($data)">Password</button>
-            <button
-              class="mb-link"
-              data-bind="visible:status!=='ACTIVE',click:()=>$parent.status($data,'ACTIVE')"
-            >
-              Activate</button
-            ><button
-              class="mb-link danger"
-              data-bind="visible:status==='ACTIVE',click:()=>$parent.status($data,'DEACTIVATED')"
-            >
-              Deactivate
-            </button><button class="mb-link danger" data-bind="click:()=>$parent.remove($data)">Remove</button>
+            <details class="mb-user-actions" onclick="event.stopPropagation()">
+              <summary>Actions <span aria-hidden="true">›</span></summary>
+              <div class="mb-user-actions-menu">
+                <button class="mb-link" data-bind="click:()=>$parent.edit($data),clickBubble:false">Edit</button>
+                <button class="mb-link" data-bind="click:()=>$parent.openPassword($data),clickBubble:false">Password</button>
+                <button
+                  class="mb-link"
+                  data-bind="visible:status!=='ACTIVE',click:()=>$parent.status($data,'ACTIVE'),clickBubble:false"
+                >
+                  Activate</button
+                ><button
+                  class="mb-link danger"
+                  data-bind="visible:status==='ACTIVE',click:()=>$parent.status($data,'DEACTIVATED'),clickBubble:false"
+                >
+                  Deactivate
+                </button><button class="mb-link danger" data-bind="click:()=>$parent.remove($data),clickBubble:false">Remove</button>
+              </div>
+            </details>
           </td>
         </tr>
       </tbody>
@@ -67,6 +72,16 @@
       No matching users found.
     </div>
   </div>
+  <oj-dialog id="userDetailsDialog" class="mb-dialog mb-dialog-details" dialog-title="User details" cancel-behavior="icon">
+    <div slot="body">
+      <div class="mb-loading" data-bind="visible:detailState.loading">Loading user details…</div>
+      <div class="mb-error" data-bind="visible:detailState.error,text:detailState.error"></div>
+      <div class="mb-detail-table" data-bind="visible:detailState.data">
+        <oj-table class="mb-user-detail-table" aria-label="User details" data="[[detailDataProvider]]" columns="[[detailColumns]]"></oj-table>
+      </div>
+    </div>
+    <div slot="footer" class="mb-dialog-actions"><oj-button on-oj-action="[[closeDetails]]">Close</oj-button></div>
+  </oj-dialog>
   <oj-dialog id="userDialog" dialog-title="Create platform user" modality="modal"
     ><div slot="body">
       <div class="mb-error" data-bind="visible:error,text:error"></div>
@@ -88,17 +103,12 @@
           required
           value="{{form().password}}"
         ></oj-input-password
-        ><label
-          >Role<select data-bind="value:form().role">
-            <option>EMPLOYEE</option>
-            <option>CUSTOMER</option>
-            <option>ADMIN</option>
-          </select></label
+        ><oj-select-single label-hint="Role" data="[[roleOptions]]" item-text="label" value="{{form().role}}"></oj-select-single
         ><oj-input-text label-hint="Phone" value="{{form().profile.phoneNumber}}"></oj-input-text
         ><oj-input-text
           label-hint="Country code"
           value="{{form().profile.countryCode}}"
-        ></oj-input-text><oj-input-text label-hint="Middle name" value="{{form().profile.middleName}}"></oj-input-text><label>Date of birth<input type="date" data-bind="value:form().profile.dateOfBirth" /></label><oj-input-text label-hint="Address line 1" value="{{form().profile.addressLine1}}"></oj-input-text><oj-input-text label-hint="Address line 2" value="{{form().profile.addressLine2}}"></oj-input-text><oj-input-text label-hint="City" value="{{form().profile.city}}"></oj-input-text><oj-input-text label-hint="State" value="{{form().profile.state}}"></oj-input-text><oj-input-text label-hint="Postal code" value="{{form().profile.postalCode}}"></oj-input-text>
+        ></oj-input-text><oj-input-text label-hint="Middle name" value="{{form().profile.middleName}}"></oj-input-text><oj-input-date label-hint="Date of birth" value="{{form().profile.dateOfBirth}}"></oj-input-date><oj-input-text label-hint="Address line 1" value="{{form().profile.addressLine1}}"></oj-input-text><oj-input-text label-hint="Address line 2" value="{{form().profile.addressLine2}}"></oj-input-text><oj-input-text label-hint="City" value="{{form().profile.city}}"></oj-input-text><oj-input-text label-hint="State" value="{{form().profile.state}}"></oj-input-text><oj-input-text label-hint="Postal code" value="{{form().profile.postalCode}}"></oj-input-text>
       </div>
     </div>
     <div slot="footer" class="mb-dialog-actions">
@@ -112,12 +122,12 @@
       <div class="mb-form three">
         <oj-input-text label-hint="Username" required value="{{form().username}}"></oj-input-text>
         <oj-input-text label-hint="Email" required value="{{form().email}}"></oj-input-text>
-        <label>Role<select data-bind="value:form().role"><option>ADMIN</option><option>EMPLOYEE</option><option>CUSTOMER</option></select></label>
+        <oj-select-single label-hint="Role" data="[[roleOptions]]" item-text="label" value="{{form().role}}"></oj-select-single>
         <oj-input-text label-hint="First name" required value="{{form().profile.firstName}}"></oj-input-text>
         <oj-input-text label-hint="Middle name" value="{{form().profile.middleName}}"></oj-input-text>
         <oj-input-text label-hint="Last name" required value="{{form().profile.lastName}}"></oj-input-text>
         <oj-input-text label-hint="Phone" value="{{form().profile.phoneNumber}}"></oj-input-text>
-        <label>Date of birth<input type="date" data-bind="value:form().profile.dateOfBirth" /></label>
+        <oj-input-date label-hint="Date of birth" value="{{form().profile.dateOfBirth}}"></oj-input-date>
         <oj-input-text label-hint="Country code" value="{{form().profile.countryCode}}"></oj-input-text>
         <oj-input-text label-hint="Address line 1" value="{{form().profile.addressLine1}}"></oj-input-text>
         <oj-input-text label-hint="Address line 2" value="{{form().profile.addressLine2}}"></oj-input-text>
