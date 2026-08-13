@@ -12,6 +12,10 @@ import com.training.platform.transactions.entity.BankTransaction;
 import com.training.platform.transactions.entity.TransactionStatus;
 import com.training.platform.transactions.entity.TransactionType;
 import com.training.platform.transactions.repository.BankTransactionRepository;
+import com.training.platform.transactions.repository.AccountStatementRepository;
+import com.training.platform.transactions.repository.TransactionEventOutboxRepository;
+import com.training.platform.transactions.client.AccountsClient;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,11 +29,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class BankTransactionServiceBehaviorTest {
     @Mock private BankTransactionRepository transactionRepository;
+    @Mock private AccountStatementRepository statementRepository;
+    @Mock private TransactionEventOutboxRepository outboxRepository;
+    @Mock private AccountsClient accountsClient;
     private BankTransactionService transactionService;
 
     @BeforeEach
     void setUp() {
-        transactionService = new BankTransactionService(transactionRepository);
+        transactionService = new BankTransactionService(transactionRepository, statementRepository,
+                outboxRepository, accountsClient, new ObjectMapper());
     }
 
     @Test
@@ -47,8 +55,6 @@ class BankTransactionServiceBehaviorTest {
     void rejectsMissingAndInvalidRequiredValues() {
         BankTransaction missingType = validTransaction("REF-1");
         missingType.setTransactionType(null);
-        BankTransaction missingStatus = validTransaction("REF-2");
-        missingStatus.setTransactionStatus(null);
         BankTransaction blankReference = validTransaction(" ");
         BankTransaction zeroAmount = validTransaction("REF-3");
         zeroAmount.setAmount(BigDecimal.ZERO);
@@ -58,7 +64,6 @@ class BankTransactionServiceBehaviorTest {
         assertAll(
                 () -> assertThrows(IllegalArgumentException.class, () -> transactionService.initiate(null)),
                 () -> assertThrows(IllegalArgumentException.class, () -> transactionService.initiate(missingType)),
-                () -> assertThrows(IllegalArgumentException.class, () -> transactionService.initiate(missingStatus)),
                 () -> assertThrows(IllegalArgumentException.class, () -> transactionService.initiate(blankReference)),
                 () -> assertThrows(IllegalArgumentException.class, () -> transactionService.initiate(zeroAmount)),
                 () -> assertThrows(IllegalArgumentException.class, () -> transactionService.initiate(blankCurrency)));

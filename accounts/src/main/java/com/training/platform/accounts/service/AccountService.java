@@ -2,12 +2,16 @@ package com.training.platform.accounts.service;
 
 import com.training.platform.accounts.dto.AccountTransferRequest;
 import com.training.platform.accounts.dto.AccountTransferResponse;
+import com.training.platform.accounts.dto.AccountAdjustmentRequest;
+import com.training.platform.accounts.dto.AccountAdjustmentResponse;
 import com.training.platform.accounts.entity.Account;
+import com.training.platform.accounts.entity.AccountBalanceOperation;
 import com.training.platform.accounts.entity.AccountHolder;
 import com.training.platform.accounts.entity.AccountStatus;
 import com.training.platform.accounts.entity.AccountStatusHistory;
 import com.training.platform.accounts.entity.AccountTransferOperation;
 import com.training.platform.accounts.repository.AccountHolderRepository;
+import com.training.platform.accounts.repository.AccountBalanceOperationRepository;
 import com.training.platform.accounts.repository.AccountRepository;
 import com.training.platform.accounts.repository.AccountStatusHistoryRepository;
 import com.training.platform.accounts.repository.AccountTransferOperationRepository;
@@ -26,14 +30,17 @@ public class AccountService {
     private final AccountHolderRepository accountHolderRepository;
     private final AccountStatusHistoryRepository accountStatusHistoryRepository;
     private final AccountTransferOperationRepository transferOperationRepository;
+    private final AccountBalanceOperationRepository balanceOperationRepository;
 
     public AccountService(AccountRepository accountRepository, AccountHolderRepository accountHolderRepository,
                           AccountStatusHistoryRepository accountStatusHistoryRepository,
-                          AccountTransferOperationRepository transferOperationRepository) {
+                          AccountTransferOperationRepository transferOperationRepository,
+                          AccountBalanceOperationRepository balanceOperationRepository) {
         this.accountRepository = accountRepository;
         this.accountHolderRepository = accountHolderRepository;
         this.accountStatusHistoryRepository = accountStatusHistoryRepository;
         this.transferOperationRepository = transferOperationRepository;
+        this.balanceOperationRepository = balanceOperationRepository;
     }
 
     public Account getById(String accountId) {
@@ -107,6 +114,7 @@ public class AccountService {
 
         validatePostable(debitAccount, currencyCode, "Debit");
         validatePostable(creditAccount, currencyCode, "Credit");
+        validateSelfTransferOwnership(request.customerId(), debitAccount, creditAccount);
         if (debitAccount.getAvailableBalance().compareTo(request.amount()) < 0) {
             throw new IllegalArgumentException("Insufficient available balance");
         }
@@ -119,7 +127,7 @@ public class AccountService {
 
         AccountTransferOperation operation = AccountTransferOperation.completed(
                 request.transactionRef(), request.debitAccountId(), request.creditAccountId(),
-                request.amount(), currencyCode, debitBalanceAfter, creditBalanceAfter);
+                request.customerId(), request.amount(), currencyCode, debitBalanceAfter, creditBalanceAfter);
         transferOperationRepository.save(operation);
         return response(operation);
     }
@@ -127,10 +135,77 @@ public class AccountService {
     private AccountTransferResponse replay(AccountTransferOperation operation,
                                             AccountTransferRequest request,
                                             String currencyCode) {
-        if (!operation.matches(request.debitAccountId(), request.creditAccountId(), request.amount(), currencyCode)) {
+        if (!operation.matches(request.debitAccountId(), request.creditAccountId(), request.customerId(),
+                request.amount(), currencyCode)) {
             throw new IllegalArgumentException("Transaction reference was already used for a different transfer");
         }
         return response(operation);
+    }
+
+    @Transactional
+    public AccountAdjustmentResponse adjust(String accountId, AccountAdjustmentRequest request) {
+        validateAdjustmentRequest(accountId, request);
+        String currencyCode = request.currencyCode().toUpperCase();
+
+        AccountBalanceOperation completed = balanceOperationRepository
+                .findByTransactionRef(request.transactionRef()).orElse(null);
+        if (completed != null) return replay(completed, accountId, request, currencyCode);
+
+        Account account = accountRepository.findByIdForUpdate(accountId)
+                .orElseThrow(() -> new EntityNotFoundException("Account not found: " + accountId));
+        validatePostable(account, currencyCode, "Target");
+
+        completed = balanceOperationRepository.findByTransactionRef(request.transactionRef()).orElse(null);
+        if (completed != null) return replay(completed, accountId, request, currencyCode);
+
+        BigDecimal balanceAfter;
+        if (request.adjustmentType() == AccountAdjustmentRequest.AdjustmentType.DEPOSIT) {
+            balanceAfter = account.getAvailableBalance().add(request.amount());
+        } else {
+            if (account.getAvailableBalance().compareTo(request.amount()) < 0) {
+                throw new IllegalArgumentException("Insufficient available balance");
+            }
+            balanceAfter = account.getAvailableBalance().subtract(request.amount());
+        }
+        account.setAvailableBalance(balanceAfter);
+        accountRepository.save(account);
+
+        AccountBalanceOperation operation = AccountBalanceOperation.completed(
+                request.transactionRef(), accountId, request.adjustmentType(), request.amount(),
+                currencyCode, balanceAfter);
+        balanceOperationRepository.save(operation);
+        return response(operation);
+    }
+
+    private AccountAdjustmentResponse replay(AccountBalanceOperation operation, String accountId,
+                                             AccountAdjustmentRequest request, String currencyCode) {
+        if (!operation.matches(accountId, request.adjustmentType(), request.amount(), currencyCode)) {
+            throw new IllegalArgumentException("Transaction reference was already used for a different posting");
+        }
+        return response(operation);
+    }
+
+    private AccountAdjustmentResponse response(AccountBalanceOperation operation) {
+        return new AccountAdjustmentResponse(operation.getTransactionRef(), operation.getAccountId(),
+                operation.getAdjustmentType(), operation.getBalanceAfter(), operation.getProcessedAt());
+    }
+
+    private void validateAdjustmentRequest(String accountId, AccountAdjustmentRequest request) {
+        if (isBlank(accountId)) throw new IllegalArgumentException("Account ID is required");
+        if (request == null) throw new IllegalArgumentException("Adjustment request is required");
+        if (isBlank(request.transactionRef())) throw new IllegalArgumentException("Transaction reference is required");
+        if (request.adjustmentType() == null) throw new IllegalArgumentException("Adjustment type is required");
+        if (request.amount() == null || request.amount().signum() <= 0) {
+            throw new IllegalArgumentException("Amount must be greater than zero");
+        }
+        if (isBlank(request.currencyCode())) throw new IllegalArgumentException("Currency code is required");
+    }
+
+    private void validateSelfTransferOwnership(String customerId, Account debitAccount, Account creditAccount) {
+        if (isBlank(customerId)) return;
+        if (!customerId.equals(debitAccount.getCustomerId()) || !customerId.equals(creditAccount.getCustomerId())) {
+            throw new IllegalArgumentException("Self transfer accounts must belong to customer " + customerId);
+        }
     }
 
     private AccountTransferResponse response(AccountTransferOperation operation) {

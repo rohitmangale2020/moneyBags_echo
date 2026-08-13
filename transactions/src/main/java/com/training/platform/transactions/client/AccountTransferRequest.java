@@ -7,4 +7,5 @@ public record AccountTransferRequest(
         String debitAccountId,
         String creditAccountId,
         BigDecimal amount,
-        String currencyCode) { }
+        String currencyCode,
+        String customerId) { }

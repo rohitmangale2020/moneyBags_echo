@@ -5,8 +5,8 @@ define([], function () {
   function errorMessage(payload, status) {
     if (typeof payload === 'string' && payload.trim()) return payload.trim();
     if (payload) {
-      if (payload.message || payload.detail || payload.error) {
-        return payload.message || payload.detail || payload.error;
+      if (payload.message || payload.detail || payload.error || payload.failureReason) {
+        return payload.message || payload.detail || payload.error || payload.failureReason;
       }
       if (payload.errors && typeof payload.errors === 'object') {
         const messages = Array.isArray(payload.errors)

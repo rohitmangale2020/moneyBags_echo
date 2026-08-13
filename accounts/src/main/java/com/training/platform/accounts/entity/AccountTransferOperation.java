@@ -35,6 +35,9 @@ public class AccountTransferOperation {
     @Column(name = "credit_account_id", nullable = false, length = 36)
     private String creditAccountId;
 
+    @Column(name = "customer_id", length = 36)
+    private String customerId;
+
     @Column(nullable = false, precision = 19, scale = 4)
     private BigDecimal amount;
 
@@ -56,6 +59,7 @@ public class AccountTransferOperation {
             String transactionRef,
             String debitAccountId,
             String creditAccountId,
+            String customerId,
             BigDecimal amount,
             String currencyCode,
             BigDecimal debitBalanceAfter,
@@ -65,6 +69,7 @@ public class AccountTransferOperation {
         operation.transactionRef = transactionRef;
         operation.debitAccountId = debitAccountId;
         operation.creditAccountId = creditAccountId;
+        operation.customerId = customerId;
         operation.amount = amount;
         operation.currencyCode = currencyCode;
         operation.debitBalanceAfter = debitBalanceAfter;
@@ -73,9 +78,11 @@ public class AccountTransferOperation {
         return operation;
     }
 
-    public boolean matches(String debitId, String creditId, BigDecimal requestedAmount, String requestedCurrency) {
+    public boolean matches(String debitId, String creditId, String requestedCustomerId,
+                           BigDecimal requestedAmount, String requestedCurrency) {
         return debitAccountId.equals(debitId)
                 && creditAccountId.equals(creditId)
+                && java.util.Objects.equals(customerId, requestedCustomerId)
                 && amount.compareTo(requestedAmount) == 0
                 && currencyCode.equalsIgnoreCase(requestedCurrency);
     }

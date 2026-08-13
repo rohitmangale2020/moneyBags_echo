@@ -51,4 +51,27 @@ public class AccountsClient {
             throw new AccountPostingException("ACCOUNT_SERVICE_UNAVAILABLE", exception.getMessage());
         }
     }
+
+    public AccountAdjustmentResponse adjust(String accountId, AccountAdjustmentRequest request) {
+        try {
+            AccountAdjustmentResponse response = restClient.post()
+                    .uri("/api/accounts/{accountId}/adjustments", accountId)
+                    .body(request)
+                    .retrieve()
+                    .body(AccountAdjustmentResponse.class);
+            if (response == null || response.balanceAfter() == null) {
+                throw new AccountPostingException("ACCOUNT_RESPONSE_INVALID",
+                        "Accounts service returned an incomplete adjustment response");
+            }
+            return response;
+        } catch (RestClientResponseException exception) {
+            String code = exception.getStatusCode().value() == HttpStatus.NOT_FOUND.value()
+                    ? "ACCOUNT_NOT_FOUND" : "ACCOUNT_ADJUSTMENT_REJECTED";
+            String responseBody = exception.getResponseBodyAsString();
+            String message = responseBody.isBlank() ? exception.getMessage() : responseBody;
+            throw new AccountPostingException(code, message);
+        } catch (ResourceAccessException exception) {
+            throw new AccountPostingException("ACCOUNT_SERVICE_UNAVAILABLE", exception.getMessage());
+        }
+    }
 }

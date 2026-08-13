@@ -9,6 +9,7 @@ import com.training.platform.accounts.entity.Account;
 import com.training.platform.accounts.entity.AccountStatus;
 import com.training.platform.accounts.entity.OwnershipType;
 import com.training.platform.accounts.repository.AccountHolderRepository;
+import com.training.platform.accounts.repository.AccountBalanceOperationRepository;
 import com.training.platform.accounts.repository.AccountRepository;
 import com.training.platform.accounts.repository.AccountStatusHistoryRepository;
 import com.training.platform.accounts.repository.AccountTransferOperationRepository;
@@ -27,12 +28,13 @@ class AccountServiceTest {
     @Mock private AccountHolderRepository accountHolderRepository;
     @Mock private AccountStatusHistoryRepository accountStatusHistoryRepository;
     @Mock private AccountTransferOperationRepository transferOperationRepository;
+    @Mock private AccountBalanceOperationRepository balanceOperationRepository;
     @Mock private Account account;
     private AccountService accountService;
 
     @BeforeEach void setUp() {
         accountService = new AccountService(accountRepository, accountHolderRepository,
-                accountStatusHistoryRepository, transferOperationRepository);
+                accountStatusHistoryRepository, transferOperationRepository, balanceOperationRepository);
     }
 
     @Test void returnsAccountWhenIdExists() {

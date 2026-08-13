@@ -2,6 +2,8 @@ package com.training.platform.accounts.controller;
 
 import com.training.platform.accounts.dto.AccountRequest;
 import com.training.platform.accounts.dto.AccountResponse;
+import com.training.platform.accounts.dto.AccountAdjustmentRequest;
+import com.training.platform.accounts.dto.AccountAdjustmentResponse;
 import com.training.platform.accounts.dto.AccountTransferRequest;
 import com.training.platform.accounts.dto.AccountTransferResponse;
 import com.training.platform.accounts.entity.Account;
@@ -55,6 +57,12 @@ public class AccountController {
     @PostMapping("/transfers")
     public AccountTransferResponse transfer(@Valid @RequestBody AccountTransferRequest request) {
         return accountService.transfer(request);
+    }
+
+    @PostMapping("/{accountId}/adjustments")
+    public AccountAdjustmentResponse adjust(@PathVariable String accountId,
+                                            @Valid @RequestBody AccountAdjustmentRequest request) {
+        return accountService.adjust(accountId, request);
     }
 
     private Account toEntity(AccountRequest request, String userId) {

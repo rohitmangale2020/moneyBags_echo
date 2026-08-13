@@ -3,6 +3,8 @@ package com.training.platform.transactions.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.training.platform.transactions.client.AccountPostingException;
+import com.training.platform.transactions.client.AccountAdjustmentRequest;
+import com.training.platform.transactions.client.AccountAdjustmentResponse;
 import com.training.platform.transactions.client.AccountTransferRequest;
 import com.training.platform.transactions.client.AccountTransferResponse;
 import com.training.platform.transactions.client.AccountsClient;
@@ -66,7 +68,7 @@ public class BankTransactionService {
         BankTransaction existing = transactionRepository.findByTransactionRef(transaction.getTransactionRef())
                 .orElse(null);
         if (existing != null) {
-            if (!sameTransfer(existing, transaction)) {
+            if (!samePosting(existing, transaction)) {
                 throw new IllegalArgumentException(
                         "Transaction reference was already used for a different transfer");
             }
@@ -80,11 +82,22 @@ public class BankTransactionService {
         BankTransaction persisted = transactionRepository.saveAndFlush(transaction);
 
         try {
-            AccountTransferResponse transfer = accountsClient.transfer(new AccountTransferRequest(
-                    persisted.getTransactionRef(), persisted.getDebitAccountId(), persisted.getCreditAccountId(),
-                    persisted.getAmount(), persisted.getCurrencyCode()));
-            validateTransferResponse(persisted, transfer);
-            complete(persisted, transfer);
+            if (persisted.getTransactionType() == TransactionType.TRANSFER) {
+                AccountTransferResponse transfer = accountsClient.transfer(new AccountTransferRequest(
+                        persisted.getTransactionRef(), persisted.getDebitAccountId(), persisted.getCreditAccountId(),
+                        persisted.getAmount(), persisted.getCurrencyCode(), persisted.getInitiatedByCustomerId()));
+                validateTransferResponse(persisted, transfer);
+                completeTransfer(persisted, transfer);
+            } else {
+                String accountId = postingAccountId(persisted);
+                AccountAdjustmentRequest.AdjustmentType adjustmentType =
+                        AccountAdjustmentRequest.AdjustmentType.valueOf(persisted.getTransactionType().name());
+                AccountAdjustmentResponse adjustment = accountsClient.adjust(accountId,
+                        new AccountAdjustmentRequest(persisted.getTransactionRef(), adjustmentType,
+                                persisted.getAmount(), persisted.getCurrencyCode()));
+                validateAdjustmentResponse(persisted, accountId, adjustment);
+                completeAdjustment(persisted, accountId, adjustment);
+            }
         } catch (AccountPostingException exception) {
             fail(persisted, exception);
         }
@@ -119,17 +132,27 @@ public class BankTransactionService {
         if (transaction.getTransactionType() == null) {
             throw new IllegalArgumentException("Transaction type is required");
         }
-        if (transaction.getTransactionType() != TransactionType.TRANSFER) {
-            throw new IllegalArgumentException("Only internal TRANSFER posting is currently supported");
+        if (transaction.getTransactionType() != TransactionType.TRANSFER
+                && transaction.getTransactionType() != TransactionType.DEPOSIT
+                && transaction.getTransactionType() != TransactionType.WITHDRAWAL) {
+            throw new IllegalArgumentException("Only TRANSFER, DEPOSIT, and WITHDRAWAL posting is supported");
         }
         if (isBlank(transaction.getTransactionRef())) {
             throw new IllegalArgumentException("Transaction reference is required");
         }
-        if (isBlank(transaction.getDebitAccountId()) || isBlank(transaction.getCreditAccountId())) {
-            throw new IllegalArgumentException("Debit and credit account IDs are required");
-        }
-        if (transaction.getDebitAccountId().equals(transaction.getCreditAccountId())) {
-            throw new IllegalArgumentException("Debit and credit accounts must be different");
+        if (transaction.getTransactionType() == TransactionType.TRANSFER) {
+            if (isBlank(transaction.getDebitAccountId()) || isBlank(transaction.getCreditAccountId())) {
+                throw new IllegalArgumentException("Debit and credit account IDs are required");
+            }
+            if (transaction.getDebitAccountId().equals(transaction.getCreditAccountId())) {
+                throw new IllegalArgumentException("Debit and credit accounts must be different");
+            }
+        } else if (transaction.getTransactionType() == TransactionType.DEPOSIT
+                && isBlank(transaction.getCreditAccountId())) {
+            throw new IllegalArgumentException("Credit account ID is required for a deposit");
+        } else if (transaction.getTransactionType() == TransactionType.WITHDRAWAL
+                && isBlank(transaction.getDebitAccountId())) {
+            throw new IllegalArgumentException("Debit account ID is required for a withdrawal");
         }
         if (transaction.getAmount() == null || transaction.getAmount().signum() <= 0) {
             throw new IllegalArgumentException("Amount must be greater than zero");
@@ -152,7 +175,17 @@ public class BankTransactionService {
         }
     }
 
-    private boolean sameTransfer(BankTransaction existing, BankTransaction requested) {
+    private void validateAdjustmentResponse(BankTransaction transaction, String accountId,
+                                            AccountAdjustmentResponse response) {
+        if (!transaction.getTransactionRef().equals(response.transactionRef())
+                || !accountId.equals(response.accountId())
+                || transaction.getTransactionType() != TransactionType.valueOf(response.adjustmentType().name())) {
+            throw new AccountPostingException("ACCOUNT_RESPONSE_INVALID",
+                    "Accounts service returned a response for a different posting");
+        }
+    }
+
+    private boolean samePosting(BankTransaction existing, BankTransaction requested) {
         return existing.getTransactionType() == requested.getTransactionType()
                 && Objects.equals(existing.getDebitAccountId(), requested.getDebitAccountId())
                 && Objects.equals(existing.getCreditAccountId(), requested.getCreditAccountId())
@@ -160,7 +193,7 @@ public class BankTransactionService {
                 && existing.getCurrencyCode().equalsIgnoreCase(requested.getCurrencyCode());
     }
 
-    private void complete(BankTransaction transaction, AccountTransferResponse transfer) {
+    private void completeTransfer(BankTransaction transaction, AccountTransferResponse transfer) {
         transaction.setTransactionStatus(TransactionStatus.COMPLETED);
         transaction.setCompletedAt(LocalDateTime.now());
 
@@ -175,6 +208,27 @@ public class BankTransactionService {
         payload.put("creditBalanceAfter", transfer.creditBalanceAfter());
         outboxRepository.save(TransactionEventOutbox.create(transaction.getTransactionId(),
                 TransactionEventType.TRANSACTION_COMPLETED, toJson(payload)));
+    }
+
+    private void completeAdjustment(BankTransaction transaction, String accountId,
+                                    AccountAdjustmentResponse adjustment) {
+        transaction.setTransactionStatus(TransactionStatus.COMPLETED);
+        transaction.setCompletedAt(LocalDateTime.now());
+
+        StatementEntryType entryType = transaction.getTransactionType() == TransactionType.DEPOSIT
+                ? StatementEntryType.CREDIT : StatementEntryType.DEBIT;
+        statementRepository.save(statement(transaction, accountId, entryType, adjustment.balanceAfter()));
+
+        Map<String, Object> payload = basePayload(transaction);
+        payload.put("accountId", accountId);
+        payload.put("balanceAfter", adjustment.balanceAfter());
+        outboxRepository.save(TransactionEventOutbox.create(transaction.getTransactionId(),
+                TransactionEventType.TRANSACTION_COMPLETED, toJson(payload)));
+    }
+
+    private String postingAccountId(BankTransaction transaction) {
+        return transaction.getTransactionType() == TransactionType.DEPOSIT
+                ? transaction.getCreditAccountId() : transaction.getDebitAccountId();
     }
 
     private void fail(BankTransaction transaction, AccountPostingException exception) {

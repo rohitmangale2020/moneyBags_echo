@@ -12,7 +12,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.training.platform.transactions.entity.BankTransaction;
-import com.training.platform.transactions.entity.TransactionChannel;
 import com.training.platform.transactions.entity.TransactionStatus;
 import com.training.platform.transactions.entity.TransactionType;
 import com.training.platform.transactions.service.BankTransactionService;
@@ -91,7 +90,6 @@ class TransactionControllerTest {
         when(transaction.getTransactionRef()).thenReturn(reference);
         when(transaction.getTransactionType()).thenReturn(TransactionType.TRANSFER);
         when(transaction.getTransactionStatus()).thenReturn(TransactionStatus.INITIATED);
-        when(transaction.getTransactionChannel()).thenReturn(TransactionChannel.API);
         when(transaction.getDebitAccountId()).thenReturn("account-1");
         when(transaction.getAmount()).thenReturn(BigDecimal.TEN);
         when(transaction.getCurrencyCode()).thenReturn("INR");
@@ -101,6 +99,6 @@ class TransactionControllerTest {
 
     private String requestBody() {
         return "{\"transactionRef\":\"TXN-1\",\"transactionType\":\"TRANSFER\",\"transactionStatus\":\"INITIATED\","
-                + "\"transactionChannel\":\"API\",\"debitAccountId\":\"account-1\",\"amount\":10.00,\"currencyCode\":\"INR\"}";
+                + "\"debitAccountId\":\"account-1\",\"creditAccountId\":\"account-2\",\"amount\":10.00,\"currencyCode\":\"INR\"}";
     }
 }
