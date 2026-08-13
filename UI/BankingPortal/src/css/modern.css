@@ -850,18 +850,26 @@ body:not(:has(#navDrawer)) .mb-content {
 
 .mb-resume-search {
   display: grid;
-  grid-template-columns: 150px minmax(220px, 1fr) 156px;
+  grid-template-columns: 150px minmax(0, 1fr) minmax(0, 156px);
   gap: 12px;
   align-items: end;
 }
 
-.mb-resume-action,
-.mb-resume-action oj-button {
-  width: 100%;
+.mb-resume-search > * {
+  min-width: 0;
 }
 
-.mb-resume-action oj-button {
+.mb-resume-action {
+  width: 100%;
+  min-width: 0;
+}
+
+.mb-resume-action oj-button,
+.mb-resume-action .oj-button-button {
+  width: 100%;
+  max-width: 100%;
   min-height: 46px;
+  min-width: 0 !important;
 }
 
 .mb-field-error {
@@ -893,6 +901,22 @@ body:not(:has(#navDrawer)) .mb-content {
 
 .mb-form oj-input-date,
 .mb-form oj-input-text {
+  width: 100%;
+}
+
+.mb-phone-pair {
+  display: grid;
+  grid-template-columns: 90px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+}
+
+.mb-phone-code,
+.mb-phone-number {
+  min-width: 0;
+}
+
+.mb-phone-pair oj-input-text {
   width: 100%;
 }
 
