@@ -56,6 +56,7 @@
           <th>Reference</th>
           <th>Type</th>
           <th>Account movement</th>
+          <th>Description</th>
           <th>Amount</th>
           <th>Status</th>
           <th>Initiated</th>
@@ -69,6 +70,7 @@
             <span data-bind="text:debitAccountId || 'Bank credit'"></span>
             <small data-bind="text:creditAccountId ? `to ${creditAccountId}` : 'withdrawal'"></small>
           </td>
+          <td data-bind="text:description || ''"></td>
           <td><strong data-bind="text:$parent.money(amount,currencyCode)"></strong></td>
           <td><span class="mb-badge" data-bind="text:transactionStatus,css:$parent.statusClass(transactionStatus)"></span></td>
           <td data-bind="text:$parent.date(initiatedAt)"></td>

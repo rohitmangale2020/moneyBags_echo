@@ -8,6 +8,7 @@ import com.training.platform.transactions.client.AccountAdjustmentResponse;
 import com.training.platform.transactions.client.AccountTransferRequest;
 import com.training.platform.transactions.client.AccountTransferResponse;
 import com.training.platform.transactions.client.AccountsClient;
+import com.training.platform.transactions.client.CustomersClient;
 import com.training.platform.transactions.entity.AccountStatement;
 import com.training.platform.transactions.entity.BankTransaction;
 import com.training.platform.transactions.entity.StatementEntryType;
@@ -25,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Locale;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,17 +37,20 @@ public class BankTransactionService {
     private final AccountStatementRepository statementRepository;
     private final TransactionEventOutboxRepository outboxRepository;
     private final AccountsClient accountsClient;
+    private final CustomersClient customersClient;
     private final ObjectMapper objectMapper;
 
     public BankTransactionService(BankTransactionRepository transactionRepository,
                                   AccountStatementRepository statementRepository,
                                   TransactionEventOutboxRepository outboxRepository,
                                   AccountsClient accountsClient,
+                                  CustomersClient customersClient,
                                   ObjectMapper objectMapper) {
         this.transactionRepository = transactionRepository;
         this.statementRepository = statementRepository;
         this.outboxRepository = outboxRepository;
         this.accountsClient = accountsClient;
+        this.customersClient = customersClient;
         this.objectMapper = objectMapper;
     }
 
@@ -81,6 +86,7 @@ public class BankTransactionService {
 
         transaction.setTransactionStatus(TransactionStatus.PROCESSING);
         transaction.setCompletedAt(null);
+        transaction.setDescription(null);
         transaction.setFailureCode(null);
         transaction.setFailureReason(null);
         BankTransaction persisted = transactionRepository.saveAndFlush(transaction);
@@ -201,10 +207,22 @@ public class BankTransactionService {
         transaction.setTransactionStatus(TransactionStatus.COMPLETED);
         transaction.setCompletedAt(LocalDateTime.now());
 
+        String debitHolder = customerName(transfer.debitCustomerId());
+        String creditHolder = customerName(transfer.creditCustomerId());
+        String channel = isSelfTransfer(transaction) ? "SELF TRANSFER" : "INTERNAL TRANSFER";
+        transaction.setDescription(limit(channel + " FROM " + debitHolder + " TO " + creditHolder, 500));
+
+        String debitDescription = channel + " TO " + creditHolder + " A/C "
+                + maskedAccount(transfer.creditAccountNumber(), transfer.creditAccountId())
+                + " | REF " + transaction.getTransactionRef();
+        String creditDescription = channel + " FROM " + debitHolder + " A/C "
+                + maskedAccount(transfer.debitAccountNumber(), transfer.debitAccountId())
+                + " | REF " + transaction.getTransactionRef();
+
         AccountStatement debitEntry = statement(transaction, transaction.getDebitAccountId(),
-                StatementEntryType.DEBIT, transfer.debitBalanceAfter());
+                StatementEntryType.DEBIT, transfer.debitBalanceAfter(), debitDescription);
         AccountStatement creditEntry = statement(transaction, transaction.getCreditAccountId(),
-                StatementEntryType.CREDIT, transfer.creditBalanceAfter());
+                StatementEntryType.CREDIT, transfer.creditBalanceAfter(), creditDescription);
         statementRepository.saveAll(List.of(debitEntry, creditEntry));
 
         Map<String, Object> payload = basePayload(transaction);
@@ -221,7 +239,13 @@ public class BankTransactionService {
 
         StatementEntryType entryType = transaction.getTransactionType() == TransactionType.DEPOSIT
                 ? StatementEntryType.CREDIT : StatementEntryType.DEBIT;
-        statementRepository.save(statement(transaction, accountId, entryType, adjustment.balanceAfter()));
+        String holder = customerName(adjustment.customerId());
+        String operation = transaction.getTransactionType() == TransactionType.DEPOSIT
+                ? "DEPOSIT BY " : "WITHDRAWAL BY ";
+        String description = operation + holder + " | REF " + transaction.getTransactionRef();
+        transaction.setDescription(limit(operation + holder, 500));
+        statementRepository.save(statement(transaction, accountId, entryType,
+                adjustment.balanceAfter(), description));
 
         Map<String, Object> payload = basePayload(transaction);
         payload.put("accountId", accountId);
@@ -247,15 +271,35 @@ public class BankTransactionService {
     }
 
     private AccountStatement statement(BankTransaction transaction, String accountId,
-                                       StatementEntryType entryType, BigDecimal balanceAfter) {
+                                       StatementEntryType entryType, BigDecimal balanceAfter,
+                                       String description) {
         AccountStatement statement = new AccountStatement();
         statement.setTransaction(transaction);
         statement.setAccountId(accountId);
         statement.setEntryType(entryType);
         statement.setAmount(transaction.getAmount());
+        statement.setDescription(limit(description, 500));
+        statement.setWithdrawalAmount(entryType == StatementEntryType.DEBIT ? transaction.getAmount() : null);
+        statement.setDepositAmount(entryType == StatementEntryType.CREDIT ? transaction.getAmount() : null);
         statement.setCurrencyCode(transaction.getCurrencyCode());
         statement.setBalanceAfter(balanceAfter);
+        statement.setClosingBalance(balanceAfter);
         return statement;
+    }
+
+    private String customerName(String customerId) {
+        return customersClient.displayName(customerId).trim().toUpperCase(Locale.ROOT);
+    }
+
+    private boolean isSelfTransfer(BankTransaction transaction) {
+        return !isBlank(transaction.getInitiatedByCustomerId());
+    }
+
+    private String maskedAccount(String accountNumber, String accountId) {
+        String value = isBlank(accountNumber) ? accountId : accountNumber;
+        if (isBlank(value)) return "XX";
+        String lastFour = value.length() <= 4 ? value : value.substring(value.length() - 4);
+        return "XX" + lastFour;
     }
 
     private Map<String, Object> basePayload(BankTransaction transaction) {
@@ -268,6 +312,7 @@ public class BankTransactionService {
         payload.put("creditAccountId", transaction.getCreditAccountId());
         payload.put("amount", transaction.getAmount());
         payload.put("currencyCode", transaction.getCurrencyCode());
+        payload.put("description", transaction.getDescription());
         return payload;
     }
 

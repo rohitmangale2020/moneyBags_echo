@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public record AccountRequest(
-        @NotBlank @Size(max = 24) String accountNumber,
+        @Size(max = 24) String accountNumber,
         @NotBlank String customerId,
         @NotBlank String productId,
         @NotNull OwnershipType ownershipType,

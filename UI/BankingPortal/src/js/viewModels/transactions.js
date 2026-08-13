@@ -71,6 +71,7 @@ define([
           transaction.creditAccountId,
           transaction.initiatedByCustomerId,
           transaction.externalBeneficiary,
+          transaction.description,
         ].map((value) => String(value || '').toLowerCase()).join(' ');
         const initiated = timestamp(transaction.initiatedAt);
         return (!query || searchable.includes(query))

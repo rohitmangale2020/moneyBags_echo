@@ -84,8 +84,8 @@
   <oj-dialog id="accountDialog" dialog-title="Open customer account"
     ><div slot="body">
       <div class="mb-info">
-        Accounts Service requires an operator-supplied account number; it does not expose number
-        generation.
+        New accounts receive a unique 12-digit number automatically. Existing legacy account
+        numbers remain unchanged.
       </div>
       <div class="mb-error" data-bind="visible:error,text:error"></div>
       <div class="mb-form">
@@ -97,7 +97,7 @@
             <!-- /ko -->
           </select></label
         ><oj-input-text label-hint="Customer ID" value="{{form.customerId}}"></oj-input-text
-        ><oj-input-text label-hint="Account number" value="{{form.accountNumber}}"></oj-input-text
+        ><oj-input-text data-bind="visible:editingId" label-hint="Account number" disabled="true" value="{{form.accountNumber}}"></oj-input-text
         ><label
           >Ownership<select data-bind="value:form.ownershipType">
             <option>INDIVIDUAL</option>

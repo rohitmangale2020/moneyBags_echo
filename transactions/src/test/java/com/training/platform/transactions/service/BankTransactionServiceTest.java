@@ -12,6 +12,7 @@ import com.training.platform.transactions.repository.BankTransactionRepository;
 import com.training.platform.transactions.repository.AccountStatementRepository;
 import com.training.platform.transactions.repository.TransactionEventOutboxRepository;
 import com.training.platform.transactions.client.AccountsClient;
+import com.training.platform.transactions.client.CustomersClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
@@ -29,12 +30,13 @@ class BankTransactionServiceTest {
     @Mock private AccountStatementRepository statementRepository;
     @Mock private TransactionEventOutboxRepository outboxRepository;
     @Mock private AccountsClient accountsClient;
+    @Mock private CustomersClient customersClient;
     @Mock private BankTransaction transaction;
     private BankTransactionService transactionService;
 
     @BeforeEach void setUp() {
         transactionService = new BankTransactionService(transactionRepository, statementRepository,
-                outboxRepository, accountsClient, new ObjectMapper());
+                outboxRepository, accountsClient, customersClient, new ObjectMapper());
     }
 
     @Test void returnsTransactionWhenReferenceExists() {

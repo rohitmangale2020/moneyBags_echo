@@ -112,14 +112,13 @@ define([
     };
     s.create = async () => {
       const p = s.products().find((x) => String(x.productId) === String(s.form.productId()));
-      if ((!p && !s.editingId()) || !s.form.customerId() || !s.form.accountNumber())
+      if ((!p && !s.editingId()) || !s.form.customerId())
         return s.error('Complete all required fields.');
-      if (s.form.accountNumber().length > 24) return s.error('Account number cannot exceed 24 characters.');
       if (Number(s.form.availableBalance()) < 0) return s.error('Available balance cannot be negative.');
       if (!/^[A-Za-z]{3}$/.test(s.editingId() ? s.form.currencyCode() : p.currency)) return s.error('Currency must be a three-letter code.');
       try {
         const payload = {
-          accountNumber: s.form.accountNumber(),
+          accountNumber: s.editingId() ? s.form.accountNumber() : null,
           customerId: String(s.form.customerId()),
           productId: String(p ? p.productId : s.form.productId()),
           ownershipType: s.form.ownershipType(),

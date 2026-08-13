@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
 
 import com.training.platform.transactions.entity.BankTransaction;
 import com.training.platform.transactions.entity.TransactionStatus;
@@ -15,6 +16,9 @@ import com.training.platform.transactions.repository.BankTransactionRepository;
 import com.training.platform.transactions.repository.AccountStatementRepository;
 import com.training.platform.transactions.repository.TransactionEventOutboxRepository;
 import com.training.platform.transactions.client.AccountsClient;
+import com.training.platform.transactions.client.CustomersClient;
+import com.training.platform.transactions.client.AccountTransferResponse;
+import com.training.platform.transactions.entity.AccountStatement;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -24,6 +28,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -32,12 +37,13 @@ class BankTransactionServiceBehaviorTest {
     @Mock private AccountStatementRepository statementRepository;
     @Mock private TransactionEventOutboxRepository outboxRepository;
     @Mock private AccountsClient accountsClient;
+    @Mock private CustomersClient customersClient;
     private BankTransactionService transactionService;
 
     @BeforeEach
     void setUp() {
         transactionService = new BankTransactionService(transactionRepository, statementRepository,
-                outboxRepository, accountsClient, new ObjectMapper());
+                outboxRepository, accountsClient, customersClient, new ObjectMapper());
     }
 
     @Test
@@ -110,6 +116,38 @@ class BankTransactionServiceBehaviorTest {
                 () -> assertEquals("NONE", existing.getFailureCode()),
                 () -> assertEquals("No failure", existing.getFailureReason()));
         verify(transactionRepository).save(existing);
+    }
+
+    @Test
+    void completedTransferCreatesBankStyleStatementDescriptionsAndAmounts() {
+        BankTransaction transfer = validTransaction("REF-100");
+        when(transactionRepository.findByTransactionRef("REF-100")).thenReturn(Optional.empty());
+        when(transactionRepository.saveAndFlush(transfer)).thenReturn(transfer);
+        when(transactionRepository.save(transfer)).thenReturn(transfer);
+        when(accountsClient.transfer(any())).thenReturn(new AccountTransferResponse(
+                "REF-100", "account-a", "account-b", "123456789012", "987654321098",
+                "1", "2", new BigDecimal("900.00"), new BigDecimal("1100.00"),
+                LocalDateTime.now()));
+        when(customersClient.displayName("1")).thenReturn("Alice Sender");
+        when(customersClient.displayName("2")).thenReturn("Bob Receiver");
+
+        BankTransaction completed = transactionService.initiate(transfer);
+
+        assertEquals(TransactionStatus.COMPLETED, completed.getTransactionStatus());
+        assertEquals("INTERNAL TRANSFER FROM ALICE SENDER TO BOB RECEIVER", completed.getDescription());
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<Iterable<AccountStatement>> entries = ArgumentCaptor.forClass(Iterable.class);
+        verify(statementRepository).saveAll(entries.capture());
+        List<AccountStatement> saved = new java.util.ArrayList<>();
+        entries.getValue().forEach(saved::add);
+        assertAll(
+                () -> assertEquals(new BigDecimal("100.00"), saved.get(0).getWithdrawalAmount()),
+                () -> assertEquals(new BigDecimal("900.00"), saved.get(0).getClosingBalance()),
+                () -> assertEquals("INTERNAL TRANSFER TO BOB RECEIVER A/C XX1098 | REF REF-100",
+                        saved.get(0).getDescription()),
+                () -> assertEquals(new BigDecimal("100.00"), saved.get(1).getDepositAmount()),
+                () -> assertEquals("INTERNAL TRANSFER FROM ALICE SENDER A/C XX9012 | REF REF-100",
+                        saved.get(1).getDescription()));
     }
 
     private static BankTransaction validTransaction(String reference) {

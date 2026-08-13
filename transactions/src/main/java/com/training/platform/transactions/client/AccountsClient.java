@@ -17,7 +17,7 @@ public class AccountsClient {
 
     public AccountsClient(RestClient.Builder builder,
                           @Value("${services.accounts.base-url}") String baseUrl) {
-        this.restClient = builder
+        this.restClient = builder.clone()
                 .baseUrl(baseUrl)
                 .requestInterceptor((request, body, execution) -> {
                     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

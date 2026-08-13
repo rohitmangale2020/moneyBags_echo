@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.argThat;
 
 import com.training.platform.accounts.entity.Account;
 import com.training.platform.accounts.entity.AccountStatus;
@@ -66,6 +67,7 @@ class AccountServiceTest {
         when(account.getAvailableBalance()).thenReturn(BigDecimal.ZERO);
         when(accountRepository.save(account)).thenReturn(account);
         assertSame(account, accountService.create(account));
+        verify(account).setAccountNumber(argThat(number -> number != null && number.matches("\\d{12}")));
         verify(accountRepository).save(account);
         verify(accountHolderRepository).save(org.mockito.ArgumentMatchers.any());
         verify(accountStatusHistoryRepository).save(org.mockito.ArgumentMatchers.any());

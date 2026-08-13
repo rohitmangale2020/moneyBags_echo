@@ -4,67 +4,106 @@ define([
   'viewModels/util',
   'ojs/ojinputtext',
   'ojs/ojbutton',
-  'ojs/ojdialog',
 ], function (ko, app, u) {
+  const dateValue = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+  const timestamp = (value) => {
+    const parsed = Date.parse(value || '');
+    return Number.isNaN(parsed) ? 0 : parsed;
+  };
+  const currentMonthRange = () => {
+    const now = new Date();
+    return { from: dateValue(new Date(now.getFullYear(), now.getMonth(), 1)), to: dateValue(now) };
+  };
+
   function VM() {
-    const s = this,
-      n = new Date();
+    const s = this;
+    const initialRange = currentMonthRange();
     s.state = u.state([]);
     s.accountId = ko.observable('');
-    s.monthly = ko.observable(false);
-    s.year = ko.observable(n.getFullYear());
-    s.month = ko.observable(n.getMonth() + 1);
-    s.statementId = ko.observable('');
-    s.error = ko.observable('');
-    s.form = {
-      transactionId: ko.observable(''), accountId: ko.observable(''), entryType: ko.observable('DEBIT'),
-      amount: ko.observable(''), currencyCode: ko.observable('INR'), balanceAfter: ko.observable(''),
-    };
+    s.entryType = ko.observable('ALL');
+    s.channel = ko.observable('ALL');
+    s.fromDate = ko.observable(initialRange.from);
+    s.toDate = ko.observable(initialRange.to);
+    s.sortBy = ko.observable('posted-desc');
     s.money = u.money;
     s.date = u.date;
-    s.search = () =>
-      !s.accountId() ? Promise.resolve(s.state.error('Account ID is required.')) : s.monthly() && (Number(s.month()) < 1 || Number(s.month()) > 12)
-        ? Promise.resolve(s.state.error('Month must be between 1 and 12.')) : s.state
-        .run(() =>
-          s.monthly()
-            ? app.services.statements.monthly(s.accountId(), s.year(), s.month())
-            : app.services.statements.account(s.accountId()),
-        )
-        .catch(() => null);
-    s.getById = () => {
-      if (!s.statementId()) return;
-      s.state.run(() => app.services.statements.get(s.statementId()).then((x) => [x])).catch(() => null);
+
+    s.filteredStatements = ko.pureComputed(() => {
+      const sorters = {
+        'posted-desc': (a, b) => timestamp(b.postedAt) - timestamp(a.postedAt),
+        'posted-asc': (a, b) => timestamp(a.postedAt) - timestamp(b.postedAt),
+        'withdrawal-desc': (a, b) => Number(b.withdrawalAmount || 0) - Number(a.withdrawalAmount || 0),
+        'deposit-desc': (a, b) => Number(b.depositAmount || 0) - Number(a.depositAmount || 0),
+      };
+      return s.state.data().slice().sort(sorters[s.sortBy()] || sorters['posted-desc']);
+    });
+
+    s.resultSummary = ko.pureComputed(() => {
+      const shown = s.filteredStatements().length;
+      const total = s.state.data().length;
+      return shown === total ? `${total} entr${total === 1 ? 'y' : 'ies'}` : `${shown} of ${total} entries`;
+    });
+
+    s.search = () => {
+      const accountId = s.accountId().trim();
+      if (!accountId) return Promise.resolve(s.state.error('Account ID is required.'));
+      if (!s.fromDate() || !s.toDate()) {
+        return Promise.resolve(s.state.error('Select both from and to dates.'));
+      }
+      if (s.fromDate() > s.toDate()) {
+        return Promise.resolve(s.state.error('From date cannot be after to date.'));
+      }
+      return s.state.run(() => app.services.statements.search(accountId, {
+        fromDate: s.fromDate(),
+        toDate: s.toDate(),
+        entryType: s.entryType(),
+        channel: s.channel(),
+      })).catch(() => null);
     };
-    s.openRecord = () => { s.error(''); document.getElementById('statementDialog').open(); };
-    s.record = async () => {
-      const d = { transactionId: s.form.transactionId(), accountId: s.form.accountId(), entryType: s.form.entryType(), amount: Number(s.form.amount()), currencyCode: s.form.currencyCode(), balanceAfter: Number(s.form.balanceAfter()) };
-      if (!d.transactionId || !d.accountId || d.amount <= 0 || !/^[A-Za-z]{3}$/.test(d.currencyCode)) return s.error('Complete the required fields with a positive amount and three-letter currency.');
-      try { const value = await app.services.statements.record(d); document.getElementById('statementDialog').close(); s.state.data([value].concat(s.state.data())); app.notify('Statement entry recorded.'); }
-      catch (e) { s.error(e.message); }
+
+    s.currentMonth = () => {
+      const range = currentMonthRange();
+      s.fromDate(range.from);
+      s.toDate(range.to);
     };
-    s.close = () => document.getElementById('statementDialog').close();
+
+    s.clearFilters = () => {
+      s.entryType('ALL');
+      s.channel('ALL');
+      s.sortBy('posted-desc');
+      s.currentMonth();
+    };
+
+    s.displayMoney = (value, currencyCode) =>
+      value === null || value === undefined ? '' : u.money(value, currencyCode);
+
     s.download = () => {
       const rows = [
-          ['Posted', 'Type', 'Amount', 'Currency', 'Balance after', 'Transaction ID'],
-          ...s.state
-            .data()
-            .map((x) => [
-              x.postedAt,
-              x.entryType,
-              x.amount,
-              x.currencyCode,
-              x.balanceAfter,
-              x.transactionId,
-            ]),
-        ],
-        csv = rows
-          .map((r) => r.map((v) => `"${String(v || '').replaceAll('"', '""')}"`).join(','))
-          .join('\n'),
-        a = document.createElement('a');
-      a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-      a.download = `statement-${s.accountId()}.csv`;
-      a.click();
-      URL.revokeObjectURL(a.href);
+          ['Posted', 'Description', 'Reference', 'Channel', 'Withdrawal', 'Deposit', 'Currency', 'Closing balance'],
+          ...s.filteredStatements().map((x) => [
+            x.postedAt,
+            x.description,
+            x.transactionRef,
+            x.channel,
+            x.withdrawalAmount,
+            x.depositAmount,
+            x.currencyCode,
+            x.closingBalance,
+          ]),
+        ];
+      const csv = rows
+        .map((row) => row.map((value) => `"${String(value === null || value === undefined ? '' : value).replaceAll('"', '""')}"`).join(','))
+        .join('\n');
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+      link.download = `statement-${s.accountId()}-${s.fromDate()}-${s.toDate()}.csv`;
+      link.click();
+      URL.revokeObjectURL(link.href);
     };
   }
   return VM;

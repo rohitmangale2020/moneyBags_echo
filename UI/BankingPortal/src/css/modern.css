@@ -580,6 +580,54 @@ body:not(:has(#navDrawer)) .mb-content {
   font-size: 12px;
 }
 
+.mb-statements-table {
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mb-statements-table table {
+  min-width: 1220px;
+  table-layout: fixed;
+}
+
+.mb-statements-table th,
+.mb-statements-table td {
+  vertical-align: top;
+}
+
+.mb-statements-table th:nth-child(1),
+.mb-statements-table td:nth-child(1) {
+  width: 180px;
+  white-space: nowrap;
+}
+
+.mb-statements-table th:nth-child(2),
+.mb-statements-table td:nth-child(2) {
+  width: 300px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.55;
+}
+
+.mb-statements-table th:nth-child(3),
+.mb-statements-table td:nth-child(3) {
+  width: 190px;
+  overflow-wrap: anywhere;
+}
+
+.mb-statements-table th:nth-child(4),
+.mb-statements-table td:nth-child(4) {
+  width: 150px;
+  white-space: nowrap;
+}
+
+.mb-statements-table th:nth-child(n + 5),
+.mb-statements-table td:nth-child(n + 5) {
+  width: 135px;
+  white-space: nowrap;
+}
+
 .mb-table th {
   padding: 15px 18px;
   border-bottom-color: var(--mb-line);
@@ -641,6 +689,32 @@ body:not(:has(#navDrawer)) .mb-content {
 
 .mb-filter-panel-transactions {
   grid-template-columns: minmax(270px, 1.8fr) repeat(3, minmax(125px, 0.8fr));
+}
+
+.mb-filter-panel-statements {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px 16px;
+  overflow: hidden;
+}
+
+.mb-filter-panel-statements .mb-filter-search {
+  grid-column: auto;
+}
+
+.mb-filter-panel-statements .mb-filter-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-column: 1 / -1;
+  gap: 10px;
+  width: min(100%, 620px);
+  margin-left: auto;
+}
+
+.mb-filter-panel-statements .mb-filter-actions oj-button,
+.mb-filter-panel-statements .mb-filter-actions .oj-button-button {
+  width: 100%;
+  min-width: 0;
+  white-space: nowrap;
 }
 
 .mb-filter-panel label {
@@ -1121,6 +1195,15 @@ body:not(:has(#navDrawer)) .mb-content {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
+  .mb-filter-panel-statements {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mb-filter-panel-statements .mb-filter-search,
+  .mb-filter-panel-statements .mb-filter-actions {
+    grid-column: 1 / -1;
+  }
+
   .mb-filter-search {
     grid-column: span 2;
   }
@@ -1161,7 +1244,8 @@ body:not(:has(#navDrawer)) .mb-content {
   }
 
   .mb-filter-panel,
-  .mb-filter-panel-transactions {
+  .mb-filter-panel-transactions,
+  .mb-filter-panel-statements {
     grid-template-columns: 1fr 1fr;
   }
 
@@ -1192,8 +1276,14 @@ body:not(:has(#navDrawer)) .mb-content {
   }
 
   .mb-filter-panel,
-  .mb-filter-panel-transactions {
+  .mb-filter-panel-transactions,
+  .mb-filter-panel-statements {
     grid-template-columns: 1fr;
+  }
+
+  .mb-filter-panel-statements .mb-filter-actions {
+    grid-template-columns: 1fr;
+    width: 100%;
   }
 
   .mb-filter-search,
