@@ -42,9 +42,8 @@ define([
       const accounts = s.state.data().filter((account) => {
         const searchable = [
           account.accountNumber,
-          account.accountId,
-          account.customerId,
-          account.productId,
+          account.customerName,
+          account.productName,
         ].map((value) => String(value || '').toLowerCase()).join(' ');
         return (!query || searchable.includes(query))
           && (s.statusFilter() === 'ALL' || account.status === s.statusFilter())
@@ -68,7 +67,36 @@ define([
         ? `${total} account${total === 1 ? '' : 's'}`
         : `${shown} of ${total} accounts`;
     });
-    s.load = () => s.state.run(() => app.services.accounts.list()).catch(() => null);
+    s.load = () => s.state.run(async () => {
+      const accounts = u.list(await app.services.accounts.list());
+      const [customersResult, productsResult] = await Promise.allSettled([
+        app.services.customers.list(),
+        app.services.products.list(),
+      ]);
+      const customers = customersResult.status === 'fulfilled' ? u.list(customersResult.value) : [];
+      const products = productsResult.status === 'fulfilled' ? u.list(productsResult.value) : [];
+      const customerNames = new Map(customers.map((customer) => [
+        String(customer.customerId),
+        [customer.firstName, customer.lastName].filter(Boolean).join(' '),
+      ]));
+      const unresolvedCustomerIds = [...new Set(accounts
+        .map((account) => account.customerId)
+        .filter((customerId) => customerId && !customerNames.has(String(customerId))))];
+      const individualCustomers = await Promise.allSettled(
+        unresolvedCustomerIds.map((customerId) => app.services.customers.get(customerId)),
+      );
+      individualCustomers.forEach((result, index) => {
+        if (result.status !== 'fulfilled') return;
+        const customer = result.value;
+        const name = [customer.firstName, customer.lastName].filter(Boolean).join(' ');
+        if (name) customerNames.set(String(unresolvedCustomerIds[index]), name);
+      });
+      const productNames = new Map(products.map((product) => [String(product.productId), product.productName]));
+      return accounts.map((account) => Object.assign({}, account, {
+        customerName: account.customerName || customerNames.get(String(account.customerId)) || '',
+        productName: account.productName || productNames.get(String(account.productId)) || '',
+      }));
+    }).catch(() => null);
     s.clearFilters = () => {
       s.query('');
       s.statusFilter('ALL');

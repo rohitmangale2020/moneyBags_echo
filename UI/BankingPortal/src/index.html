@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="css/demo-alta-site-min.css" />
     <link rel="stylesheet" href="css/app.css" />
     <link rel="stylesheet" href="css/modern.css" />
+    <link rel="stylesheet" href="css/account-theme.css" />
   </head>
   <body>
     <a class="mb-skip" href="#mainContent">Skip to content</a>
@@ -53,12 +54,6 @@
             selection="{{selection.path}}"
             on-click="[[toggleDrawer]]"
           ></oj-navigation-list>
-          <div class="mb-api">
-            <i></i>
-            <div>
-              <strong>API Gateway</strong><small>Secure connection</small>
-            </div>
-          </div>
         </div></oj-bind-if
       >
       <div id="pageContent" class="mb-page">
@@ -78,21 +73,26 @@
                 workspace</small
               ><strong>MoneyBags Banking</strong>
             </div>
-            <div class="mb-user">
-              <span class="mb-avatar"
-                ><oj-bind-text value="[[initials]]"></oj-bind-text
-              ></span>
-              <div>
-                <strong
-                  ><oj-bind-text value="[[displayName]]"></oj-bind-text></strong
-                ><small
-                  ><oj-bind-text value="[[session.role]]"></oj-bind-text
-                ></small>
+            <details class="mb-profile-menu">
+              <summary aria-label="Open profile menu">
+                <span class="mb-avatar"
+                  ><oj-bind-text value="[[initials]]"></oj-bind-text
+                ></span>
+                <span class="mb-profile-identity">
+                  <strong
+                    ><oj-bind-text value="[[displayName]]"></oj-bind-text></strong
+                  ><small
+                    ><oj-bind-text value="[[session.role]]"></oj-bind-text
+                  ></small>
+                </span>
+                <span class="mb-profile-chevron" aria-hidden="true">⌄</span>
+              </summary>
+              <div class="mb-profile-dropdown" role="menu">
+                <button type="button" role="menuitem" on-click="[[signOut]]">
+                  Sign out
+                </button>
               </div>
-              <oj-button chroming="borderless" on-oj-action="[[signOut]]"
-                >Sign out</oj-button
-              >
-            </div>
+            </details>
           </header></oj-bind-if
         ><oj-module
           id="mainContent"

@@ -1,15 +1,15 @@
 <section class="mb-stack">
   <div class="mb-heading">
-    <div>
+    <div class="mb-account-intro">
       <small>CORE BANKING / ACCOUNTS</small>
       <h1>Account management</h1>
       <p>Review every account, narrow the directory, or open an account against an active product.</p>
     </div>
-    <oj-button chroming="callToAction" on-oj-action="[[open]]">Open account</oj-button>
+    <oj-button class="mb-open-account" chroming="callToAction" on-oj-action="[[open]]">Open account</oj-button>
   </div>
   <div class="mb-filter-panel mb-filter-panel-accounts">
     <label class="mb-filter-search">Search accounts
-      <input type="search" placeholder="Account, customer, product, or ID" data-bind="value:query,valueUpdate:'input'" />
+      <input type="search" placeholder="Account number, customer, or product" data-bind="value:query,valueUpdate:'input'" />
     </label>
     <label>Status
       <select data-bind="value:statusFilter">
@@ -59,16 +59,12 @@
       </div>
       <dl>
         <div>
-          <dt>Account ID</dt>
-          <dd data-bind="text:accountId"></dd>
+          <dt>Account holder</dt>
+          <dd data-bind="text:$data.customerName || 'Account holder unavailable'"></dd>
         </div>
         <div>
-          <dt>Customer ID</dt>
-          <dd data-bind="text:customerId"></dd>
-        </div>
-        <div>
-          <dt>Product ID</dt>
-          <dd data-bind="text:productId"></dd>
+          <dt>Product</dt>
+          <dd data-bind="text:$data.productName || 'Product unavailable'"></dd>
         </div>
         <div>
           <dt>Opened</dt>
