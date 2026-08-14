@@ -233,8 +233,13 @@ body:not(:has(#navDrawer)) .mb-content {
 }
 
 .mb-sidebar oj-navigation-list {
+  position: absolute;
+  top: var(--mb-shell-header-height);
+  right: 0;
+  bottom: 114px;
+  left: 0;
   padding: 20px 14px;
-
+  overflow-y: auto;
 }
 
 .mb-sidebar .oj-navigationlist-item {
@@ -297,7 +302,12 @@ body:not(:has(#navDrawer)) .mb-content {
 }
 
 .mb-api {
-  margin: 16px;
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  left: 16px;
+  z-index: 2;
+  margin: 0;
   padding: 14px;
   border-color: var(--mb-line);
   border-radius: 14px;
