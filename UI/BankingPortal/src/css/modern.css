@@ -1109,13 +1109,46 @@ body:not(:has(#navDrawer)) .mb-content {
 
 .mb-resume-search .mb-resume-kind > select,
 .mb-dialog .mb-select-field > select {
+  box-sizing: border-box;
+  inline-size: 100% !important;
+  max-inline-size: 100% !important;
+  min-inline-size: 0 !important;
   min-height: 78px;
   padding: 30px 36px 7px 13px;
+}
+
+.mb-resume-search oj-input-text,
+.mb-resume-search .oj-text-field-container {
+  box-sizing: border-box;
+  inline-size: 100% !important;
+  max-inline-size: 100% !important;
+  min-inline-size: 0 !important;
 }
 
 .mb-resume-search .mb-resume-kind > label,
 .mb-dialog .mb-select-field > label {
   top: 13px;
+}
+
+/* Onboarding selects match the single-line input style. Their labels remain
+   available to assistive technology without appearing inside the control. */
+.mb-workflow .mb-select-field > label,
+.mb-resume-search .mb-resume-kind > label {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.mb-workflow .mb-select-field > select,
+.mb-resume-search .mb-resume-kind > select {
+  box-sizing: border-box;
+  inline-size: 100% !important;
+  min-height: 78px;
+  padding: 11px 36px 11px 13px;
 }
 
 .mb-resume-action {
@@ -1227,7 +1260,7 @@ body:not(:has(#navDrawer)) .mb-content {
 
 .mb-workflow .mb-select-field > select {
   min-height: 78px;
-  padding: 30px 36px 7px 13px;
+  padding: 11px 36px 11px 13px;
 }
 
 .mb-workflow .mb-select-field > label {

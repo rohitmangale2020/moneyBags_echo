@@ -17,7 +17,7 @@
       <div class="mb-select-field mb-resume-kind">
         <label>Find by</label>
         <select data-bind="value:resumeKind">
-          <option value="" disabled>Select lookup type</option>
+          <option value="" disabled>Find customer by</option>
           <option value="cif">CIF number</option>
           <option value="id">Customer ID</option>
           <option value="email">Email</option>
@@ -766,7 +766,7 @@
               disabled="[[busy()]]"
               on-oj-action="[[saveKyc]]"
       >
-        Save assessment →
+        <span data-bind="text:kycSaved() ? 'Continue to review →' : 'Save assessment →'"></span>
       </oj-button>
 
     </div>

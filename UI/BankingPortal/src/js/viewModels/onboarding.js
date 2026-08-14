@@ -39,6 +39,7 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
     s.uploadedDocuments = ko.observableArray([]);
     s.uploadedDocumentCount = ko.pureComputed(() => s.uploadedDocuments().length);
     s.kycRecord = ko.observable(null);
+    s.kycSaved = ko.pureComputed(() => Boolean(s.kycRecord()));
     s.products = ko.observableArray([]);
     s.account = ko.observable(null);
     s.resumedOnboarding = ko.observable(false);
@@ -297,6 +298,13 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
     };
 
     s.saveKyc = async () => {
+      // A saved assessment is retained when navigating back from review. Continue
+      // forward instead of submitting a second KYC record for the same customer.
+      if (s.kycSaved()) {
+        s.clearErrors();
+        s.step(5);
+        return;
+      }
       if (!s.addressSaved()) return s.error('Add the customer address before verifying KYC.');
       if (!s.uploadedDocuments().length) return s.error('Upload at least one document before verifying KYC.');
       const e = {};
@@ -423,6 +431,11 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
       const documents = valueOf(records[1], []);
       const kyc = valueOf(records[2], null);
       const nominees = valueOf(records[3], []);
+      if (kyc) {
+        ['kycStatus', 'kycDate', 'riskLevel', 'riskScore', 'remarks'].forEach((key) => {
+          if (kyc[key] !== undefined && kyc[key] !== null && s.kyc[key]) s.kyc[key](kyc[key]);
+        });
+      }
       if (nominees.length) {
         const savedNominee = nominees[0];
         ['nomineeName', 'relationship', 'dob', 'phone', 'sharePercentage'].forEach((key) => {
