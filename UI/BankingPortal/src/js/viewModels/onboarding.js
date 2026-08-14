@@ -43,7 +43,9 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
     s.account = ko.observable(null);
     s.resumedOnboarding = ko.observable(false);
     s.file = ko.observable(null);
-    s.resumeKind = ko.observable('cif');
+    // Keep lookup neutral until the employee chooses the identifier type.
+    // This also prevents a long default value from making the closed select look wider.
+    s.resumeKind = ko.observable('');
     s.resumeValue = ko.observable('');
     s.verifiedBy = ko.pureComputed(() => String(app.session.userId() || ''));
     s.canProceedToAccount = ko.pureComputed(() =>
@@ -73,7 +75,7 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
       pincode: ko.observable(''),
     };
     s.document = {
-      documentType: ko.observable('PAN'),
+      documentType: ko.observable(''),
       documentNumber: ko.observable(''),
       issueDate: ko.observable(''),
       expiryDate: ko.observable(''),
@@ -111,14 +113,18 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
       ownershipType: ko.observable('INDIVIDUAL'),
       availableBalance: ko.observable(0),
     };
-    s.documentRequiresNumber = ko.pureComputed(() =>
-      !['PHOTO', 'SIGNATURE', 'SALARY_SLIP'].includes(s.document.documentType()),
-    );
+    s.documentRequiresNumber = ko.pureComputed(() => {
+      const type = s.document.documentType();
+      return Boolean(type) && !['PHOTO', 'SIGNATURE', 'SALARY_SLIP'].includes(type);
+    });
     s.documentShowsIssueDate = ko.pureComputed(() =>
       ['PASSPORT', 'DRIVING_LICENSE'].includes(s.document.documentType()),
     );
     s.documentRequiresExpiry = ko.pureComputed(() =>
       ['PASSPORT', 'DRIVING_LICENSE'].includes(s.document.documentType()),
+    );
+    s.documentFileAccept = ko.pureComputed(() =>
+      ['PHOTO', 'SIGNATURE'].includes(s.document.documentType()) ? '.png,.jpg,.jpeg' : 'application/pdf,.pdf',
     );
     s.document.documentType.subscribe(() => {
       if (!s.documentRequiresNumber()) s.document.documentNumber('');
@@ -240,13 +246,19 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
     };
 
     s.choose = (_, event) => {
-      s.file(event.target.files && event.target.files[0]);
+      const selected = event.target.files && event.target.files[0];
+      const imageDocument = ['PHOTO', 'SIGNATURE'].includes(s.document.documentType());
+      const name = String((selected && selected.name) || '').toLowerCase();
+      const valid = imageDocument ? /\.(png|jpe?g)$/.test(name) : /\.pdf$/.test(name);
+      s.file(valid ? selected : null);
+      if (selected && !valid) s.fieldErrors(Object.assign({}, s.fieldErrors(), { file: imageDocument ? 'Upload a PNG or JPEG image.' : 'Upload a PDF file.' }));
       if (s.file()) s.fieldErrors(Object.assign({}, s.fieldErrors(), { file: '' }));
     };
     s.upload = async () => {
       const e = {};
       const type = s.document.documentType();
       const number = text(s.document.documentNumber()).toUpperCase();
+      if (!type) e.documentType = 'Select a document type.';
       if (s.documentRequiresNumber() && !number) e.documentNumber = 'Document number is required.';
       else if (number.length > 100) e.documentNumber = 'Document number cannot exceed 100 characters.';
       else if (type === 'PAN' && !/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(number)) e.documentNumber = 'Enter a PAN in the format AAAAA0000A.';
@@ -285,6 +297,8 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
     };
 
     s.saveKyc = async () => {
+      if (!s.addressSaved()) return s.error('Add the customer address before verifying KYC.');
+      if (!s.uploadedDocuments().length) return s.error('Upload at least one document before verifying KYC.');
       const e = {};
       const score = 0;
       if (!s.kyc.kycDate()) e.kycDate = 'KYC date is required.';
@@ -382,6 +396,7 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
 
     s.resume = async () => {
       const value = text(s.resumeValue());
+      if (!s.resumeKind()) return s.setErrors({ resumeValue: 'Select how you want to find the customer.' });
       if (!value) return s.setErrors({ resumeValue: 'Enter the customer ID, CIF, email, or phone to continue.' });
       const calls = {
         id: app.services.customers.get,

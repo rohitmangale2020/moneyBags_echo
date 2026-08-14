@@ -14,15 +14,16 @@
       <p>Find a customer by an approved identifier and open their record for review or update.</p>
     </div>
     <div class="mb-resume-search">
-      <label>
-        Find by
+      <div class="mb-select-field mb-resume-kind">
+        <label>Find by</label>
         <select data-bind="value:resumeKind">
+          <option value="" disabled>Select lookup type</option>
           <option value="cif">CIF number</option>
           <option value="id">Customer ID</option>
           <option value="email">Email</option>
           <option value="phone">Phone</option>
         </select>
-      </label>
+      </div>
 
       <div>
         <oj-input-text
@@ -383,10 +384,10 @@
 
     <div class="mb-form three">
 
-      <label>
-        Document type
-
+      <div class="mb-select-field">
+        <label>Document type</label>
         <select data-bind="value:document.documentType">
+          <option value="" disabled>Select document type</option>
           <option>PAN</option>
           <option>AADHAAR</option>
           <option>PASSPORT</option>
@@ -395,7 +396,7 @@
           <option>PHOTO</option>
           <option>SIGNATURE</option>
         </select>
-      </label>
+      </div>
 
       <!-- ko if:documentRequiresNumber -->
       <div>
@@ -454,8 +455,7 @@
 
           <input
                   type="file"
-                  accept="application/pdf,image/*"
-                  data-bind="event:{change:choose}"
+          data-bind="attr:{accept:documentFileAccept},event:{change:choose}"
           />
         </label>
 
