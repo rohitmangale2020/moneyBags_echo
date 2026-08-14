@@ -79,16 +79,18 @@
               ><strong>MoneyBags Banking</strong>
             </div>
             <div class="mb-user">
-              <span class="mb-avatar"
-                ><oj-bind-text value="[[initials]]"></oj-bind-text
-              ></span>
-              <div>
-                <strong
-                  ><oj-bind-text value="[[displayName]]"></oj-bind-text></strong
-                ><small
-                  ><oj-bind-text value="[[session.role]]"></oj-bind-text
-                ></small>
-              </div>
+              <details class="mb-profile-menu">
+                <summary aria-label="Open profile menu">
+                  <span class="mb-avatar"><oj-bind-text value="[[initials]]"></oj-bind-text></span>
+                  <div><strong><oj-bind-text value="[[displayName]]"></oj-bind-text></strong><small><oj-bind-text value="[[session.role]]"></oj-bind-text></small></div>
+                  <span class="mb-profile-chevron" aria-hidden="true"><span class="mb-profile-chevron-icon">⌄</span></span>
+                </summary>
+                <div class="mb-profile-menu-panel">
+                  <div class="mb-profile-menu-identity"><span class="mb-avatar"><oj-bind-text value="[[initials]]"></oj-bind-text></span><div><strong><oj-bind-text value="[[displayName]]"></oj-bind-text></strong><small><oj-bind-text value="[[session.role]]"></oj-bind-text></small></div></div>
+                  <button on-click="[[openProfile]]">Show profile</button>
+                  <button on-click="[[openProfilePassword]]">Update password</button>
+                </div>
+              </details>
               <oj-button chroming="borderless" on-oj-action="[[signOut]]"
                 >Sign out</oj-button
               >

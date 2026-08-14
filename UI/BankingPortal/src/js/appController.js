@@ -122,6 +122,10 @@ define([
         },
       },
       {
+        path: "profile",
+        detail: { hidden: true, roles: ["ADMIN", "EMPLOYEE", "CUSTOMER"] },
+      },
+      {
         path: "access-denied",
         detail: { hidden: true, roles: ["ADMIN", "EMPLOYEE", "CUSTOMER"] },
       },
@@ -166,6 +170,12 @@ define([
       () => new ArrayDataProvider(self.navItems(), { keyAttributes: "path" }),
     );
     self.go = (p) => router.go({ path: p });
+    self.openProfile = () => router.go({ path: "profile" });
+    self.profilePasswordRequest = ko.observable(false);
+    self.openProfilePassword = () => {
+      self.profilePasswordRequest(true);
+      return router.go({ path: "profile" });
+    };
     self.customerToManage = ko.observable(null);
     self.openCustomer = (customerId) => {
       self.customerToManage(String(customerId));
