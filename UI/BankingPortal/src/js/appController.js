@@ -116,7 +116,7 @@ define([
         detail: {
           label: "Audit logs",
           iconClass: "oj-ux-ico-history",
-          roles: ["ADMIN"],
+          roles: ["ADMIN", "AUDITOR"],
         },
       },
       {

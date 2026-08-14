@@ -93,5 +93,10 @@ define(['services/apiClient'], function (api) {
         api.get(`/api/statements/monthly?accountId=${e(id)}&year=${y}&month=${m}`),
       record: (d) => api.post('/api/statements', d),
     },
+    audits: {
+      list: (service, page, size) =>
+        api.get(`/api/audit/${e(service)}?page=${e(page || 0)}&size=${e(size || 100)}`),
+      get: (service, auditId) => api.get(`/api/audit/${e(service)}/${e(auditId)}`),
+    },
   };
 });
