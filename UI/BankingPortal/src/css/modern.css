@@ -234,6 +234,7 @@ body:not(:has(#navDrawer)) .mb-content {
 
 .mb-sidebar oj-navigation-list {
   padding: 20px 14px;
+
 }
 
 .mb-sidebar .oj-navigationlist-item {
@@ -1385,6 +1386,88 @@ body:not(:has(#navDrawer)) .mb-content {
   justify-content: flex-end;
   gap: 10px;
   width: 100%;
+}
+
+/* Users table action menu. */
+.mb-user-actions {
+  position: relative;
+  display: inline-block;
+}
+
+.mb-user-actions summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 104px;
+  min-height: 34px;
+  padding: 7px 10px;
+  border: 1px solid #cad6ee;
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--mb-primary);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  list-style: none;
+}
+
+.mb-user-actions summary::-webkit-details-marker {
+  display: none;
+}
+
+.mb-user-actions summary:hover,
+.mb-user-actions[open] summary {
+  border-color: var(--mb-primary);
+  background: var(--mb-primary-soft);
+}
+
+.mb-user-actions summary span {
+  font-size: 16px;
+  line-height: 1;
+  transition: transform 150ms ease;
+}
+
+.mb-user-actions[open] summary span {
+  transform: rotate(90deg);
+}
+
+.mb-user-actions-menu {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 4px);
+  right: 0;
+  display: grid;
+  min-width: 146px;
+  padding: 5px;
+  border: 1px solid #cad6ee;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 12px 26px rgba(23, 32, 51, 0.16);
+}
+
+.mb-user-actions-menu .mb-link {
+  width: 100%;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--mb-primary);
+  font-size: 11px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.mb-user-actions-menu .mb-link:hover {
+  background: var(--mb-primary-soft);
+}
+
+.mb-user-actions-menu .mb-link.danger {
+  color: var(--bad);
+}
+
+.mb-user-actions-menu .mb-link.danger:hover {
+  background: #fff1f2;
 }
 
 /* Login */
