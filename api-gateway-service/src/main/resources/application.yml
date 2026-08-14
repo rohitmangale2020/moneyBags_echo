@@ -34,6 +34,9 @@ spring:
             - id: statements-service
               uri: lb://transactions-service
               predicates: ["Path=/api/statements,/api/statements/**"]
+            - id: ledger-service
+              uri: lb://transactions-service
+              predicates: ["Path=/api/ledger,/api/ledger/**"]
             - id: audit-service
               uri: lb://audit-service
               predicates: ["Path=/api/audit,/api/audit/**"]

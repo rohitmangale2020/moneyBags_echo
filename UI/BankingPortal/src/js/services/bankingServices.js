@@ -93,6 +93,17 @@ define(['services/apiClient'], function (api) {
         api.get(`/api/statements/monthly?accountId=${e(id)}&year=${y}&month=${m}`),
       record: (d) => api.post('/api/statements', d),
     },
+    ledger: {
+      accounts: () => api.get('/api/ledger/accounts'),
+      account: (code) => api.get(`/api/ledger/accounts/${e(code)}`),
+      entries: ({ transactionRef, accountCode }) => {
+        const params = new URLSearchParams();
+        if (transactionRef) params.set('transactionRef', transactionRef);
+        if (accountCode) params.set('accountCode', accountCode);
+        return api.get(`/api/ledger/entries?${params.toString()}`);
+      },
+      post: (d) => api.post('/api/ledger/entries', d),
+    },
     audits: {
       list: (service, page, size) =>
         api.get(`/api/audit/${e(service)}?page=${e(page || 0)}&size=${e(size || 100)}`),

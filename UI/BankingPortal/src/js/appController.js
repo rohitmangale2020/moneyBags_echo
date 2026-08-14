@@ -112,6 +112,14 @@ define([
         },
       },
       {
+        path: "ledger",
+        detail: {
+          label: "Ledger",
+          iconClass: "oj-ux-ico-bank",
+          roles: ["ADMIN"],
+        },
+      },
+      {
         path: "audit",
         detail: {
           label: "Audit logs",

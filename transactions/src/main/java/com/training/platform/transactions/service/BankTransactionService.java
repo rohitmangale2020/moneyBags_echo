@@ -43,6 +43,7 @@ public class BankTransactionService {
     private final CustomersClient customersClient;
     private final ObjectMapper objectMapper;
     private final AuditClient auditClient;
+    private final LedgerService ledgerService;
 
     public BankTransactionService(BankTransactionRepository transactionRepository,
                                   AccountStatementRepository statementRepository,
@@ -50,7 +51,8 @@ public class BankTransactionService {
                                   AccountsClient accountsClient,
                                   CustomersClient customersClient,
                                   ObjectMapper objectMapper,
-                                  AuditClient auditClient) {
+                                  AuditClient auditClient,
+                                  LedgerService ledgerService) {
         this.transactionRepository = transactionRepository;
         this.statementRepository = statementRepository;
         this.outboxRepository = outboxRepository;
@@ -58,6 +60,7 @@ public class BankTransactionService {
         this.customersClient = customersClient;
         this.objectMapper = objectMapper;
         this.auditClient = auditClient;
+        this.ledgerService = ledgerService;
     }
 
     public BankTransaction getById(String transactionId) {
@@ -241,6 +244,7 @@ public class BankTransactionService {
         AccountStatement creditEntry = statement(transaction, transaction.getCreditAccountId(),
                 StatementEntryType.CREDIT, transfer.creditBalanceAfter(), creditDescription);
         statementRepository.saveAll(List.of(debitEntry, creditEntry));
+        ledgerService.postCompletedTransaction(transaction);
         auditRelatedCreated("STATEMENT_ENTRY_CREATED", transaction, "STATEMENT",
                 debitEntry.getStatementId(), "Debit statement entry created", statementValues(debitEntry));
         auditRelatedCreated("STATEMENT_ENTRY_CREATED", transaction, "STATEMENT",
@@ -273,6 +277,7 @@ public class BankTransactionService {
         AccountStatement statementEntry = statement(transaction, accountId, entryType,
                 adjustment.balanceAfter(), description);
         statementRepository.save(statementEntry);
+        ledgerService.postCompletedTransaction(transaction);
         auditRelatedCreated("STATEMENT_ENTRY_CREATED", transaction, "STATEMENT",
                 statementEntry.getStatementId(), entryType + " statement entry created",
                 statementValues(statementEntry));

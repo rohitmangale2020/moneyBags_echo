@@ -69,3 +69,26 @@ GET /api/statements?accountId=<id>
 
 Optional filters are `fromDate`, `toDate`, `entryType`, and `channel`. Supported channels
 are `WITHDRAWAL`, `DEPOSIT`, `SELF_TRANSFER`, and `INTERNAL_TRANSFER`.
+
+## Ledger
+
+The transactions service has a small immutable double-entry ledger. It uses only
+`ledger_account` and `ledger_entry`; a journal header is deliberately not stored.
+The entries sharing a `transactionRef` are the ledger posting and must balance.
+Completed deposits and withdrawals produce two entries, while internal transfers
+produce four entries through the `INTERNAL_CLEARING` account.
+
+The service bootstraps `CASH_ON_HAND`, `CUSTOMER_DEPOSITS`, and
+`INTERNAL_CLEARING`. Ledger APIs are available through the gateway:
+
+```text
+GET  /api/ledger/accounts
+POST /api/ledger/accounts
+GET  /api/ledger/entries?transactionRef=<reference>
+GET  /api/ledger/entries?accountCode=<code>
+POST /api/ledger/entries
+```
+
+`transactions/src/main/resources/db/ledger-schema-oracle.sql` is the reference
+Oracle DDL for managed environments. Local development creates these tables using
+the existing Hibernate `ddl-auto=update` setting.
