@@ -234,6 +234,7 @@ body:not(:has(#navDrawer)) .mb-content {
 
 .mb-sidebar oj-navigation-list {
   padding: 20px 14px;
+
 }
 
 .mb-sidebar .oj-navigationlist-item {

@@ -128,6 +128,10 @@ define([
         },
       },
       {
+        path: "profile",
+        detail: { hidden: true, roles: ["ADMIN", "EMPLOYEE", "CUSTOMER"] },
+      },
+      {
         path: "access-denied",
         detail: { hidden: true, roles: ["ADMIN", "EMPLOYEE", "CUSTOMER"] },
       },
@@ -229,6 +233,12 @@ define([
       sessionStorage.removeItem('moneybags.activeCustomer');
       sessionStorage.removeItem('moneybags.activeAccountId');
       sessionStorage.removeItem('moneybags.activeTransactionCustomerId');
+    };
+    self.openProfile = () => router.go({ path: "profile" });
+    self.profilePasswordRequest = ko.observable(false);
+    self.openProfilePassword = () => {
+      self.profilePasswordRequest(true);
+      return router.go({ path: "profile" });
     };
     self.customerToManage = ko.observable(null);
     self.openCustomer = (customerId) => {
