@@ -38,7 +38,6 @@ define([
       [
         { value: 'ADMIN', label: 'Admin' },
         { value: 'EMPLOYEE', label: 'Employee' },
-        { value: 'CUSTOMER', label: 'Customer' },
       ],
       { keyAttributes: 'value' },
     );
