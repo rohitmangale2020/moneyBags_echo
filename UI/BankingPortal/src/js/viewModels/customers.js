@@ -37,10 +37,16 @@ define([
     s.isEmployee = ko.pureComputed(() => app.session.role() === 'EMPLOYEE');
     s.openOnboarding = () => app.go('onboarding');
     s.state = u.state([]);
+    s.currentPage = ko.observable(0);
+    s.totalPages = ko.observable(1);
+    s.totalCustomers = ko.observable(0);
+    s.pageSize = 10;
+    s.directoryRequest = 0;
     s.detailState = u.state({ addresses: [], documents: [], nominees: [], accounts: [], kyc: null });
     s.showDetailPage = ko.observable(false);
     s.query = ko.observable('');
     s.searchMode = ko.observable('local');
+    s.statusFilter = ko.observable('');
     s.selected = ko.observable(null);
     s.form = ko.observable(customerBlank());
     s.addressForm = ko.observable(addressBlank());
@@ -69,19 +75,52 @@ define([
       const q = s.query().toLowerCase();
       return s.state.data().filter((x) => !q || `${x.cifNo} ${x.firstName} ${x.lastName || ''} ${x.email || ''} ${x.phone}`.toLowerCase().includes(q));
     });
+    s.orderedCustomers = ko.pureComputed(() => s.filtered().slice().sort((a, b) => {
+      if (a.status === 'ACTIVE' && b.status !== 'ACTIVE') return -1;
+      if (b.status === 'ACTIVE' && a.status !== 'ACTIVE') return 1;
+      return 0;
+    }));
     s.kycVerified = ko.pureComputed(() =>
       String((s.detailState.data().kyc || {}).kycStatus || '').toUpperCase() === 'VERIFIED',
     );
     s.accountActionLabel = ko.pureComputed(() => s.kycVerified() ? 'Add account' : 'Add account (KYC required)');
-    s.load = () => s.state.run(() => app.services.customers.list()).catch(() => null);
+    s.load = async (requestedPage = 0) => {
+      const requestId = ++s.directoryRequest;
+      const page = Number.isInteger(requestedPage) ? requestedPage : 0;
+      const status = s.statusFilter();
+      s.state.loading(true);
+      s.state.error('');
+      try {
+        const response = await app.services.customers.list(page, s.pageSize, status);
+        if (requestId !== s.directoryRequest) return s.state.data();
+        const customers = u.list(response);
+        s.currentPage(Number(response.number || 0));
+        s.totalPages(Number(response.totalPages === undefined ? 1 : response.totalPages));
+        s.totalCustomers(Number(response.totalElements === undefined ? customers.length : response.totalElements));
+        s.state.data(customers);
+        return customers;
+      } catch (error) {
+        if (requestId === s.directoryRequest) s.state.error(error.message);
+        return null;
+      } finally {
+        if (requestId === s.directoryRequest) s.state.loading(false);
+      }
+    };
+    s.previousPage = () => { if (!s.state.loading() && s.currentPage() > 0) s.load(s.currentPage() - 1); };
+    s.nextPage = () => { if (!s.state.loading() && s.currentPage() < s.totalPages() - 1) s.load(s.currentPage() + 1); };
+    s.statusFilter.subscribe(() => {
+      s.query('');
+      s.searchMode('local');
+      s.load(0);
+    });
     s.backendSearch = () => {
       const q = s.query().trim();
-      if (!q || s.searchMode() === 'local') return s.load();
+      if (!q || s.searchMode() === 'local') return s.load(0);
       const calls = {
         cif: app.services.customers.byCif,
         email: app.services.customers.byEmail,
         phone: app.services.customers.byPhone,
-        status: app.services.customers.byStatus,
+        firstName: app.services.customers.byFirstName,
       };
       s.state.run(async () => {
         const value = await calls[s.searchMode()](q);
@@ -158,7 +197,7 @@ define([
         }
         const value = x.status === 'ACTIVE' ? await app.services.customers.deactivate(x.customerId) : await app.services.customers.activate(x.customerId);
         if (s.selected() && s.selected().customerId === x.customerId) s.selected(value);
-        app.notify(`Customer ${x.status === 'ACTIVE' ? 'deactivated' : 'activated'}.`); s.load();
+        app.notify(`Customer ${x.status === 'ACTIVE' ? 'deactivated' : 'activated'}.`); s.load(s.currentPage());
       } catch (e) { app.notify(e.message, 'error'); }
     };
     s.openAccountForCustomer = async () => {

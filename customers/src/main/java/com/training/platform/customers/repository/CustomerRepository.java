@@ -3,6 +3,8 @@ package com.training.platform.customers.repository;
 import com.training.platform.customers.constants.CustomerStatus;
 import com.training.platform.customers.entity.CustomerEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -24,4 +26,8 @@ public interface CustomerRepository extends JpaRepository<CustomerEntity, Long> 
     boolean existsByPhone(String phone);
 
     List<CustomerEntity> findByStatus(CustomerStatus status);
+
+    Page<CustomerEntity> findByStatus(CustomerStatus status, Pageable pageable);
+
+    List<CustomerEntity> findByFirstNameContainingIgnoreCase(String firstName);
 }

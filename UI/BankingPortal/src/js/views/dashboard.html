@@ -12,6 +12,7 @@
       >Onboard customer</oj-button
     >
   </div>
+  <div class="mb-loading" data-bind="visible:state.loading">Loading dashboard data…</div>
   <div class="mb-metrics" data-bind="foreach:cards">
     <article>
       <span class="mb-metric-icon" data-bind="css:tone" aria-hidden="true">
