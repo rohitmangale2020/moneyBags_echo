@@ -11,7 +11,7 @@
 
 .mb-audit-tabs {
   display: grid;
-  grid-template-columns: repeat(7, minmax(130px, 1fr));
+  grid-template-columns: repeat(8, minmax(130px, 1fr));
   gap: 8px;
   overflow-x: auto;
   padding: 4px 2px 10px;
@@ -177,6 +177,19 @@
   cursor: pointer;
 }
 
+.mb-audit-service-tag {
+  width: fit-content;
+  margin: 0 0 5px !important;
+  padding: 3px 7px;
+  border-radius: 999px;
+  color: #315d9e !important;
+  background: #edf3ff;
+  font-size: 8px !important;
+  font-weight: 800;
+  letter-spacing: .045em;
+  text-transform: uppercase;
+}
+
 .mb-audit-cards { display: none; }
 
 .mb-audit-pagination label {
@@ -303,7 +316,7 @@
 .mb-audit-technical dl > div { min-width: 0; padding-top: 10px; border-top: 1px solid #e9edf5; }
 
 @media (max-width: 1450px) {
-  .mb-audit-tabs { grid-template-columns: repeat(7, minmax(145px, 1fr)); }
+  .mb-audit-tabs { grid-template-columns: repeat(8, minmax(145px, 1fr)); }
   .mb-audit-filters { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .mb-audit-filters .mb-filter-search { grid-column: span 2; }
   .mb-audit-filters .mb-filter-actions { grid-column: auto; }

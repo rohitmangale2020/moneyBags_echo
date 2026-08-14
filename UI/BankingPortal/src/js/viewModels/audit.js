@@ -12,7 +12,7 @@ define([
   const EMPTY = '—';
   const OWN = Object.prototype.hasOwnProperty;
 
-  const CATEGORIES = [
+  const SERVICE_CATEGORIES = [
     { id: 'security', label: 'Security', eyebrow: 'AUTH', description: 'Sign-ins and access decisions' },
     { id: 'users', label: 'Users', eyebrow: 'IDENTITY', description: 'User, role and status changes' },
     { id: 'customers', label: 'Customers', eyebrow: 'CUSTOMER', description: 'Profiles, KYC and related records' },
@@ -21,6 +21,9 @@ define([
     { id: 'transactions', label: 'Transactions', eyebrow: 'PAYMENTS', description: 'Transactions, approvals and statements' },
     { id: 'api-access', label: 'API access', eyebrow: 'GATEWAY', description: 'Request results and service response times' },
   ];
+  const CATEGORIES = [
+    { id: 'all', label: 'All services', eyebrow: 'CENTRAL', description: 'Combined activity across every service' },
+  ].concat(SERVICE_CATEGORIES);
 
   const isPresent = (value) => value !== null && value !== undefined && value !== '';
   const isUuid = (value) => /^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(String(value || ''));
@@ -42,6 +45,14 @@ define([
       .replace(/\bKyc\b/g, 'KYC')
       .replace(/\bIp\b/g, 'IP')
       .replace(/\bId\b/g, 'ID');
+  }
+
+  function categoryFor(activeCategory, log) {
+    return activeCategory === 'all' ? log._auditCategory : activeCategory;
+  }
+
+  function categoryConfig(categoryId) {
+    return CATEGORIES.find((category) => category.id === categoryId) || CATEGORIES[0];
   }
 
   function parseJson(value) {
@@ -302,6 +313,7 @@ define([
     s.truncated = ko.observable(false);
     s.query = ko.observable('');
     s.outcomeFilter = ko.observable('ALL');
+    s.serviceFilter = ko.observable('ALL');
     s.actionFilter = ko.observable('ALL');
     s.dateFrom = ko.observable('');
     s.dateTo = ko.observable('');
@@ -313,17 +325,17 @@ define([
     s.selectedChanges = ko.observableArray([]);
     s.selectedTechnical = ko.observableArray([]);
 
-    s.activeConfig = ko.pureComputed(() =>
-      CATEGORIES.find((category) => category.id === s.activeCategory()) || CATEGORIES[0]);
+    s.activeConfig = ko.pureComputed(() => categoryConfig(s.activeCategory()));
     s.actions = ko.pureComputed(() => Array.from(new Set(
       s.state.data().map((log) => log.action).filter(Boolean),
     )).sort());
 
     s.activityTitle = activityTitle;
     s.activityCaption = activityCaption;
-    s.subject = (log) => subjectFor(s.activeCategory(), log);
-    s.context = (log) => contextFor(s.activeCategory(), log);
-    s.contextNote = (log) => contextNote(s.activeCategory(), log);
+    s.subject = (log) => subjectFor(categoryFor(s.activeCategory(), log), log);
+    s.context = (log) => contextFor(categoryFor(s.activeCategory(), log), log);
+    s.contextNote = (log) => contextNote(categoryFor(s.activeCategory(), log), log);
+    s.serviceLabel = (log) => categoryConfig(categoryFor(s.activeCategory(), log)).label;
     s.actor = friendlyActor;
     s.date = u.date;
     s.humanize = humanize;
@@ -334,14 +346,15 @@ define([
       const query = s.query().trim().toLowerCase();
       const from = s.dateFrom() ? new Date(`${s.dateFrom()}T00:00:00`).getTime() : null;
       const to = s.dateTo() ? new Date(`${s.dateTo()}T23:59:59.999`).getTime() : null;
-      const category = s.activeCategory();
       const logs = s.state.data().filter((log) => {
+        const category = categoryFor(s.activeCategory(), log);
         const created = timeValue(log.createdAt);
         const searchable = [
           activityTitle(log), activityCaption(log), subjectFor(category, log), contextFor(category, log),
-          contextNote(category, log), friendlyActor(log), log.action, log.outcome,
+          contextNote(category, log), friendlyActor(log), categoryConfig(category).label, log.action, log.outcome,
         ].join(' ').toLowerCase();
         return (!query || searchable.includes(query))
+          && (s.serviceFilter() === 'ALL' || category === s.serviceFilter())
           && (s.outcomeFilter() === 'ALL' || log.outcome === s.outcomeFilter())
           && (s.actionFilter() === 'ALL' || log.action === s.actionFilter())
           && (from === null || created >= from)
@@ -368,7 +381,10 @@ define([
       const base = matching === loaded
         ? `${loaded} audit ${loaded === 1 ? 'event' : 'events'}`
         : `${matching} of ${loaded} loaded events match`;
-      return s.truncated() ? `${base} · newest ${loaded} of ${total} loaded` : base;
+      if (!s.truncated()) return base;
+      return s.activeCategory() === 'all'
+        ? `${base} · ${loaded} of ${total} loaded across services`
+        : `${base} · newest ${loaded} of ${total} loaded`;
     });
     s.pageSummary = ko.pureComputed(() => `Page ${s.currentPage() + 1} of ${s.totalViewPages()}`);
     s.detailTitle = ko.pureComputed(() => s.selectedLog() ? activityTitle(s.selectedLog()) : 'Audit details');
@@ -377,7 +393,7 @@ define([
       return log ? (log.description || activityTitle(log)) : '';
     });
 
-    async function fetchCategory(category) {
+    async function fetchServiceCategory(category) {
       const first = await app.services.audits.list(category, 0, PAGE_SIZE);
       const firstRows = u.list(first);
       const total = Number(first.totalElements === undefined ? firstRows.length : first.totalElements);
@@ -388,8 +404,24 @@ define([
         requests.push(app.services.audits.list(category, page, PAGE_SIZE));
       }
       const remaining = await Promise.all(requests);
-      const rows = firstRows.concat(...remaining.map(u.list));
+      const rows = firstRows.concat(...remaining.map(u.list))
+        .map((log) => ({ ...log, _auditCategory: category }));
       return { rows, total, truncated: totalPages > MAX_PAGES };
+    }
+
+    async function fetchCategory(category) {
+      if (category !== 'all') return fetchServiceCategory(category);
+      const results = await Promise.all(SERVICE_CATEGORIES.map(async (serviceCategory) => {
+        const result = await fetchServiceCategory(serviceCategory.id);
+        cache[serviceCategory.id] = result;
+        return result;
+      }));
+      return {
+        rows: results.reduce((rows, result) => rows.concat(result.rows), [])
+          .sort((a, b) => timeValue(b.createdAt) - timeValue(a.createdAt)),
+        total: results.reduce((total, result) => total + result.total, 0),
+        truncated: results.some((result) => result.truncated),
+      };
     }
 
     s.load = (force) => {
@@ -414,18 +446,22 @@ define([
     s.selectCategory = (category) => {
       if (s.activeCategory() === category.id) return;
       s.activeCategory(category.id);
+      s.serviceFilter('ALL');
       s.actionFilter('ALL');
       s.currentPage(0);
       s.load(false);
     };
     s.refresh = () => {
-      delete cache[s.activeCategory()];
+      const category = s.activeCategory();
+      delete cache[category];
+      if (category !== 'all') delete cache.all;
       s.currentPage(0);
       s.load(true);
     };
     s.clearFilters = () => {
       s.query('');
       s.outcomeFilter('ALL');
+      s.serviceFilter('ALL');
       s.actionFilter('ALL');
       s.dateFrom('');
       s.dateTo('');
@@ -440,10 +476,11 @@ define([
     };
 
     s.openDetails = (log) => {
+      const category = categoryFor(s.activeCategory(), log);
       s.selectedLog(log);
-      s.selectedFields(detailFields(s.activeCategory(), log));
+      s.selectedFields(detailFields(category, log));
       s.selectedChanges(changeRows(log));
-      s.selectedTechnical(technicalFields(s.activeCategory(), log));
+      s.selectedTechnical(technicalFields(category, log));
       document.getElementById('auditDetailDialog').open();
     };
     s.closeDetails = () => document.getElementById('auditDetailDialog').close();
@@ -455,7 +492,7 @@ define([
       return true;
     };
 
-    [s.query, s.outcomeFilter, s.actionFilter, s.dateFrom, s.dateTo, s.sortBy, s.pageSize]
+    [s.query, s.outcomeFilter, s.serviceFilter, s.actionFilter, s.dateFrom, s.dateTo, s.sortBy, s.pageSize]
       .forEach((observable) => observable.subscribe(() => s.currentPage(0)));
     s.filteredLogs.subscribe(() => {
       if (s.currentPage() >= s.totalViewPages()) s.currentPage(Math.max(0, s.totalViewPages() - 1));

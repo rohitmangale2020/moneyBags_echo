@@ -12,32 +12,32 @@
     </div>
   </div>
 
-  <nav class="mb-audit-tabs" role="tablist" aria-label="Audit service">
-    <!-- ko foreach: categories -->
-    <button type="button" role="tab"
-      data-bind="click:$parent.selectCategory,
-        css:{active:$parent.activeCategory()===id},
-        attr:{'aria-selected':$parent.activeCategory()===id,'aria-controls':'audit-log-panel'}">
-      <small data-bind="text:eyebrow"></small>
-      <strong data-bind="text:label"></strong>
-      <span data-bind="text:description"></span>
-    </button>
-    <!-- /ko -->
-  </nav>
+<!--  <nav class="mb-audit-tabs" role="tablist" aria-label="Audit service">-->
+<!--    &lt;!&ndash; ko foreach: categories &ndash;&gt;-->
+<!--    <button type="button" role="tab"-->
+<!--      data-bind="click:$parent.selectCategory,-->
+<!--        css:{active:$parent.activeCategory()===id},-->
+<!--        attr:{'aria-selected':$parent.activeCategory()===id,'aria-controls':'audit-log-panel'}">-->
+<!--      <small data-bind="text:eyebrow"></small>-->
+<!--      <strong data-bind="text:label"></strong>-->
+<!--      <span data-bind="text:description"></span>-->
+<!--    </button>-->
+<!--    &lt;!&ndash; /ko &ndash;&gt;-->
+<!--  </nav>-->
 
   <div id="audit-log-panel" class="mb-audit-panel" role="tabpanel">
-    <div class="mb-audit-panel-heading">
-      <div>
-        <small data-bind="text:activeConfig().eyebrow + ' AUDIT'">AUDIT</small>
-        <h2 data-bind="text:activeConfig().label + ' activity'"></h2>
-        <p data-bind="text:activeConfig().description"></p>
-      </div>
-      <div class="mb-audit-legend" aria-label="Audit outcomes">
-        <span><i class="success"></i>Success</span>
-        <span><i class="failed"></i>Failed</span>
-        <span><i class="rejected"></i>Rejected</span>
-      </div>
-    </div>
+<!--    <div class="mb-audit-panel-heading">-->
+<!--      <div>-->
+<!--        <small data-bind="text:activeConfig().eyebrow + ' AUDIT'">AUDIT</small>-->
+<!--        <h2 data-bind="text:activeConfig().label + ' activity'"></h2>-->
+<!--        <p data-bind="text:activeConfig().description"></p>-->
+<!--      </div>-->
+<!--      <div class="mb-audit-legend" aria-label="Audit outcomes">-->
+<!--        <span><i class="success"></i>Success</span>-->
+<!--        <span><i class="failed"></i>Failed</span>-->
+<!--        <span><i class="rejected"></i>Rejected</span>-->
+<!--      </div>-->
+<!--    </div>-->
 
     <div class="mb-filter-panel mb-audit-filters">
       <label class="mb-filter-search">Search this service
@@ -49,6 +49,12 @@
           <option value="SUCCESS">Success</option>
           <option value="FAILED">Failed</option>
           <option value="REJECTED">Rejected</option>
+        </select>
+      </label>
+      <label data-bind="visible:activeCategory()==='all'">Service
+        <select data-bind="value:serviceFilter">
+          <option value="ALL">All services</option>
+          <!-- ko foreach:categories --><!-- ko if:id!=='all' --><option data-bind="value:id,text:label"></option><!-- /ko --><!-- /ko -->
         </select>
       </label>
       <label>Activity
@@ -94,7 +100,7 @@
         <tbody data-bind="foreach:pagedLogs">
           <tr tabindex="0" data-bind="click:$parent.openDetails,event:{keydown:$parent.handleRowKey},attr:{'aria-label':'Open ' + $parent.activityTitle($data) + ' details'}">
             <td><time data-bind="text:$parent.date(createdAt),attr:{datetime:createdAt}"></time></td>
-            <td><strong data-bind="text:$parent.activityTitle($data)"></strong><small data-bind="visible:$parent.activityCaption($data),text:$parent.activityCaption($data)"></small></td>
+            <td><small class="mb-audit-service-tag" data-bind="visible:$parent.activeCategory()==='all',text:$parent.serviceLabel($data)"></small><strong data-bind="text:$parent.activityTitle($data)"></strong><small data-bind="visible:$parent.activityCaption($data),text:$parent.activityCaption($data)"></small></td>
             <td><strong data-bind="text:$parent.subject($data)"></strong></td>
             <td><span data-bind="text:$parent.context($data)"></span><small data-bind="visible:$parent.contextNote($data),text:$parent.contextNote($data)"></small></td>
             <td><span data-bind="text:$parent.actor($data)"></span><small data-bind="text:$parent.humanize(actorType)"></small></td>
@@ -108,6 +114,7 @@
     <div class="mb-audit-cards" data-bind="foreach:pagedLogs,visible:pagedLogs().length && !state.loading()">
       <article tabindex="0" data-bind="click:$parent.openDetails,event:{keydown:$parent.handleRowKey}">
         <header><time data-bind="text:$parent.date(createdAt)"></time><span class="mb-audit-outcome" data-bind="text:$parent.humanize(outcome),css:$parent.outcomeClass(outcome)"></span></header>
+        <small class="mb-audit-service-tag" data-bind="visible:$parent.activeCategory()==='all',text:$parent.serviceLabel($data)"></small>
         <h3 data-bind="text:$parent.activityTitle($data)"></h3>
         <p data-bind="visible:$parent.activityCaption($data),text:$parent.activityCaption($data)"></p>
         <dl><div><dt>Subject</dt><dd data-bind="text:$parent.subject($data)"></dd></div><div><dt>Details</dt><dd data-bind="text:$parent.context($data)"></dd></div><div><dt>Actor</dt><dd data-bind="text:$parent.actor($data)"></dd></div></dl>
@@ -134,7 +141,7 @@
     <div slot="body" data-bind="with:selectedLog">
       <div class="mb-audit-detail-hero">
         <div>
-          <small data-bind="text:$parent.activeConfig().label + ' audit · ' + $parent.date(createdAt)"></small>
+          <small data-bind="text:$parent.serviceLabel($data) + ' audit · ' + $parent.date(createdAt)"></small>
           <h2 data-bind="text:$parent.activityTitle($data)"></h2>
           <p data-bind="text:$parent.detailDescription"></p>
         </div>
