@@ -14,6 +14,10 @@ define([
   function VM() {
     const s = this;
     s.state = u.state([]);
+    s.pageSize = 10;
+    s.currentPage = ko.observable(0);
+    s.totalTransactions = ko.observable(0);
+    s.totalPages = ko.observable(0);
     s.query = ko.observable('');
     s.typeFilter = ko.observable('ALL');
     s.statusFilter = ko.observable('ALL');
@@ -93,13 +97,26 @@ define([
     });
     s.resultSummary = ko.pureComputed(() => {
       const shown = s.filteredTransactions().length;
-      const total = s.state.data().length;
+      const total = s.totalTransactions();
       return shown === total
         ? `${total} transaction${total === 1 ? '' : 's'}`
         : `${shown} of ${total} transactions`;
     });
     s.statusClass = (status) => String(status || '').toLowerCase();
-    s.load = () => s.state.run(() => app.services.transactions.list()).catch(() => null);
+    s.load = (requestedPage) => s.state.run(async () => {
+      const page = Number.isInteger(requestedPage) ? requestedPage : s.currentPage();
+      const response = await app.services.transactions.list(page, s.pageSize);
+      s.currentPage(Number(response.number || 0));
+      s.totalTransactions(Number(response.totalElements === undefined ? u.list(response).length : response.totalElements));
+      s.totalPages(Number(response.totalPages === undefined ? 1 : response.totalPages));
+      return u.list(response);
+    }).catch(() => null);
+    s.previousPage = () => {
+      if (s.currentPage() > 0) s.load(s.currentPage() - 1);
+    };
+    s.nextPage = () => {
+      if (s.currentPage() < s.totalPages() - 1) s.load(s.currentPage() + 1);
+    };
     s.clearFilters = () => {
       s.query('');
       s.typeFilter('ALL');
@@ -108,6 +125,7 @@ define([
       s.dateFrom('');
       s.dateTo('');
       s.sortBy('initiated-desc');
+      s.load(0);
     };
 
     s.selectOperation = (operation) => {
@@ -229,12 +247,12 @@ define([
       s.error('');
       try {
         const transaction = await app.services.transactions.transfer(payload);
-        s.state.data([transaction].concat(s.state.data().filter((item) => item.transactionId !== transaction.transactionId)));
+        await s.load(0);
         s.close();
         app.notify(`${s.operationTitle()} completed.`, 'success');
       } catch (error) {
         if (error.details && error.details.transactionId) {
-          s.state.data([error.details].concat(s.state.data()));
+          await s.load(0);
         }
         s.error(error.message);
       } finally {

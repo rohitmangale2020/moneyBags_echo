@@ -8,6 +8,8 @@ import com.training.platform.transactions.service.BankTransactionService;
 import jakarta.validation.Valid;
 import java.math.BigDecimal;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -32,12 +34,20 @@ public class TransactionController {
     public TransactionResponse getById(@PathVariable String transactionId) { return TransactionResponse.from(transactionService.getById(transactionId)); }
 
     @GetMapping
-    public List<TransactionResponse> find(@RequestParam(required = false) String transactionRef,
+    public Object find(@RequestParam(required = false) String transactionRef,
                                           @RequestParam(required = false) String debitAccountId,
-                                          @RequestParam(required = false) String creditAccountId) {
+                                          @RequestParam(required = false) String creditAccountId,
+                                          @RequestParam(required = false) Integer page,
+                                          @RequestParam(required = false) Integer size) {
         if (transactionRef != null) return List.of(TransactionResponse.from(transactionService.getByReference(transactionRef)));
         if (debitAccountId != null) return transactionService.getDebitAccountTransactions(debitAccountId).stream().map(TransactionResponse::from).toList();
         if (creditAccountId != null) return transactionService.getCreditAccountTransactions(creditAccountId).stream().map(TransactionResponse::from).toList();
+        if (page != null || size != null) {
+            int safePage = Math.max(0, page == null ? 0 : page);
+            int safeSize = Math.min(100, Math.max(1, size == null ? 10 : size));
+            Page<TransactionResponse> transactions = transactionService.getTransactions(PageRequest.of(safePage, safeSize)).map(TransactionResponse::from);
+            return transactions;
+        }
         return transactionService.getAllTransactions().stream().map(TransactionResponse::from).toList();
     }
 

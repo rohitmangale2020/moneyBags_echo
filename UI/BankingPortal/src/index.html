@@ -43,11 +43,15 @@
         ><div
           id="navDrawer"
           class="mb-sidebar oj-offcanvas-start"
+          data-bind="css:{'mb-sidebar-collapsed':sidebarCollapsed}"
           role="navigation"
         >
           <div class="mb-brand">
-            <span>M</span>
+            <span class="mb-brand-logo" data-bind="click:toggleSidebar" role="button" tabindex="0" aria-label="Toggle sidebar">M</span>
             <div><strong>MoneyBags</strong><small>Banking platform</small></div>
+            <button class="mb-sidebar-toggle" type="button" data-bind="click:toggleSidebar" aria-label="Toggle sidebar">
+              <span class="oj-ux-ico-menu" aria-hidden="true"></span>
+            </button>
           </div>
           <oj-navigation-list
             data="[[navDataProvider]]"
