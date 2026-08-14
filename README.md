@@ -32,13 +32,31 @@ or ports differ from the local defaults.
 
 ## Run
 
-Set MySQL connection values if needed (defaults point to local MySQL), then build:
+Copy `.env.example` to `.env`, then enter the Oracle database connection values
+for your local environment. The launcher reads this file automatically:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Then build:
 
 ```powershell
 mvn clean verify
 ```
 
-Start a service, for example:
+Start all backend services and the UI with one command:
+
+```powershell
+.\scripts\start-all.ps1
+```
+
+Or double-click `start-all.cmd` from Windows Explorer. The UI is available at
+`http://localhost:8000`, while the API gateway is on port `8080`. Logs are
+written to `logs/`. To start only the backend services, use
+`.\scripts\start-all.ps1 -SkipUi`.
+
+Start a single service, for example:
 
 ```powershell
 mvn -pl users spring-boot:run

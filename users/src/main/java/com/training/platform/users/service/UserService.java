@@ -13,7 +13,7 @@ public interface UserService {
 
     UserResponse get(Long id);
 
-    Page<UserResponse> getAll(Pageable pageable);
+    Page<UserResponse> getAll(String query, Pageable pageable);
 
     UserResponse update(Long id, UpdateUserRequest request);
 

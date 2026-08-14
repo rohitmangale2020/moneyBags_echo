@@ -42,6 +42,12 @@ define([
       { keyAttributes: 'value' },
     );
     s.query = ko.observable('');
+    s.currentPage = ko.observable(0);
+    s.totalPages = ko.observable(1);
+    s.totalUsers = ko.observable(0);
+    s.pageSize = 20;
+    s.directoryRequest = 0;
+    s.searchTimer = null;
     s.form = ko.observable(blank());
     s.editingId = ko.observable(null);
     s.password = ko.observable('');
@@ -71,28 +77,14 @@ define([
         ['Address line 2', profile.addressLine2], ['City', profile.city], ['State', profile.state], ['Postal code', profile.postalCode],
       ].map(([field, value]) => ({ field, value: display(value) }));
     };
-    s.filtered = ko.pureComputed(() => {
-      const q = s.query().toLowerCase();
-      return s.state
-        .data()
-        .filter(
-          (x) =>
-            !q ||
-            `${x.username} ${x.email} ${x.profile && x.profile.firstName}`
-              .toLowerCase()
-              .includes(q),
-        )
-        .sort((a, b) =>
-          s.statusRank(a.status) - s.statusRank(b.status) ||
-          String(a.username || '').localeCompare(String(b.username || '')),
-        )
-        .map((x) =>
+    s.users = ko.pureComputed(() =>
+      s.state.data().map((x) =>
           Object.assign({}, x, {
             detailsAvailable: s.canViewDetails(x),
             openDetails: () => s.openDetails(x),
           }),
-        );
-    });
+        ),
+    );
     s.validate = (data, needsPassword) => {
       if (!data.username || data.username.length < 3 || !data.email || !data.profile.firstName || !data.profile.lastName)
         return 'Username (at least 3 characters), email, first name, and last name are required.';
@@ -103,8 +95,41 @@ define([
       if (data.profile.dateOfBirth && new Date(data.profile.dateOfBirth) >= new Date()) return 'Date of birth must be in the past.';
       return null;
     };
-    s.load = () =>
-      s.state.run(async () => u.list(await app.services.users.list())).catch(() => null);
+    s.load = async (requestedPage = s.currentPage()) => {
+      const requestId = ++s.directoryRequest;
+      const page = Number.isInteger(requestedPage) && requestedPage >= 0 ? requestedPage : 0;
+      s.state.loading(true);
+      s.state.error('');
+      try {
+        const response = await app.services.users.list(page, s.pageSize, s.query().trim());
+        if (requestId !== s.directoryRequest) return s.state.data();
+        const users = u.list(response);
+        const totalPages = Number(response.totalPages === undefined ? 1 : response.totalPages);
+        if (!users.length && page > 0 && totalPages > 0 && page >= totalPages) {
+          return s.load(totalPages - 1);
+        }
+        s.currentPage(Number(response.number || 0));
+        s.totalPages(totalPages);
+        s.totalUsers(Number(response.totalElements === undefined ? users.length : response.totalElements));
+        s.state.data(users);
+        return users;
+      } catch (error) {
+        if (requestId === s.directoryRequest) s.state.error(error.message);
+        return null;
+      } finally {
+        if (requestId === s.directoryRequest) s.state.loading(false);
+      }
+    };
+    s.previousPage = () => {
+      if (!s.state.loading() && s.currentPage() > 0) s.load(s.currentPage() - 1);
+    };
+    s.nextPage = () => {
+      if (!s.state.loading() && s.currentPage() < s.totalPages() - 1) s.load(s.currentPage() + 1);
+    };
+    s.query.subscribe(() => {
+      if (s.searchTimer) window.clearTimeout(s.searchTimer);
+      s.searchTimer = window.setTimeout(() => s.load(0), 300);
+    });
     s.open = () => {
       s.editingId(null);
       s.form(blank());
