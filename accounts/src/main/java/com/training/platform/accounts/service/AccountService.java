@@ -22,6 +22,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -60,6 +62,10 @@ public class AccountService {
 
     public List<Account> getAllAccounts() {
         return accountRepository.findAllByOrderByCreatedAtDesc();
+    }
+
+    public Page<Account> getAccounts(Pageable pageable) {
+        return accountRepository.findAllByOrderByCreatedAtDesc(pageable);
     }
 
     public List<Account> getByCustomerId(String customerId) { return accountRepository.findByCustomerId(customerId); }

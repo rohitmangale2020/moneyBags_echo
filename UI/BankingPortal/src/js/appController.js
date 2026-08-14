@@ -38,6 +38,12 @@ define([
     self.toasts = ko.observableArray([]);
     self.manner = ko.observable("polite");
     self.message = ko.observable("");
+    self.sidebarCollapsed = ko.observable(localStorage.getItem("moneybags.sidebar.collapsed") === "true");
+    self.toggleSidebar = () => {
+      const collapsed = !self.sidebarCollapsed();
+      self.sidebarCollapsed(collapsed);
+      localStorage.setItem("moneybags.sidebar.collapsed", String(collapsed));
+    };
     const routes = [
       { path: "", redirect: "login" },
       { path: "login", detail: { public: true, hidden: true } },

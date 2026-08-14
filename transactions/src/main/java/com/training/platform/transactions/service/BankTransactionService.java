@@ -28,6 +28,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Locale;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -66,6 +68,10 @@ public class BankTransactionService {
 
     public List<BankTransaction> getAllTransactions() {
         return transactionRepository.findAllByOrderByInitiatedAtDesc();
+    }
+
+    public Page<BankTransaction> getTransactions(Pageable pageable) {
+        return transactionRepository.findAllByOrderByInitiatedAtDesc(pageable);
     }
 
     public List<BankTransaction> getDebitAccountTransactions(String accountId) { return transactionRepository.findByDebitAccountId(accountId); }

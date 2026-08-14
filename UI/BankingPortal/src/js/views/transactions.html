@@ -1,11 +1,18 @@
 <section class="mb-stack">
+  <div class="mb-account-page-loader" data-bind="visible:state.loading" role="status" aria-live="polite">
+    <span class="mb-account-page-spinner" aria-hidden="true"></span>
+    <strong>Loading transactions</strong>
+    <small>Preparing transaction history…</small>
+  </div>
   <div class="mb-heading">
-    <div>
-      <small>PAYMENTS / TRANSACTIONS</small>
-      <h1>Transactions</h1>
-      <p>Review every posting, filter the transaction history, or submit a new transaction.</p>
+    <div class="mb-account-intro">
+      <div>
+        <small>PAYMENTS / TRANSACTIONS</small>
+        <h1>Transactions</h1>
+        <p>Review every posting, filter the transaction history, or submit a new transaction.</p>
+      </div>
+      <oj-button class="mb-open-account" chroming="callToAction" on-oj-action="[[open]]">New transaction</oj-button>
     </div>
-    <oj-button chroming="callToAction" on-oj-action="[[open]]">New transaction</oj-button>
   </div>
 
   <div class="mb-filter-panel mb-filter-panel-transactions">
@@ -42,13 +49,12 @@
     </label>
     <div class="mb-filter-actions">
       <button type="button" class="mb-link" data-bind="click:clearFilters">Clear filters</button>
-      <oj-button on-oj-action="[[load]]" disabled="[[state.loading]]">Refresh</oj-button>
+      <oj-button on-oj-action="[[load.bind(null,0)]]" disabled="[[state.loading]]">Refresh</oj-button>
     </div>
   </div>
 
   <div class="mb-list-meta"><strong data-bind="text:resultSummary"></strong><span>Filters update instantly</span></div>
   <div class="mb-error" data-bind="visible:state.error"><span data-bind="text:state.error"></span><button data-bind="click:load">Retry</button></div>
-  <div class="mb-loading" data-bind="visible:state.loading">Loading transactions...</div>
   <div class="mb-table" data-bind="visible:filteredTransactions().length">
     <table>
       <thead>
@@ -77,6 +83,12 @@
         </tr>
       </tbody>
     </table>
+  </div>
+
+  <div class="mb-pagination" data-bind="visible:totalPages() > 1">
+    <oj-button on-oj-action="[[previousPage]]" disabled="[[state.loading() || currentPage() === 0]]">Previous</oj-button>
+    <span data-bind="text:`Page ${currentPage() + 1} of ${totalPages()}`"></span>
+    <oj-button on-oj-action="[[nextPage]]" disabled="[[state.loading() || currentPage() >= totalPages() - 1]]">Next</oj-button>
   </div>
 
   <div class="mb-empty" data-bind="visible:!filteredTransactions().length && !state.loading()">

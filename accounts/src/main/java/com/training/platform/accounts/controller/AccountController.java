@@ -10,6 +10,8 @@ import com.training.platform.accounts.entity.Account;
 import com.training.platform.accounts.service.AccountService;
 import jakarta.validation.Valid;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -36,10 +38,18 @@ public class AccountController {
     }
 
     @GetMapping
-    public List<AccountResponse> find(@RequestParam(required = false) String customerId,
-                                      @RequestParam(required = false) String accountNumber) {
+    public Object find(@RequestParam(required = false) String customerId,
+                                      @RequestParam(required = false) String accountNumber,
+                                      @RequestParam(required = false) Integer page,
+                                      @RequestParam(required = false) Integer size) {
         if (customerId != null) return accountService.getByCustomerId(customerId).stream().map(AccountResponse::from).toList();
         if (accountNumber != null) return List.of(AccountResponse.from(accountService.getByAccountNumber(accountNumber)));
+        if (page != null || size != null) {
+            int safePage = Math.max(0, page == null ? 0 : page);
+            int safeSize = Math.min(100, Math.max(1, size == null ? 10 : size));
+            Page<AccountResponse> accounts = accountService.getAccounts(PageRequest.of(safePage, safeSize)).map(AccountResponse::from);
+            return accounts;
+        }
         return accountService.getAllAccounts().stream().map(AccountResponse::from).toList();
     }
 
