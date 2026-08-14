@@ -1,5 +1,6 @@
 package com.training.platform.transactions.service;
 
+import com.training.platform.auditclient.AuditClient;
 import com.training.platform.transactions.entity.AccountStatement;
 import com.training.platform.transactions.entity.StatementEntryType;
 import com.training.platform.transactions.entity.TransactionChannel;
@@ -12,6 +13,8 @@ import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -22,10 +25,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class AccountStatementService {
     private final AccountStatementRepository statementRepository;
     private final BankTransactionRepository transactionRepository;
+    private final AuditClient auditClient;
 
-    public AccountStatementService(AccountStatementRepository statementRepository, BankTransactionRepository transactionRepository) {
+    public AccountStatementService(AccountStatementRepository statementRepository,
+                                   BankTransactionRepository transactionRepository,
+                                   AuditClient auditClient) {
         this.statementRepository = statementRepository;
         this.transactionRepository = transactionRepository;
+        this.auditClient = auditClient;
     }
 
     public AccountStatement getById(String statementId) {
@@ -104,7 +111,33 @@ public class AccountStatementService {
         statement.setDepositAmount(statement.getEntryType() == StatementEntryType.CREDIT
                 ? statement.getAmount() : null);
         statement.setClosingBalance(statement.getBalanceAfter());
-        return statementRepository.save(statement);
+        AccountStatement saved = statementRepository.save(statement);
+        Map<String, Object> details = new LinkedHashMap<>();
+        details.put("transactionId", saved.getTransaction().getTransactionId());
+        details.put("transactionRef", saved.getTransaction().getTransactionRef());
+        details.put("debitAccountId", saved.getEntryType() == StatementEntryType.DEBIT
+                ? saved.getAccountId() : null);
+        details.put("creditAccountId", saved.getEntryType() == StatementEntryType.CREDIT
+                ? saved.getAccountId() : null);
+        details.put("amount", saved.getAmount());
+        details.put("currencyCode", saved.getCurrencyCode());
+        details.put("relatedEntityType", "STATEMENT");
+        details.put("relatedEntityId", saved.getStatementId());
+        Map<String, Object> values = new LinkedHashMap<>();
+        values.put("accountId", saved.getAccountId());
+        values.put("entryType", saved.getEntryType().name());
+        values.put("amount", saved.getAmount());
+        values.put("description", saved.getDescription());
+        values.put("withdrawalAmount", saved.getWithdrawalAmount());
+        values.put("depositAmount", saved.getDepositAmount());
+        values.put("currencyCode", saved.getCurrencyCode());
+        values.put("balanceAfter", saved.getBalanceAfter());
+        values.put("closingBalance", saved.getClosingBalance());
+        Map<String, Object> changes = auditClient.changes(Map.of(), values);
+        if (changes != null) details.putAll(changes);
+        auditClient.success("transactions", "STATEMENT_ENTRY_CREATED",
+                saved.getEntryType() + " statement entry created", details);
+        return saved;
     }
 
     private void validate(AccountStatement statement) {

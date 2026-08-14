@@ -1,5 +1,6 @@
 package com.training.platform.transactions.client;
 
+import com.training.platform.auditclient.AuditClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -13,10 +14,13 @@ public class CustomersClient {
     private final RestClient restClient;
 
     public CustomersClient(RestClient.Builder builder,
-                           @Value("${services.customers.base-url}") String baseUrl) {
+                           @Value("${services.customers.base-url}") String baseUrl,
+                           AuditClient auditClient) {
         this.restClient = builder.clone()
                 .baseUrl(baseUrl)
                 .requestInterceptor((request, body, execution) -> {
+                    request.getHeaders().set(AuditClient.CORRELATION_HEADER,
+                            auditClient.currentCorrelationId());
                     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
                     if (authentication instanceof JwtAuthenticationToken jwtAuthentication) {
                         request.getHeaders().setBearerAuth(jwtAuthentication.getToken().getTokenValue());

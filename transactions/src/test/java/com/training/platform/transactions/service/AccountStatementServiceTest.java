@@ -1,5 +1,6 @@
 package com.training.platform.transactions.service;
 
+import com.training.platform.auditclient.AuditClient;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
@@ -23,11 +24,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class AccountStatementServiceTest {
     @Mock private AccountStatementRepository statementRepository;
     @Mock private BankTransactionRepository transactionRepository;
+    @Mock private AuditClient auditClient;
     @Mock private AccountStatement statement;
     @Mock private BankTransaction transaction;
     private AccountStatementService statementService;
 
-    @BeforeEach void setUp() { statementService = new AccountStatementService(statementRepository, transactionRepository); }
+    @BeforeEach void setUp() {
+        statementService = new AccountStatementService(statementRepository, transactionRepository, auditClient);
+    }
 
     @Test void returnsStatementWhenItExists() {
         when(statementRepository.findById("statement-1")).thenReturn(Optional.of(statement));

@@ -1,5 +1,6 @@
 package com.training.platform.customers.service.impl;
 
+import com.training.platform.auditclient.AuditClient;
 import com.training.platform.customers.dto.AddressRequest;
 import com.training.platform.customers.dto.AddressResponse;
 import com.training.platform.customers.dto.NomineeRequestDto;
@@ -20,7 +21,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,6 +33,7 @@ public class NomineeServiceImpl implements NomineeService {
     private final NomineeRepository nomineeRepository;
     private final CustomerRepository customerRepository;
     private final AddressMapper addressMapper;
+    private final AuditClient auditClient;
 
     @Override
     public NomineeResponseDto createNominee(Long customerId, NomineeRequestDto requestDto) {
@@ -79,7 +83,10 @@ public class NomineeServiceImpl implements NomineeService {
         entity.setStartDate(requestDto.getStartDate() != null ? requestDto.getStartDate() : LocalDate.now());
         entity.setEndDate(requestDto.getEndDate());
 
-        return toResponse(nomineeRepository.save(entity));
+        NomineeEntity saved = nomineeRepository.save(entity);
+        auditNomineeChange(customerId, saved, "NOMINEE_ADDED", "Customer nominee added",
+                Map.of(), nomineeValues(saved));
+        return toResponse(saved);
     }
 
     @Override
@@ -99,7 +106,6 @@ public class NomineeServiceImpl implements NomineeService {
         NomineeEntity nominee = nomineeRepository.findByNomineeIdAndCustomerCustomerId(nomineeId, customerId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Nominee not found with id " + nomineeId + " for customer " + customerId));
-
         return toResponse(nominee);
     }
 
@@ -108,6 +114,7 @@ public class NomineeServiceImpl implements NomineeService {
         NomineeEntity nominee = nomineeRepository.findByNomineeIdAndCustomerCustomerId(nomineeId, customerId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Nominee not found with id " + nomineeId + " for customer " + customerId));
+        Map<String, Object> previousValues = nomineeValues(nominee);
 
         if (requestDto.getNomineeName() == null || requestDto.getNomineeName().trim().isEmpty()) {
             throw new BadRequestException("Nominee name is required");
@@ -133,7 +140,10 @@ public class NomineeServiceImpl implements NomineeService {
         nominee.setStartDate(requestDto.getStartDate() != null ? requestDto.getStartDate() : nominee.getStartDate());
         nominee.setEndDate(requestDto.getEndDate());
 
-        return toResponse(nomineeRepository.save(nominee));
+        NomineeEntity saved = nomineeRepository.save(nominee);
+        auditNomineeChange(customerId, saved, "NOMINEE_UPDATED", "Nominee fields changed",
+                previousValues, nomineeValues(saved));
+        return toResponse(saved);
     }
 
     @Override
@@ -142,11 +152,15 @@ public class NomineeServiceImpl implements NomineeService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Nominee not found with id " + nomineeId + " for customer " + customerId));
 
+        Map<String, Object> previousValues = nomineeValues(nominee);
         nominee.setStatus("Closed");
         nominee.setEndDate(LocalDate.now());
         nominee.setUpdatedAt(LocalDateTime.now());
 
-        return toResponse(nomineeRepository.save(nominee));
+        NomineeEntity saved = nomineeRepository.save(nominee);
+        auditNomineeChange(customerId, saved, "NOMINEE_CLOSED", "Customer nominee closed",
+                previousValues, nomineeValues(saved));
+        return toResponse(saved);
     }
 
     @Override
@@ -154,7 +168,10 @@ public class NomineeServiceImpl implements NomineeService {
         NomineeEntity nominee = nomineeRepository.findByNomineeIdAndCustomerCustomerId(nomineeId, customerId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Nominee not found with id " + nomineeId + " for customer " + customerId));
+        Map<String, Object> previousValues = nomineeValues(nominee);
         nomineeRepository.delete(nominee);
+        auditNomineeChange(customerId, nominee, "NOMINEE_DELETED", "Customer nominee deleted",
+                previousValues, Map.of());
     }
 
     private NomineeResponseDto toResponse(NomineeEntity entity) {
@@ -251,5 +268,47 @@ public class NomineeServiceImpl implements NomineeService {
             throw new BadRequestException(
                     String.format("Nominee share cannot exceed 100%%. %.2f%% is already allocated.", allocatedShare));
         }
+    }
+
+    private Map<String, Object> nomineeValues(NomineeEntity nominee) {
+        Map<String, Object> values = new LinkedHashMap<>();
+        values.put("nomineeName", nominee.getNomineeName());
+        values.put("relationship", nominee.getRelationship());
+        values.put("relationType", nominee.getRelationType());
+        values.put("dob", nominee.getDob());
+        values.put("phone", nominee.getPhone());
+        values.put("sharePercentage", nominee.getSharePercentage());
+        values.put("status", nominee.getStatus());
+        values.put("startDate", nominee.getStartDate());
+        values.put("endDate", nominee.getEndDate());
+        AddressEntity address = nominee.getAddress();
+        if (address != null) {
+            values.put("addressType", address.getAddressType() == null ? null : address.getAddressType().name());
+            values.put("addressLine1", address.getLine1());
+            values.put("addressLine2", address.getLine2());
+            values.put("addressCity", address.getCity());
+            values.put("addressState", address.getState());
+            values.put("addressCountry", address.getCountry());
+            values.put("addressPincode", address.getPincode());
+        }
+        return values;
+    }
+
+    private void auditNomineeChange(Long customerId, NomineeEntity nominee, String action,
+                                    String description, Map<String, ?> previousValues,
+                                    Map<String, ?> newValues) {
+        Map<String, Object> changes = auditClient.changes(previousValues, newValues);
+        if (changes != null && changes.isEmpty()) return;
+        Map<String, Object> details = new LinkedHashMap<>();
+        details.put("customerId", customerId);
+        details.put("relatedEntityType", "NOMINEE");
+        details.put("relatedEntityId", nominee.getNomineeId().toString());
+        details.put("previousStatus", previousValues.get("status"));
+        details.put("newStatus", newValues.get("status"));
+        if (changes != null) {
+            details.putAll(changes);
+            if (!previousValues.isEmpty() && !newValues.isEmpty()) description += ": " + changes.get("changedFields");
+        }
+        auditClient.success("customers", action, description, details);
     }
 }

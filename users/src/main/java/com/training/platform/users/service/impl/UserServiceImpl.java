@@ -1,5 +1,6 @@
 package com.training.platform.users.service.impl;
 
+import com.training.platform.auditclient.AuditClient;
 import com.training.platform.users.dto.CreateUserRequest;
 import com.training.platform.users.dto.UpdateUserRequest;
 import com.training.platform.users.dto.UserProfileRequest;
@@ -20,7 +21,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +32,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuditClient auditClient;
 
     @Override
     @Transactional
@@ -47,6 +51,7 @@ public class UserServiceImpl implements UserService {
 
         User savedUser = userRepository.save(user);
         log.info("User created id={}", savedUser.getId());
+        auditUserChange(savedUser, "USER_CREATED", "User account created", Map.of(), userValues(savedUser));
         return toResponse(savedUser);
     }
 
@@ -66,6 +71,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserResponse update(Long id, UpdateUserRequest request) {
         User user = findUser(id);
+        Map<String, Object> previousValues = userValues(user);
         String username = normalizeIdentity(request.username());
         String email = normalizeIdentity(request.email());
         ensureUniqueForUpdate(id, username, email);
@@ -75,6 +81,7 @@ public class UserServiceImpl implements UserService {
         user.setRole(normalizeRole(request.role()));
         applyProfile(user, request.profile());
         log.info("User updated id={}", id);
+        auditUserChange(user, "USER_UPDATED", "User fields changed", previousValues, userValues(user));
         return toResponse(user);
     }
 
@@ -84,14 +91,22 @@ public class UserServiceImpl implements UserService {
         User user = findUser(id);
         user.setPasswordHash(passwordEncoder.encode(rawPassword));
         log.info("Password updated id={}", id);
+        Map<String, Object> passwordDetails = new LinkedHashMap<>();
+        passwordDetails.put("targetUserId", id);
+        passwordDetails.put("changedFields", "password");
+        passwordDetails.put("oldValuesJson", "{\"password\":\"[REDACTED]\"}");
+        passwordDetails.put("newValuesJson", "{\"password\":\"[REDACTED]\"}");
+        auditClient.success("users", "PASSWORD_CHANGED", "User password changed", passwordDetails);
     }
 
     @Override
     @Transactional
     public UserResponse updateStatus(Long id, UserStatus status) {
         User user = findUser(id);
+        String previousStatus = user.getStatus().name();
         user.setStatus(status);
         log.info("User status updated id={} status={}", id, status);
+        auditStatusChange(user, "USER_STATUS_CHANGED", "User status changed", previousStatus, status.name());
         return toResponse(user);
     }
 
@@ -99,8 +114,11 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void deactivate(Long id) {
         User user = findUser(id);
+        String previousStatus = user.getStatus().name();
         user.setStatus(UserStatus.DEACTIVATED);
         log.info("User deactivated id={}", id);
+        auditStatusChange(user, "USER_DEACTIVATED", "User account deactivated",
+                previousStatus, UserStatus.DEACTIVATED.name());
     }
 
     private User findUser(Long id) {
@@ -204,5 +222,55 @@ public class UserServiceImpl implements UserService {
             return null;
         }
         return value.trim();
+    }
+
+    private Map<String, Object> userValues(User user) {
+        Map<String, Object> values = new LinkedHashMap<>();
+        values.put("username", user.getUsername());
+        values.put("email", user.getEmail());
+        values.put("role", user.getRole());
+        values.put("status", user.getStatus() == null ? null : user.getStatus().name());
+        UserProfile profile = user.getProfile();
+        if (profile != null) {
+            values.put("firstName", profile.getFirstName());
+            values.put("middleName", profile.getMiddleName());
+            values.put("lastName", profile.getLastName());
+            values.put("phoneNumber", profile.getPhoneNumber());
+            values.put("dateOfBirth", profile.getDateOfBirth());
+            values.put("addressLine1", profile.getAddressLine1());
+            values.put("addressLine2", profile.getAddressLine2());
+            values.put("city", profile.getCity());
+            values.put("state", profile.getState());
+            values.put("postalCode", profile.getPostalCode());
+            values.put("countryCode", profile.getCountryCode());
+        }
+        return values;
+    }
+
+    private void auditUserChange(User user, String action, String description,
+                                 Map<String, ?> previousValues, Map<String, ?> newValues) {
+        Map<String, Object> changes = auditClient.changes(previousValues, newValues);
+        if (changes != null && changes.isEmpty()) return;
+        Map<String, Object> details = new LinkedHashMap<>();
+        details.put("targetUserId", user.getId());
+        details.put("newStatus", user.getStatus() == null ? null : user.getStatus().name());
+        details.put("newRole", user.getRole());
+        if (changes != null) {
+            details.putAll(changes);
+            description = description + ": " + changes.get("changedFields");
+        }
+        auditClient.success("users", action, description, details);
+    }
+
+    private void auditStatusChange(User user, String action, String description,
+                                   String previousStatus, String newStatus) {
+        Map<String, Object> details = new LinkedHashMap<>();
+        details.put("targetUserId", user.getId());
+        details.put("previousStatus", previousStatus);
+        details.put("newStatus", newStatus);
+        Map<String, Object> changes = auditClient.changes(
+                Map.of("status", previousStatus), Map.of("status", newStatus));
+        if (changes != null) details.putAll(changes);
+        auditClient.success("users", action, description, details);
     }
 }

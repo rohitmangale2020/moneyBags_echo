@@ -45,3 +45,10 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
 
+services:
+  audit:
+    base-url: ${SERVICES_AUDIT_BASE_URL:http://localhost:8086}
+
+audit:
+  internal-key: ${AUDIT_INTERNAL_KEY:local-audit-key}
+

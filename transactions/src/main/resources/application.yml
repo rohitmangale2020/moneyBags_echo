@@ -24,10 +24,15 @@ spring:
         jwt:
           issuer-uri: ${JWT_ISSUER:http://localhost:8087}
 services:
+  audit:
+    base-url: ${SERVICES_AUDIT_BASE_URL:http://localhost:8086}
   accounts:
     base-url: ${ACCOUNTS_SERVICE_URL:http://accounts-service}
   customers:
     base-url: ${CUSTOMERS_SERVICE_URL:http://customers-service}
+
+audit:
+  internal-key: ${AUDIT_INTERNAL_KEY:local-audit-key}
 
 eureka:
   client:

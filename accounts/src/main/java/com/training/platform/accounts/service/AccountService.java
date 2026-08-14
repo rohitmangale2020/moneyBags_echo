@@ -1,5 +1,6 @@
 package com.training.platform.accounts.service;
 
+import com.training.platform.auditclient.AuditClient;
 import com.training.platform.accounts.dto.AccountTransferRequest;
 import com.training.platform.accounts.dto.AccountTransferResponse;
 import com.training.platform.accounts.dto.AccountAdjustmentRequest;
@@ -38,16 +39,19 @@ public class AccountService {
     private final AccountStatusHistoryRepository accountStatusHistoryRepository;
     private final AccountTransferOperationRepository transferOperationRepository;
     private final AccountBalanceOperationRepository balanceOperationRepository;
+    private final AuditClient auditClient;
 
     public AccountService(AccountRepository accountRepository, AccountHolderRepository accountHolderRepository,
                           AccountStatusHistoryRepository accountStatusHistoryRepository,
                           AccountTransferOperationRepository transferOperationRepository,
-                          AccountBalanceOperationRepository balanceOperationRepository) {
+                          AccountBalanceOperationRepository balanceOperationRepository,
+                          AuditClient auditClient) {
         this.accountRepository = accountRepository;
         this.accountHolderRepository = accountHolderRepository;
         this.accountStatusHistoryRepository = accountStatusHistoryRepository;
         this.transferOperationRepository = transferOperationRepository;
         this.balanceOperationRepository = balanceOperationRepository;
+        this.auditClient = auditClient;
     }
 
     public Account getById(String accountId) {
@@ -77,12 +81,29 @@ public class AccountService {
         Account savedAccount = accountRepository.save(account);
         accountHolderRepository.save(AccountHolder.primaryHolder(savedAccount));
         accountStatusHistoryRepository.save(AccountStatusHistory.initialStatus(savedAccount));
+        Map<String, Object> details = accountDetails(savedAccount);
+        details.put("newStatus", savedAccount.getStatus().name());
+        details.put("balanceAfter", savedAccount.getAvailableBalance());
+        putChanges(details, Map.of(), accountValues(savedAccount));
+        auditClient.success("accounts", "ACCOUNT_OPENED", "Account opened", details);
+        Map<String, Object> holderDetails = accountDetails(savedAccount);
+        Map<String, Object> holderValues = new LinkedHashMap<>();
+        holderValues.put("customerId", savedAccount.getCustomerId());
+        holderValues.put("holderRole", "PRIMARY");
+        holderValues.put("operatingRule", "SOLELY");
+        holderValues.put("signingAuthority", "AUTHORIZED");
+        holderValues.put("holderStatus", "ACTIVE");
+        putChanges(holderDetails, Map.of(), holderValues);
+        auditClient.success("accounts", "ACCOUNT_HOLDER_ADDED", "Primary account holder added", holderDetails);
         return savedAccount;
     }
 
     @Transactional
     public Account update(String accountId, Account account) {
         Account existing = getById(accountId);
+        Map<String, Object> previousValues = accountValues(existing);
+        AccountStatus previousStatus = existing.getStatus();
+        BigDecimal previousBalance = existing.getAvailableBalance();
         // Account numbers are immutable. This also preserves legacy, non-numeric
         // numbers while every newly opened account uses the numeric format.
         existing.setCustomerId(account.getCustomerId());
@@ -93,7 +114,22 @@ public class AccountService {
         existing.setClosedAt(account.getClosedAt());
         existing.setUpdatedByUserId(account.getUpdatedByUserId());
         validate(existing);
-        return accountRepository.save(existing);
+        Account saved = accountRepository.save(existing);
+        Map<String, Object> details = accountDetails(saved);
+        details.put("previousStatus", previousStatus.name());
+        details.put("newStatus", saved.getStatus().name());
+        details.put("balanceBefore", previousBalance);
+        details.put("balanceAfter", saved.getAvailableBalance());
+        String action = previousStatus == saved.getStatus() ? "ACCOUNT_UPDATED" : "ACCOUNT_STATUS_CHANGED";
+        Map<String, Object> changes = auditClient.changes(previousValues, accountValues(saved));
+        if (changes == null || !changes.isEmpty()) {
+            if (changes != null) details.putAll(changes);
+            String description = previousStatus == saved.getStatus()
+                    ? "Account fields changed" : "Account status and fields changed";
+            if (changes != null) description += ": " + changes.get("changedFields");
+            auditClient.success("accounts", action, description, details);
+        }
+        return saved;
     }
 
     @Transactional
@@ -136,8 +172,10 @@ public class AccountService {
             throw new IllegalArgumentException("Insufficient available balance");
         }
 
-        BigDecimal debitBalanceAfter = debitAccount.getAvailableBalance().subtract(request.amount());
-        BigDecimal creditBalanceAfter = creditAccount.getAvailableBalance().add(request.amount());
+        BigDecimal debitBalanceBefore = debitAccount.getAvailableBalance();
+        BigDecimal creditBalanceBefore = creditAccount.getAvailableBalance();
+        BigDecimal debitBalanceAfter = debitBalanceBefore.subtract(request.amount());
+        BigDecimal creditBalanceAfter = creditBalanceBefore.add(request.amount());
         debitAccount.setAvailableBalance(debitBalanceAfter);
         creditAccount.setAvailableBalance(creditBalanceAfter);
         accountRepository.saveAll(List.of(debitAccount, creditAccount));
@@ -146,6 +184,12 @@ public class AccountService {
                 request.transactionRef(), request.debitAccountId(), request.creditAccountId(),
                 request.customerId(), request.amount(), currencyCode, debitBalanceAfter, creditBalanceAfter);
         transferOperationRepository.save(operation);
+        auditBalanceChange("BALANCE_DEBITED", debitAccount, operation.getTransactionRef(),
+                operation.getOperationId(), operation.getAmount(), operation.getCurrencyCode(),
+                debitBalanceBefore, debitBalanceAfter, "Transfer debit applied");
+        auditBalanceChange("BALANCE_CREDITED", creditAccount, operation.getTransactionRef(),
+                operation.getOperationId(), operation.getAmount(), operation.getCurrencyCode(),
+                creditBalanceBefore, creditBalanceAfter, "Transfer credit applied");
         return response(operation);
     }
 
@@ -175,6 +219,7 @@ public class AccountService {
         completed = balanceOperationRepository.findByTransactionRef(request.transactionRef()).orElse(null);
         if (completed != null) return replay(completed, accountId, request, currencyCode);
 
+        BigDecimal balanceBefore = account.getAvailableBalance();
         BigDecimal balanceAfter;
         if (request.adjustmentType() == AccountAdjustmentRequest.AdjustmentType.DEPOSIT) {
             balanceAfter = account.getAvailableBalance().add(request.amount());
@@ -191,6 +236,11 @@ public class AccountService {
                 request.transactionRef(), accountId, request.adjustmentType(), request.amount(),
                 currencyCode, balanceAfter);
         balanceOperationRepository.save(operation);
+        String action = request.adjustmentType() == AccountAdjustmentRequest.AdjustmentType.DEPOSIT
+                ? "BALANCE_CREDITED" : "BALANCE_DEBITED";
+        auditBalanceChange(action, account, operation.getTransactionRef(), operation.getOperationId(),
+                operation.getAmount(), operation.getCurrencyCode(), balanceBefore, balanceAfter,
+                request.adjustmentType() + " applied");
         return response(operation);
     }
 
@@ -285,6 +335,49 @@ public class AccountService {
         if (account.getAvailableBalance() == null || account.getAvailableBalance().signum() < 0) {
             throw new IllegalArgumentException("Available balance cannot be negative");
         }
+    }
+
+    private Map<String, Object> accountDetails(Account account) {
+        Map<String, Object> details = new LinkedHashMap<>();
+        details.put("accountId", account.getAccountId());
+        details.put("customerId", account.getCustomerId());
+        details.put("currencyCode", account.getCurrencyCode());
+        return details;
+    }
+
+    private void auditBalanceChange(String action, Account account, String transactionRef,
+                                    String operationId, BigDecimal amount, String currencyCode,
+                                    BigDecimal balanceBefore, BigDecimal balanceAfter, String reason) {
+        Map<String, Object> details = accountDetails(account);
+        details.put("transactionRef", transactionRef);
+        details.put("operationId", operationId);
+        details.put("amount", amount);
+        details.put("currencyCode", currencyCode);
+        details.put("balanceBefore", balanceBefore);
+        details.put("balanceAfter", balanceAfter);
+        details.put("reason", reason);
+        putChanges(details, Map.of("availableBalance", balanceBefore),
+                Map.of("availableBalance", balanceAfter));
+        auditClient.success("accounts", action, reason, details);
+    }
+
+    private Map<String, Object> accountValues(Account account) {
+        Map<String, Object> values = new LinkedHashMap<>();
+        values.put("accountNumber", account.getAccountNumber());
+        values.put("customerId", account.getCustomerId());
+        values.put("productId", account.getProductId());
+        values.put("ownershipType", account.getOwnershipType() == null ? null : account.getOwnershipType().name());
+        values.put("status", account.getStatus() == null ? null : account.getStatus().name());
+        values.put("currencyCode", account.getCurrencyCode());
+        values.put("availableBalance", account.getAvailableBalance());
+        values.put("closedAt", account.getClosedAt());
+        return values;
+    }
+
+    private void putChanges(Map<String, Object> details, Map<String, ?> previousValues,
+                            Map<String, ?> newValues) {
+        Map<String, Object> changes = auditClient.changes(previousValues, newValues);
+        if (changes != null) details.putAll(changes);
     }
 
     private boolean isBlank(String value) { return value == null || value.isBlank(); }

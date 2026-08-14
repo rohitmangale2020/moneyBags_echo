@@ -44,9 +44,15 @@ Start a service, for example:
 mvn -pl users spring-boot:run
 ```
 
-Start the services in this order: `users`, `security-service`, then
-`api-gateway-service`. For example, run `mvn -pl security-service
-spring-boot:run` after the users service is available.
+Start the services in this order: `discovery-service`, `audit`, the business
+services (`users`, `customers`, `products`, `accounts`, `transactions`),
+`security-service`, and finally `api-gateway-service`.
+
+For audit persistence, start `audit` before the business services. The local
+default audit URL is `http://localhost:8086`; override it with
+`SERVICES_AUDIT_BASE_URL` when needed. All services and the audit service must
+share the same `AUDIT_INTERNAL_KEY`. The audit service creates/updates its seven
+audit tables through Hibernate when it starts against Oracle.
 
 ## Accounts and statements
 
