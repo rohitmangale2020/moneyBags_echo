@@ -65,14 +65,14 @@ textarea {
 .mb-product-filter-panel .oj-text-field-container,
 .mb-product-filter-panel .oj-button-button { box-sizing: border-box; width: 100%; height: 46px; min-height: 46px; justify-content: center; }
 .mb-product-list { display: grid; min-width: 0; gap: 8px; }
-.mb-product-row { display: grid; grid-template-columns: minmax(260px, 1fr) minmax(330px, 1.2fr) auto; align-items: center; min-width: 0; gap: 20px; padding: 13px 16px; border: 1px solid var(--mb-line); border-radius: 12px; background: var(--mb-surface); }
+.mb-product-row { display: grid; grid-template-columns: minmax(260px, 1fr) minmax(330px, 1.2fr) auto; align-items: center; min-width: 0; gap: 20px; padding: 10px 16px; border: 1px solid var(--mb-line); border-radius: 12px; background: var(--mb-surface); }
 .mb-product-row-identity { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; min-width: 0; gap: 14px; }
 .mb-product-row-identity > div { display: grid; min-width: 0; gap: 3px; }
 .mb-product-row-identity small { color: var(--mb-subtle); font-size: 10px; font-weight: 700; }
 .mb-product-row-identity strong { overflow: hidden; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
 .mb-product-row-identity code { overflow: hidden; width: fit-content; max-width: 100%; text-overflow: ellipsis; white-space: nowrap; }
-.mb-product-row-stats { display: grid; grid-template-columns: repeat(3, minmax(90px, 1fr)); min-width: 0; margin: 0; padding: 9px 12px; border-radius: 10px; background: #f7f9fc; }
-.mb-product-row-stats div { min-width: 0; }
+.mb-product-row-stats { display: grid; grid-template-columns: repeat(3, minmax(90px, 1fr)); align-self: center; align-items: center; min-width: 0; margin: 0; padding: 7px 12px; border-radius: 10px; background: #f7f9fc; }
+.mb-product-row-stats div { display: grid; align-content: center; min-width: 0; min-height: 36px; padding: 0 8px; }
 .mb-product-row-stats dt { color: var(--mb-subtle); font-size: 9px; }
 .mb-product-row-stats dd { overflow: hidden; margin: 3px 0 0; font-size: 11px; font-weight: 750; text-overflow: ellipsis; white-space: nowrap; }
 .mb-product-row > .mb-link { white-space: nowrap; }
