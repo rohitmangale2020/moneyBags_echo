@@ -310,27 +310,9 @@
         ></small>
       </div>
 
-      <div>
-        <oj-input-text
-                label-hint="City"
-                required
-                maxlength="100"
-                value="{{address.city}}"
-        ></oj-input-text>
-
-        <small
-                class="mb-field-error"
-                data-bind="visible:fieldErrors().city,text:fieldErrors().city"
-        ></small>
-      </div>
-
-      <div>
-        <oj-input-text
-                label-hint="State"
-                required
-                maxlength="100"
-                value="{{address.state}}"
-        ></oj-input-text>
+      <div class="mb-select-field">
+        <label for="customerState">State</label>
+        <select id="customerState" data-bind="value:address.state"><option value="">Select state / union territory</option><!-- ko foreach:indianStates --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select>
 
         <small
                 class="mb-field-error"
@@ -338,7 +320,13 @@
         ></small>
       </div>
 
-      <div>
+      <div class="mb-select-field">
+        <label for="customerDistrict">City / district</label>
+        <select id="customerDistrict" data-bind="value:address.city,enable:address.state"><option value="">Select city / district</option><!-- ko foreach:addressDistricts --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select>
+        <small class="mb-field-error" data-bind="visible:fieldErrors().city,text:fieldErrors().city"></small>
+      </div>
+
+      <div class="wide">
         <oj-input-text
                 label-hint="Pincode"
                 required
@@ -732,30 +720,20 @@
         ></small>
       </div>
 
-      <div>
-        <oj-input-text
-                label-hint="City"
-                maxlength="100"
-                value="{{nominee.city}}"
-        ></oj-input-text>
-
-        <small
-                class="mb-field-error"
-                data-bind="visible:fieldErrors().nomineeCity,text:fieldErrors().nomineeCity"
-        ></small>
-      </div>
-
-      <div>
-        <oj-input-text
-                label-hint="State"
-                maxlength="100"
-                value="{{nominee.state}}"
-        ></oj-input-text>
+      <div class="mb-select-field">
+        <label for="nomineeState">State</label>
+        <select id="nomineeState" data-bind="value:nominee.state"><option value="">Select state / union territory</option><!-- ko foreach:indianStates --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select>
 
         <small
                 class="mb-field-error"
                 data-bind="visible:fieldErrors().nomineeState,text:fieldErrors().nomineeState"
         ></small>
+      </div>
+
+      <div class="mb-select-field">
+        <label for="nomineeDistrict">City / district</label>
+        <select id="nomineeDistrict" data-bind="value:nominee.city,enable:nominee.state"><option value="">Select city / district</option><!-- ko foreach:nomineeDistricts --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select>
+        <small class="mb-field-error" data-bind="visible:fieldErrors().nomineeCity,text:fieldErrors().nomineeCity"></small>
       </div>
 
       <div>

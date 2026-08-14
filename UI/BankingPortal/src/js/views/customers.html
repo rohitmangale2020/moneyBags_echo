@@ -162,8 +162,14 @@
         <label>Address type<select data-bind="value:nomineeForm().address.addressType"><option>CURRENT</option><option>PERMANENT</option><option>OFFICE</option></select></label>
         <oj-input-text label-hint="Address line 1" value="{{nomineeForm().address.line1}}"></oj-input-text>
         <oj-input-text label-hint="Address line 2" value="{{nomineeForm().address.line2}}"></oj-input-text>
-        <oj-input-text label-hint="City" value="{{nomineeForm().address.city}}"></oj-input-text>
-        <oj-input-text label-hint="State" value="{{nomineeForm().address.state}}"></oj-input-text>
+        <div class="mb-select-field">
+          <label for="nomineeState">State</label>
+          <select id="nomineeState" data-bind="value:nomineeAddressState"><option value="">Select state / union territory</option><!-- ko foreach:indianStates --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select>
+        </div>
+        <div class="mb-select-field">
+          <label for="nomineeDistrict">City / district</label>
+          <select id="nomineeDistrict" data-bind="value:nomineeForm().address.city,enable:nomineeAddressState"><option value="">Select city / district</option><!-- ko foreach:nomineeAddressDistricts --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select>
+        </div>
         <oj-input-text label-hint="Country" value="{{nomineeForm().address.country}}"></oj-input-text>
         <oj-input-text label-hint="Pincode" value="{{nomineeForm().address.pincode}}"></oj-input-text>
       </div>

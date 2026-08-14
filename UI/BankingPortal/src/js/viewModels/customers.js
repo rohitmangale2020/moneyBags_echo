@@ -2,10 +2,11 @@ define([
   'knockout',
   'appController',
   'viewModels/util',
+  'viewModels/indiaAddressOptions',
   'ojs/ojinputtext',
   'ojs/ojbutton',
   'ojs/ojdialog',
-], function (ko, app, u) {
+], function (ko, app, u, indiaAddress) {
   'use strict';
 
   const customerBlank = () => ({
@@ -61,6 +62,21 @@ define([
     s.documentForm = ko.observable(documentBlank());
     s.nomineeForm = ko.observable(nomineeBlank());
     s.includeNomineeAddress = ko.observable(false);
+    s.indianStates = ko.observableArray(indiaAddress.states());
+    s.nomineeAddressState = ko.observable('');
+    s.settingNomineeAddress = false;
+    s.nomineeAddressDistricts = ko.pureComputed(() => {
+      s.indianStates();
+      return indiaAddress.districts(s.nomineeAddressState());
+    });
+    indiaAddress.load().then(() => s.indianStates(indiaAddress.states()));
+    s.nomineeAddressState.subscribe((state) => {
+      const form = s.nomineeForm();
+      if (!form || !form.address) return;
+      form.address.state = state;
+      if (!s.settingNomineeAddress) form.address.city = '';
+      s.nomineeForm.valueHasMutated();
+    });
     s.documentFile = ko.observable(null);
     s.activationNotice = ko.observable('');
     s.accountProducts = ko.observableArray([]);
@@ -284,6 +300,9 @@ define([
         s.includeNomineeAddress(Boolean(value && value.address));
         form.address = Object.assign(addressBlank(), (value && value.address) || {});
         s.nomineeForm(form);
+        s.settingNomineeAddress = true;
+        s.nomineeAddressState(form.address.state || '');
+        s.settingNomineeAddress = false;
         document.getElementById('nomineeDialog').open();
       } catch (e) {
         app.notify(e.message, 'error');
@@ -302,6 +321,13 @@ define([
       if (d.phone && !/^[6-9][0-9]{9}$/.test(d.phone)) return s.error('Nominee phone must be a valid 10-digit Indian mobile number.');
       if (d.dob && new Date(d.dob) >= new Date()) return s.error('Nominee date of birth must be in the past.');
       if (d.address && (!d.address.line1 || !d.address.city || !d.address.state || !d.address.country || !/^[1-9][0-9]{5}$/.test(d.address.pincode || ''))) return s.error('Complete the nominee address and enter a valid six-digit pincode.');
+      if (d.address) {
+        try {
+          if (!await indiaAddress.validatePincode(d.address.state, d.address.city, d.address.pincode)) return s.error('Enter a pincode valid for the selected state and city / district.');
+        } catch (e) {
+          return s.error('PIN validation is temporarily unavailable. Please try again.');
+        }
+      }
       try { nomineeId ? await app.services.customers.updateNominee(id, nomineeId, d) : await app.services.customers.nominee(id, d); document.getElementById('nomineeDialog').close(); app.notify('Nominee saved.'); await s.loadDetail(s.selected()); }
       catch (e) { s.error(e.message); }
     };

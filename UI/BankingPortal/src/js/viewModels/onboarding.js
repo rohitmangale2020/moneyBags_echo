@@ -1,4 +1,4 @@
-define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton', 'ojs/ojdatetimepicker'], function (ko, app) {
+define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojinputtext', 'ojs/ojbutton', 'ojs/ojdatetimepicker'], function (ko, app, indiaAddress) {
   'use strict';
 
   const today = () => new Date().toISOString().slice(0, 10);
@@ -99,6 +99,12 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton', 'ojs/ojd
       country: ko.observable(''),
       pincode: ko.observable(''),
     };
+    s.indianStates = ko.observableArray(indiaAddress.states());
+    s.addressDistricts = ko.pureComputed(() => { s.indianStates(); return indiaAddress.districts(s.address.state()); });
+    s.nomineeDistricts = ko.pureComputed(() => { s.indianStates(); return indiaAddress.districts(s.nominee.state()); });
+    indiaAddress.load().then(() => s.indianStates(indiaAddress.states()));
+    s.address.state.subscribe(() => s.address.city(''));
+    s.nominee.state.subscribe(() => s.nominee.city(''));
     s.accountForm = {
       accountNumber: ko.observable(''),
       productId: ko.observable(''),
@@ -219,7 +225,9 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton', 'ojs/ojd
         if (!values[field]) e[field] = `${field[0].toUpperCase()}${field.slice(1)} is required.`;
         else if (values[field].length > 100) e[field] = `${field[0].toUpperCase()}${field.slice(1)} cannot exceed 100 characters.`;
       });
-      if (!/^[1-9][0-9]{5}$/.test(values.pincode)) e.pincode = 'Enter a valid six-digit Indian pincode that does not begin with zero.';
+      try {
+        if (!await indiaAddress.validatePincode(values.state, values.city, values.pincode)) e.pincode = 'Enter a pincode valid for the selected state and district.';
+      } catch (error) { e.pincode = 'PIN validation is temporarily unavailable. Please try again.'; }
       if (!s.setErrors(e)) return;
       const result = await s.run(
         () => app.services.customers.address(s.customer().customerId, values),
@@ -303,7 +311,11 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton', 'ojs/ojd
           else if (field !== 'pincode' && value.length > (field === 'line1' ? 250 : 100)) e[`nominee${field[0].toUpperCase()}${field.slice(1)}`] = `${label} is too long.`;
         });
         if (text(s.nominee.line2()).length > 250) e.nomineeLine2 = 'Address line 2 cannot exceed 250 characters.';
-        if (text(s.nominee.pincode()) && !/^[1-9][0-9]{5}$/.test(text(s.nominee.pincode()))) e.nomineePincode = 'Enter a valid six-digit pincode.';
+        if (text(s.nominee.pincode())) {
+          try {
+            if (!await indiaAddress.validatePincode(text(s.nominee.state()), text(s.nominee.city()), text(s.nominee.pincode()))) e.nomineePincode = 'Enter a pincode valid for the selected state and district.';
+          } catch (error) { e.nomineePincode = 'PIN validation is temporarily unavailable. Please try again.'; }
+        }
       }
       if (!s.setErrors(e)) return;
 
