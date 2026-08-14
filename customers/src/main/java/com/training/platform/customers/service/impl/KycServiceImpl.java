@@ -9,13 +9,11 @@ import com.training.platform.customers.exception.DuplicateResourceException;
 import com.training.platform.customers.exception.ResourceNotFoundException;
 import com.training.platform.customers.repository.CustomerRepository;
 import com.training.platform.customers.repository.KycRepository;
-import com.training.platform.customers.repository.NomineeRepository;
 import com.training.platform.customers.security.CurrentUser;
 import com.training.platform.customers.service.KycService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Service
@@ -24,7 +22,6 @@ public class KycServiceImpl implements KycService {
 
     private final KycRepository kycRepository;
     private final CustomerRepository customerRepository;
-    private final NomineeRepository nomineeRepository;
 
     @Override
     public KycResponse createKyc(Long customerId, KycRequest requestDto) {
@@ -34,7 +31,6 @@ public class KycServiceImpl implements KycService {
         if (kycRepository.existsByCustomerCustomerId(customerId)) {
             throw new DuplicateResourceException("KYC already exists for customer id " + customerId);
         }
-        validateMinorHasNominee(customer);
 
         KycEntity kyc = new KycEntity();
         kyc.setCustomer(customer);
@@ -77,7 +73,6 @@ public class KycServiceImpl implements KycService {
         if (requestDto.getKycStatus() == null) {
             throw new BadRequestException("KYC status is required");
         }
-        validateMinorHasNominee(kyc.getCustomer());
 
         kyc.setKycStatus(requestDto.getKycStatus());
         kyc.setKycDate(requestDto.getKycDate());
@@ -122,12 +117,4 @@ public class KycServiceImpl implements KycService {
         return dto;
     }
 
-    private void validateMinorHasNominee(CustomerEntity customer) {
-        if (customer == null || customer.getDob() == null || !customer.getDob().plusYears(18).isAfter(LocalDate.now())) {
-            return;
-        }
-        if (!nomineeRepository.existsByCustomerCustomerIdAndStatusIgnoreCase(customer.getCustomerId(), "ACTIVE")) {
-            throw new BadRequestException("An active nominee is required before KYC can be saved for a customer under 18.");
-        }
-    }
 }

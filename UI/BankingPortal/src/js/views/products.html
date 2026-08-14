@@ -12,8 +12,13 @@
   </div>
   <div class="mb-error" data-bind="visible:state.error,text:state.error"></div>
   <section class="mb-product-section" aria-labelledby="active-products-heading">
-    <div class="mb-product-section-heading"><div><small>AVAILABLE NOW</small><h2 id="active-products-heading">Active products</h2><p>Products currently available for customers.</p></div><span class="mb-product-count" data-bind="text:activeProducts().length + ' active'"></span></div>
-  <div class="mb-card-grid" data-bind="foreach:activeProducts">
+    <div class="mb-product-section-heading"><div><small>AVAILABLE NOW</small><h2 id="active-products-heading">Active products</h2><p>Products currently available for customers.</p></div><div class="mb-product-heading-actions"><button type="button" class="mb-view-toggle" data-bind="click:toggleActiveCompact,text:activeCompact()?'Card view':'Compact view',attr:{'aria-pressed':activeCompact}"></button><span class="mb-product-count" data-bind="text:activeCountLabel"></span></div></div>
+    <div class="mb-search-panel mb-product-filter-panel">
+      <label>Search active products<oj-input-text aria-label="Search active products" placeholder="Name, code, or description" value="{{activeSearch}}" clear-icon="conditional"></oj-input-text></label>
+      <label>Product type<select data-bind="value:activeType"><option value="">All active product types</option><!-- ko foreach:activeTypeOptions --><option data-bind="value:code,text:name"></option><!-- /ko --></select></label>
+      <oj-button on-oj-action="[[clearActiveFilters]]" disabled="[[!activeFiltersApplied()]]">Clear filters</oj-button>
+    </div>
+  <div class="mb-card-grid" data-bind="visible:!activeCompact(),foreach:filteredActiveProducts">
     <article class="mb-card">
       <div class="mb-card-top">
         <span class="mb-card-icon mb-product-icon" data-bind="css:$parent.productIcon($data)" aria-hidden="true"></span
@@ -41,14 +46,47 @@
       >View and manage</button>
     </article>
   </div>
-  <div class="mb-empty mb-product-empty" data-bind="visible:activeProducts().length===0">No active products are available.</div>
+  <div class="mb-product-list" data-bind="visible:activeCompact,foreach:filteredActiveProducts">
+    <article class="mb-product-row">
+      <div class="mb-product-row-identity">
+        <span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span>
+        <div><small data-bind="text:productTypeName||productTypeCode"></small><strong data-bind="text:productName"></strong><code data-bind="text:productCode"></code></div>
+      </div>
+      <dl class="mb-product-row-stats">
+        <div><dt>Interest</dt><dd data-bind="text:`${rate&&rate.interestRate||0}%`"></dd></div>
+        <div><dt>Min balance</dt><dd data-bind="text:$parent.money(minimumBalance,currency)"></dd></div>
+        <div><dt>Monthly fee</dt><dd data-bind="text:$parent.money(fee&&fee.monthlyMaintenanceFee,currency)"></dd></div>
+      </dl>
+      <button class="mb-link" data-bind="click:()=>$parent.manage($data)">View and manage</button>
+    </article>
+  </div>
+  <div class="mb-empty mb-product-empty" data-bind="visible:filteredActiveProducts().length===0,text:activeFiltersApplied()?'No active products match these filters.':'No active products are available.'"></div>
   </section>
   <section class="mb-product-section mb-product-section-retired" aria-labelledby="retired-products-heading">
-    <div class="mb-product-section-heading"><div><small>ARCHIVED CATALOGUE</small><h2 id="retired-products-heading">Retired products</h2><p>Products retained for staff reference and history.</p></div><span class="mb-product-count retired" data-bind="text:retiredProducts().length + ' retired'"></span></div>
-    <div class="mb-card-grid" data-bind="foreach:retiredProducts">
+    <div class="mb-product-section-heading"><div><small>ARCHIVED CATALOGUE</small><h2 id="retired-products-heading">Retired products</h2><p>Products retained for staff reference and history.</p></div><div class="mb-product-heading-actions"><button type="button" class="mb-view-toggle" data-bind="click:toggleRetiredCompact,text:retiredCompact()?'Card view':'Compact view',attr:{'aria-pressed':retiredCompact}"></button><span class="mb-product-count retired" data-bind="text:retiredCountLabel"></span></div></div>
+    <div class="mb-search-panel mb-product-filter-panel">
+      <label>Search retired products<oj-input-text aria-label="Search retired products" placeholder="Name, code, or description" value="{{retiredSearch}}" clear-icon="conditional"></oj-input-text></label>
+      <label>Product type<select data-bind="value:retiredType"><option value="">All retired product types</option><!-- ko foreach:retiredTypeOptions --><option data-bind="value:code,text:name"></option><!-- /ko --></select></label>
+      <oj-button on-oj-action="[[clearRetiredFilters]]" disabled="[[!retiredFiltersApplied()]]">Clear filters</oj-button>
+    </div>
+    <div class="mb-card-grid" data-bind="visible:!retiredCompact(),foreach:filteredRetiredProducts">
       <article class="mb-card mb-card-retired"><div class="mb-card-top"><span class="mb-card-icon mb-product-icon" data-bind="css:$parent.productIcon($data)" aria-hidden="true"></span><span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span></div><small data-bind="text:productTypeName||productTypeCode"></small><h2 data-bind="text:productName"></h2><code data-bind="text:productCode"></code><div class="mb-card-stats"><div><small>Interest</small><strong data-bind="text:`${rate&&rate.interestRate||0}%`"></strong></div><div><small>Min balance</small><strong data-bind="text:$parent.money(minimumBalance,currency)"></strong></div><div><small>Monthly fee</small><strong data-bind="text:$parent.money(fee&&fee.monthlyMaintenanceFee,currency)"></strong></div></div><button class="mb-link" data-bind="click:()=>$parent.manage($data)">View details</button></article>
     </div>
-    <div class="mb-empty mb-product-empty" data-bind="visible:retiredProducts().length===0">No retired products.</div>
+    <div class="mb-product-list" data-bind="visible:retiredCompact,foreach:filteredRetiredProducts">
+      <article class="mb-product-row mb-card-retired">
+        <div class="mb-product-row-identity">
+          <span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span>
+          <div><small data-bind="text:productTypeName||productTypeCode"></small><strong data-bind="text:productName"></strong><code data-bind="text:productCode"></code></div>
+        </div>
+        <dl class="mb-product-row-stats">
+          <div><dt>Interest</dt><dd data-bind="text:`${rate&&rate.interestRate||0}%`"></dd></div>
+          <div><dt>Min balance</dt><dd data-bind="text:$parent.money(minimumBalance,currency)"></dd></div>
+          <div><dt>Monthly fee</dt><dd data-bind="text:$parent.money(fee&&fee.monthlyMaintenanceFee,currency)"></dd></div>
+        </dl>
+        <button class="mb-link" data-bind="click:()=>$parent.manage($data)">View details</button>
+      </article>
+    </div>
+    <div class="mb-empty mb-product-empty" data-bind="visible:filteredRetiredProducts().length===0,text:retiredFiltersApplied()?'No retired products match these filters.':'No retired products.'"></div>
   </section>
   <oj-dialog
     id="productDialog"
@@ -78,10 +116,10 @@
         <oj-input-text data-bind="visible:isRecurringDeposit" label-hint="Installment amount" value="{{form().term.installmentAmount}}"></oj-input-text>
         <oj-input-text data-bind="visible:isRecurringDeposit" label-hint="Installment frequency" value="{{form().term.installmentFrequency}}"></oj-input-text>
         <oj-input-text data-bind="visible:isTermDeposit" label-hint="Maturity instruction" value="{{form().term.maturityInstruction}}"></oj-input-text>
-        <label data-bind="visible:isTermDeposit">Premature withdrawal<select data-bind="value:form().term.prematureWithdrawalAllowed"><option data-bind="value:null">Not configured</option><option data-bind="value:true">Allowed</option><option data-bind="value:false">Not allowed</option></select></label>
+        <div class="mb-product-toggle" data-bind="visible:isTermDeposit"><span>Premature withdrawal</span><oj-switch aria-label="Allow premature withdrawal" value="{{form().term.prematureWithdrawalAllowed}}"></oj-switch></div>
       </div>
     </div>
-    <div slot="footer" class="mb-dialog-actions">
+    <div slot="footer" class="mb-dialog-actions mb-product-dialog-actions">
       <oj-button on-oj-action="[[close]]">Cancel</oj-button>
       <oj-button data-bind="visible:editingCode" chroming="callToAction" on-oj-action="[[save]]">Save changes</oj-button>
       <oj-button data-bind="visible:!editingCode()" chroming="callToAction" on-oj-action="[[save]]">Create product</oj-button>
@@ -109,5 +147,5 @@
       <oj-button chroming="callToAction" on-oj-action="[[saveType]]">Create type</oj-button>
     </div>
   </oj-dialog>
-  <oj-dialog id="productDetailDialog" class="mb-dialog mb-dialog-wide" dialog-title="Product details" cancel-behavior="icon"><div slot="body"><div class="mb-error" data-bind="visible:error,text:error"></div><div data-bind="with:selected"><div class="mb-detail-hero"><div><small data-bind="text:productCode"></small><h2 data-bind="text:productName"></h2><p data-bind="visible:description,text:description"></p></div><span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span></div><dl class="mb-kv three"><div><dt>Type</dt><dd data-bind="text:productTypeName"></dd></div><div><dt>Interest</dt><dd data-bind="text:`${rate&&rate.interestRate||0}%`"></dd></div><div><dt>Monthly fee</dt><dd data-bind="text:fee&&fee.monthlyMaintenanceFee"></dd></div><div><dt>Minimum</dt><dd data-bind="text:minimumBalance"></dd></div><div><dt>Maximum</dt><dd data-bind="text:maximumBalance"></dd></div><div><dt>Currency</dt><dd data-bind="text:currency"></dd></div></dl></div><div class="mb-detail-actions"><button class="mb-link" data-bind="visible:isAdmin,click:edit">Edit product</button><button class="mb-link danger" data-bind="visible:isAdmin && selected() && selected().status==='ACTIVE',click:()=>retire(selected())">Retire</button></div><div class="mb-section-title"><small>ACTIVITY HISTORY</small><h3>Lifecycle changes</h3></div><div class="mb-table compact"><table><thead><tr><th>Change</th><th>Reason</th><th>By</th><th>Date</th></tr></thead><tbody data-bind="foreach:history"><tr><td data-bind="text:previousStatus===newStatus ? 'Product updated' : `${previousStatus} → ${newStatus}`"></td><td data-bind="text:changeReason"></td><td data-bind="text:changedBy"></td><td data-bind="text:changedDate"></td></tr></tbody></table></div></div></oj-dialog>
+  <oj-dialog id="productDetailDialog" class="mb-dialog mb-dialog-wide" dialog-title="Product details" cancel-behavior="icon"><div slot="body"><div class="mb-error" data-bind="visible:error,text:error"></div><div data-bind="with:selected"><div class="mb-detail-hero"><div><small data-bind="text:productCode"></small><h2 data-bind="text:productName"></h2><p data-bind="visible:description,text:description"></p></div><span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span></div><dl class="mb-kv three"><div><dt>Type</dt><dd data-bind="text:productTypeName"></dd></div><div><dt>Interest</dt><dd data-bind="text:`${rate&&rate.interestRate||0}%`"></dd></div><div><dt>Monthly fee</dt><dd data-bind="text:fee&&fee.monthlyMaintenanceFee"></dd></div><div><dt>Minimum</dt><dd data-bind="text:minimumBalance"></dd></div><div><dt>Maximum</dt><dd data-bind="text:maximumBalance"></dd></div><div><dt>Currency</dt><dd data-bind="text:currency"></dd></div></dl></div><div class="mb-detail-actions"><button class="mb-link" data-bind="visible:isAdmin() && selected() && selected().status==='ACTIVE',click:edit">Edit product</button><button class="mb-link danger" data-bind="visible:isAdmin() && selected() && selected().status==='ACTIVE',click:()=>retire(selected())">Retire</button></div><div class="mb-section-title"><small>ACTIVITY HISTORY</small><h3>Lifecycle changes</h3></div><div class="mb-table compact"><table><thead><tr><th>Change</th><th>Reason</th><th>By</th><th>Date</th></tr></thead><tbody data-bind="foreach:history"><tr><td data-bind="text:previousStatus===newStatus ? 'Product updated' : `${previousStatus} → ${newStatus}`"></td><td data-bind="text:changeReason"></td><td data-bind="text:changedBy"></td><td data-bind="text:changedDate"></td></tr></tbody></table></div></div></oj-dialog>
 </section>

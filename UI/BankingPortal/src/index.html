@@ -100,7 +100,7 @@
               </div>
             </details>
           </header></oj-bind-if
-        ><oj-module
+        ><oj-bind-if test="[[hasActiveCustomer]]"><div class="mb-customer-context"><div><small>ACTIVE CUSTOMER</small><strong><oj-bind-text value="[[activeCustomerLabel]]"></oj-bind-text></strong></div><div><oj-button on-oj-action="[[() => go('customers')]]">Customer workspace</oj-button><oj-button on-oj-action="[[clearActiveCustomer]]">Clear</oj-button></div></div></oj-bind-if><oj-module
           id="mainContent"
           role="main"
           class="mb-content"

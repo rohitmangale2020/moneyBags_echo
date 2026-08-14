@@ -23,15 +23,6 @@ define([
   const nomineeBlank = () => ({
     nomineeId: null, nomineeName: '', relationship: '', relationType: 'NOMINEE', dob: '', phone: '', sharePercentage: 100, status: 'ACTIVE', updatedBy: '', startDate: '', endDate: '', includeAddress: false, address: addressBlank(),
   });
-  const isMinor = (dob) => {
-    if (!dob) return false;
-    const birthDate = new Date(`${dob}T00:00:00`);
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    if (today.getMonth() < birthDate.getMonth() || (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate())) age -= 1;
-    return age < 18;
-  };
-
   function clean(value) {
     const result = {};
     Object.keys(value).forEach((key) => {
@@ -46,23 +37,42 @@ define([
     s.isEmployee = ko.pureComputed(() => app.session.role() === 'EMPLOYEE');
     s.openOnboarding = () => app.go('onboarding');
     s.state = u.state([]);
-    s.detailState = u.state({ addresses: [], documents: [], nominees: [], kyc: null });
+    s.detailState = u.state({ addresses: [], documents: [], nominees: [], accounts: [], kyc: null });
+    s.showDetailPage = ko.observable(false);
     s.query = ko.observable('');
     s.searchMode = ko.observable('local');
     s.selected = ko.observable(null);
     s.form = ko.observable(customerBlank());
     s.addressForm = ko.observable(addressBlank());
+    s.documentRequiresExpiry = ko.observable(false);
+    s.setDocumentExpiryRequirement = (type) => {
+      const needsExpiry = ['PASSPORT', 'DRIVING_LICENSE'].includes(String(type || ''));
+      s.documentRequiresExpiry(needsExpiry);
+      if (!needsExpiry && s.documentForm()) s.documentForm().expiryDate = '';
+    };
+    s.onDocumentTypeChange = (_, event) => s.setDocumentExpiryRequirement(event.target.value);
     s.kycForm = ko.observable(kycBlank());
     s.documentForm = ko.observable(documentBlank());
     s.nomineeForm = ko.observable(nomineeBlank());
     s.includeNomineeAddress = ko.observable(false);
     s.documentFile = ko.observable(null);
+    s.activationNotice = ko.observable('');
+    s.accountProducts = ko.observableArray([]);
+    s.accountForm = {
+      productId: ko.observable(''),
+      ownershipType: ko.observable('INDIVIDUAL'),
+      availableBalance: ko.observable(0),
+    };
     s.error = ko.observable('');
     s.date = u.date;
     s.filtered = ko.pureComputed(() => {
       const q = s.query().toLowerCase();
       return s.state.data().filter((x) => !q || `${x.cifNo} ${x.firstName} ${x.lastName || ''} ${x.email || ''} ${x.phone}`.toLowerCase().includes(q));
     });
+    s.kycVerified = ko.pureComputed(() =>
+      String((s.detailState.data().kyc || {}).kycStatus || '').toUpperCase() === 'VERIFIED',
+    );
+    s.accountActionLabel = ko.pureComputed(() => s.kycVerified() ? 'Add account' : 'Add account (KYC required)');
     s.load = () => s.state.run(() => app.services.customers.list()).catch(() => null);
     s.backendSearch = () => {
       const q = s.query().trim();
@@ -81,26 +91,36 @@ define([
     s.loadDetail = async (customer) => {
       const id = customer.customerId;
       s.selected(await app.services.customers.get(id));
+      app.setActiveCustomer(s.selected());
       return s.detailState.run(async () => {
         const results = await Promise.allSettled([
           app.services.customers.addresses(id),
           app.services.customers.documents(id),
           app.services.customers.nominees(id),
           app.services.customers.kyc(id),
+          app.services.accounts.customer(id),
+          app.services.products.list(),
         ]);
+        const products = results[5].status === 'fulfilled' ? results[5].value : [];
+        const productNames = new Map(products.map((product) => [String(product.productId), product.productName]));
         return {
           addresses: results[0].status === 'fulfilled' ? results[0].value : [],
           documents: results[1].status === 'fulfilled' ? results[1].value : [],
           nominees: results[2].status === 'fulfilled' ? results[2].value : [],
           kyc: results[3].status === 'fulfilled' ? results[3].value : null,
+          accounts: results[4].status === 'fulfilled'
+            ? results[4].value.map((account) => Object.assign({}, account, {
+              productName: account.productName || productNames.get(String(account.productId)) || 'Product unavailable',
+            }))
+            : [],
         };
       });
     };
     s.openDetail = async (customer) => {
       s.error('');
-      document.getElementById('customerDetailDialog').open();
-      try { await s.loadDetail(customer); } catch (e) { s.error(e.message); }
+      try { await s.loadDetail(customer); s.showDetailPage(true); } catch (e) { s.error(e.message); }
     };
+    s.backToDirectory = () => { s.error(''); s.showDetailPage(false); };
     s.editCustomer = () => {
       s.form(Object.assign(customerBlank(), ko.toJS(s.selected())));
       s.error('');
@@ -127,14 +147,58 @@ define([
     };
     s.status = async (x) => {
       try {
+        if (x.status !== 'ACTIVE') {
+          let kyc = null;
+          try { kyc = await app.services.customers.kyc(x.customerId); } catch (e) { /* KYC has not been created yet. */ }
+          if (String((kyc || {}).kycStatus || '').toUpperCase() !== 'VERIFIED') {
+            s.activationNotice(`Customer ${x.cifNo} cannot be activated yet. Complete and verify KYC first, then activate the customer.`);
+            document.getElementById('activationRequirementsDialog').open();
+            return;
+          }
+        }
         const value = x.status === 'ACTIVE' ? await app.services.customers.deactivate(x.customerId) : await app.services.customers.activate(x.customerId);
         if (s.selected() && s.selected().customerId === x.customerId) s.selected(value);
         app.notify(`Customer ${x.status === 'ACTIVE' ? 'deactivated' : 'activated'}.`); s.load();
       } catch (e) { app.notify(e.message, 'error'); }
     };
+    s.openAccountForCustomer = async () => {
+      if (!s.kycVerified()) {
+        return app.notify('Verify KYC first. An account or product can only be added after KYC is verified.', 'warning');
+      }
+      s.error('');
+      s.accountForm.productId('');
+      s.accountForm.ownershipType('INDIVIDUAL');
+      s.accountForm.availableBalance(0);
+      try {
+        s.accountProducts((await app.services.products.list()).filter((product) => product.status === 'ACTIVE'));
+        if (!s.accountProducts().length) return s.error('No active banking products are available for account opening.');
+        document.getElementById('customerAccountDialog').open();
+      } catch (e) { s.error(e.message); }
+    };
+    s.createAccount = async () => {
+      const product = s.accountProducts().find((item) => String(item.productId) === String(s.accountForm.productId()));
+      const openingBalance = Number(s.accountForm.availableBalance());
+      if (!s.kycVerified()) return s.error('Verify KYC first. An account cannot be opened before KYC is verified.');
+      if (!product) return s.error('Select an active banking product.');
+      if (!Number.isFinite(openingBalance) || openingBalance < 0) return s.error('Opening balance must be zero or a positive number.');
+      try {
+        await app.services.accounts.create({
+          customerId: String(s.selected().customerId),
+          productId: String(product.productId),
+          ownershipType: s.accountForm.ownershipType(),
+          status: 'ACTIVE',
+          currencyCode: product.currency,
+          availableBalance: openingBalance,
+          closedAt: null,
+        });
+        document.getElementById('customerAccountDialog').close();
+        app.notify('Account opened successfully.');
+        await s.loadDetail(s.selected());
+      } catch (e) { s.error(e.message); }
+    };
     s.remove = async (x) => {
       if (!window.confirm(`Delete customer ${x.cifNo}? This calls the backend DELETE operation.`)) return;
-      try { await app.services.customers.remove(x.customerId); document.getElementById('customerDetailDialog').close(); app.notify('Customer deleted.'); s.load(); }
+      try { await app.services.customers.remove(x.customerId); s.showDetailPage(false); app.notify('Customer deleted.'); s.load(); }
       catch (e) { app.notify(e.message, 'error'); }
     };
     s.openAddress = async (x) => { s.error(''); try { const value = x ? await app.services.customers.getAddress(s.selected().customerId, x.addressId) : null; s.addressForm(Object.assign(addressBlank(), value || {})); document.getElementById('addressDialog').open(); } catch (e) { app.notify(e.message, 'error'); } };
@@ -155,21 +219,19 @@ define([
     };
     s.saveKyc = async () => {
       const raw = ko.toJS(s.kycForm()), d = clean({ kycStatus: raw.kycStatus, kycDate: raw.kycDate, verifiedBy: raw.verifiedBy, riskLevel: 'LOW', riskScore: 0, expiryDate: raw.expiryDate, remarks: raw.remarks, updatedBy: raw.updatedBy }), id = s.selected().customerId;
-      const nominees = s.detailState.data().nominees || [];
-      if (isMinor(s.selected().dob) && !nominees.some((nominee) => String(nominee.status || '').toUpperCase() === 'ACTIVE')) {
-        return s.error('A minor customer must have an active nominee before KYC can be saved. Add the nominee first.');
-      }
       if (d.kycDate && new Date(d.kycDate) > new Date()) return s.error('KYC date cannot be in the future.');
       d.riskScore = 0;
       try { s.detailState.data().kyc ? await app.services.customers.updateKyc(id, d) : await app.services.customers.createKyc(id, d); document.getElementById('kycDialog').close(); app.notify('KYC record saved.'); await s.loadDetail(s.selected()); }
       catch (e) { s.error(e.message); }
     };
-    s.openDocument = async (x) => { s.error(''); try { const value = x ? await app.services.customers.getDocument(s.selected().customerId, x.docId) : null; s.documentForm(Object.assign(documentBlank(), value || {})); s.documentFile(null); document.getElementById('documentDialog').open(); } catch (e) { app.notify(e.message, 'error'); } };
+    s.openDocument = async (x) => { s.error(''); try { const value = x ? await app.services.customers.getDocument(s.selected().customerId, x.docId) : null; const form = Object.assign(documentBlank(), value || {}); s.documentForm(form); s.setDocumentExpiryRequirement(form.documentType); s.documentFile(null); document.getElementById('documentDialog').open(); } catch (e) { app.notify(e.message, 'error'); } };
     s.pickFile = (_, event) => { s.documentFile(event.target.files && event.target.files[0]); };
     s.saveDocument = async () => {
-      const raw = ko.toJS(s.documentForm()), docId = raw.docId, d = clean({ documentType: raw.documentType, documentNumber: raw.documentNumber, issueDate: raw.issueDate, expiryDate: raw.expiryDate, status: raw.status, verifiedBy: raw.verifiedBy, rejectedReason: raw.rejectedReason, remarks: raw.remarks, updatedBy: raw.updatedBy }), id = s.selected().customerId, file = s.documentFile();
+      const raw = ko.toJS(s.documentForm()), docId = raw.docId, d = clean({ documentType: raw.documentType, documentNumber: raw.documentNumber, issueDate: raw.issueDate, expiryDate: s.documentRequiresExpiry() ? raw.expiryDate : null, status: raw.status, verifiedBy: raw.verifiedBy, rejectedReason: raw.rejectedReason, remarks: raw.remarks, updatedBy: raw.updatedBy }), id = s.selected().customerId, file = s.documentFile();
       if (!d.documentNumber || (!docId && !file)) return s.error('Document number and file are required.');
       if (d.issueDate && new Date(d.issueDate) > new Date()) return s.error('Document issue date cannot be in the future.');
+      if (s.documentRequiresExpiry() && !d.expiryDate) return s.error('Expiry date is required for this document type.');
+      if (d.expiryDate && new Date(d.expiryDate) <= new Date()) return s.error('Expiry date must be in the future.');
       try { docId ? await app.services.customers.updateDocument(id, docId, file, d) : await app.services.customers.document(id, file, d); document.getElementById('documentDialog').close(); app.notify('Document saved.'); await s.loadDetail(s.selected()); }
       catch (e) { s.error(e.message); }
     };

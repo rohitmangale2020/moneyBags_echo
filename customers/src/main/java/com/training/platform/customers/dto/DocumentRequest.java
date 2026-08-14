@@ -2,7 +2,6 @@ package com.training.platform.customers.dto;
 
 import com.training.platform.customers.constants.DocumentType;
 import com.training.platform.customers.constants.DocumentStatusType;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Size;
@@ -17,7 +16,6 @@ public class DocumentRequest {
     @NotNull(message = "Document type is required")
     private DocumentType documentType;
 
-    @NotBlank(message = "Document number is required")
     @Size(max = 100, message = "Document number must not exceed 100 characters")
     private String documentNumber;
 
@@ -25,7 +23,6 @@ public class DocumentRequest {
     private LocalDate issueDate;
     private LocalDate expiryDate;
 
-    @NotNull(message = "Document status is required")
     private DocumentStatusType status;
 
     @Size(max = 100, message = "Verified by must not exceed 100 characters")

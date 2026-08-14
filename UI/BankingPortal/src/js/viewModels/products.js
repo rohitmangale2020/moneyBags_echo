@@ -5,6 +5,7 @@ define([
   'ojs/ojinputtext',
   'ojs/ojbutton',
   'ojs/ojdialog',
+  'ojs/ojswitch',
 ], function (ko, app, u) {
   function blank() {
     return {
@@ -23,10 +24,32 @@ define([
         installmentFrequency: null,
         lockInPeriod: null,
         maturityInstruction: null,
-        prematureWithdrawalAllowed: null,
+        prematureWithdrawalAllowed: false,
       },
       fee: { monthlyMaintenanceFee: 0 },
     };
+  }
+  function filterProducts(products, search, typeCode) {
+    const query = (search || '').trim().toLowerCase();
+    return products.filter((product) => {
+      if (typeCode && product.productTypeCode !== typeCode) return false;
+      if (!query) return true;
+      return [
+        product.productCode,
+        product.productName,
+        product.productTypeCode,
+        product.productTypeName,
+        product.description,
+      ].some((value) => String(value || '').toLowerCase().includes(query));
+    });
+  }
+  function productTypeOptions(products) {
+    const options = new Map();
+    products.forEach((product) => {
+      options.set(product.productTypeCode, product.productTypeName || product.productTypeCode);
+    });
+    return Array.from(options, ([code, name]) => ({ code, name }))
+      .sort((left, right) => left.name.localeCompare(right.name));
   }
   function VM() {
     const s = this;
@@ -41,6 +64,30 @@ define([
     s.history = ko.observableArray([]);
     s.activeProducts = ko.pureComputed(() => s.state.data().filter((product) => product.status === 'ACTIVE'));
     s.retiredProducts = ko.pureComputed(() => s.state.data().filter((product) => product.status === 'RETIRED'));
+    s.activeSearch = ko.observable('');
+    s.activeType = ko.observable('');
+    s.activeCompact = ko.observable(false);
+    s.retiredSearch = ko.observable('');
+    s.retiredType = ko.observable('');
+    s.retiredCompact = ko.observable(false);
+    s.activeTypeOptions = ko.pureComputed(() => productTypeOptions(s.activeProducts()));
+    s.retiredTypeOptions = ko.pureComputed(() => productTypeOptions(s.retiredProducts()));
+    s.filteredActiveProducts = ko.pureComputed(() =>
+      filterProducts(s.activeProducts(), s.activeSearch(), s.activeType()));
+    s.filteredRetiredProducts = ko.pureComputed(() =>
+      filterProducts(s.retiredProducts(), s.retiredSearch(), s.retiredType()));
+    s.activeFiltersApplied = ko.pureComputed(() => !!s.activeSearch().trim() || !!s.activeType());
+    s.retiredFiltersApplied = ko.pureComputed(() => !!s.retiredSearch().trim() || !!s.retiredType());
+    s.activeCountLabel = ko.pureComputed(() => s.activeFiltersApplied()
+      ? `${s.filteredActiveProducts().length} of ${s.activeProducts().length} active`
+      : `${s.activeProducts().length} active`);
+    s.retiredCountLabel = ko.pureComputed(() => s.retiredFiltersApplied()
+      ? `${s.filteredRetiredProducts().length} of ${s.retiredProducts().length} retired`
+      : `${s.retiredProducts().length} retired`);
+    s.clearActiveFilters = () => { s.activeSearch(''); s.activeType(''); };
+    s.clearRetiredFilters = () => { s.retiredSearch(''); s.retiredType(''); };
+    s.toggleActiveCompact = () => s.activeCompact(!s.activeCompact());
+    s.toggleRetiredCompact = () => s.retiredCompact(!s.retiredCompact());
     s.typeForm = {
       productTypeCode: ko.observable(''),
       productTypeName: ko.observable(''),
@@ -61,7 +108,7 @@ define([
       product.productTypeCode = typeCode;
       if (typeCode !== 'FD' && typeCode !== 'RD') {
         product.term.tenureMonths = null; product.term.lockInPeriod = null;
-        product.term.maturityInstruction = null; product.term.prematureWithdrawalAllowed = null;
+        product.term.maturityInstruction = null; product.term.prematureWithdrawalAllowed = false;
       }
       if (typeCode !== 'RD') {
         product.term.installmentAmount = null; product.term.installmentFrequency = null;
@@ -120,7 +167,9 @@ define([
       s.editingCode(d.productCode);
       s.form(Object.assign(blank(), d, {
         rate: Object.assign({ interestRate: 0 }, d.rate || {}),
-        term: Object.assign(blank().term, d.term || {}),
+        term: Object.assign(blank().term, d.term || {}, {
+          prematureWithdrawalAllowed: !!(d.term && d.term.prematureWithdrawalAllowed),
+        }),
         fee: Object.assign({ monthlyMaintenanceFee: 0 }, d.fee || {}),
       }));
       s.formType(d.productTypeCode);
@@ -184,6 +233,10 @@ define([
       }
     };
     s.retire = async (p) => {
+      if (!s.isAdmin()) {
+        app.notify('Only administrators can retire products.', 'warning');
+        return;
+      }
       if (!window.confirm(`Retire product ${p.productCode}?`)) return;
       try {
         await app.services.products.retire(p.productCode);

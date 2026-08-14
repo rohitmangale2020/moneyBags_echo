@@ -30,6 +30,9 @@ define([
     s.busy = ko.observable(false);
     s.loadingAccounts = ko.observable(false);
     s.accounts = ko.observableArray([]);
+    s.activeCustomer = app.activeCustomer;
+    s.hasActiveCustomer = app.hasActiveCustomer;
+    s.useCustomerAccounts = ko.observable(false);
 
     s.form = {
       transactionRef: ko.observable(u.ref()),
@@ -49,6 +52,10 @@ define([
     s.isSelfTransfer = ko.pureComputed(() => s.operation() === 'SELF_TRANSFER');
     s.isSingleAccount = ko.pureComputed(
       () => s.operation() === 'DEPOSIT' || s.operation() === 'WITHDRAWAL',
+    );
+    s.hasCustomerAccounts = ko.pureComputed(() => s.accounts().length > 0);
+    s.isUsingCustomerAccounts = ko.pureComputed(
+      () => s.useCustomerAccounts() && s.accounts().length > 0,
     );
     s.operationTitle = ko.pureComputed(() => ({
       TRANSFER: 'Internal transfer',
@@ -131,6 +138,17 @@ define([
     s.selectOperation = (operation) => {
       s.operation(operation);
       s.error('');
+      if (s.hasActiveCustomer()) s.loadCustomerAccounts();
+    };
+
+    s.useDifferentAccount = () => {
+      s.useCustomerAccounts(false);
+      s.error('');
+    };
+
+    s.useActiveCustomerAccounts = () => {
+      s.useCustomerAccounts(true);
+      if (s.hasActiveCustomer()) s.loadCustomerAccounts();
     };
 
     s.open = () => {
@@ -138,15 +156,19 @@ define([
       s.form.debitAccountId('');
       s.form.creditAccountId('');
       s.form.accountId('');
-      s.form.customerId('');
+      s.form.customerId(s.hasActiveCustomer()
+        ? s.activeCustomer().customerId
+        : (app.activeTransactionCustomerId ? app.activeTransactionCustomerId() : ''));
       s.form.fromAccountId('');
       s.form.toAccountId('');
       s.form.amount('');
       s.form.currencyCode('INR');
       s.accounts([]);
+      s.useCustomerAccounts(s.hasActiveCustomer());
       s.operation('TRANSFER');
       s.error('');
       document.getElementById('transactionDialog').open();
+      if (s.hasActiveCustomer()) s.loadCustomerAccounts();
     };
 
     s.close = () => document.getElementById('transactionDialog').close();
@@ -154,18 +176,27 @@ define([
     s.loadCustomerAccounts = async () => {
       const customerId = s.form.customerId().trim();
       if (!customerId) return s.error('Enter a customer ID first.');
+      if (app.setTransactionCustomerId) app.setTransactionCustomerId(customerId);
       s.loadingAccounts(true);
       s.error('');
       try {
         const accounts = (await app.services.accounts.customer(customerId))
           .filter((account) => account.status === 'ACTIVE');
         s.accounts(accounts);
-        s.form.fromAccountId(accounts[0] ? accounts[0].accountId : '');
-        s.form.toAccountId(accounts[1] ? accounts[1].accountId : '');
+        s.useCustomerAccounts(accounts.length > 0);
+        const firstAccountId = accounts[0] ? String(accounts[0].accountId) : '';
+        const secondAccountId = accounts[1] ? String(accounts[1].accountId) : '';
+        s.form.fromAccountId(firstAccountId);
+        s.form.toAccountId(secondAccountId);
+        s.form.debitAccountId(firstAccountId);
+        s.form.accountId(firstAccountId);
         if (accounts[0]) s.form.currencyCode(accounts[0].currencyCode);
-        if (accounts.length < 2) s.error('This customer needs at least two active accounts for a self transfer.');
+        if (s.isSelfTransfer() && accounts.length < 2) {
+          s.error('This customer needs at least two active accounts for a self transfer.');
+        }
       } catch (error) {
         s.accounts([]);
+        s.useCustomerAccounts(false);
         s.error(error.message);
       } finally {
         s.loadingAccounts(false);
@@ -173,7 +204,7 @@ define([
     };
 
     s.form.fromAccountId.subscribe((accountId) => {
-      const account = s.accounts().find((item) => item.accountId === accountId);
+      const account = s.accounts().find((item) => String(item.accountId) === String(accountId));
       if (account) s.form.currencyCode(account.currencyCode);
     });
 
@@ -185,16 +216,16 @@ define([
       let customerId = null;
 
       if (operation === 'TRANSFER') {
-        debitAccountId = s.form.debitAccountId().trim();
-        creditAccountId = s.form.creditAccountId().trim();
+        debitAccountId = String(s.form.debitAccountId() || '').trim();
+        creditAccountId = String(s.form.creditAccountId() || '').trim();
       } else if (operation === 'SELF_TRANSFER') {
-        debitAccountId = s.form.fromAccountId();
-        creditAccountId = s.form.toAccountId();
+        debitAccountId = String(s.form.fromAccountId() || '').trim();
+        creditAccountId = String(s.form.toAccountId() || '').trim();
         customerId = s.form.customerId().trim();
       } else if (operation === 'DEPOSIT') {
-        creditAccountId = s.form.accountId().trim();
+        creditAccountId = String(s.form.accountId() || '').trim();
       } else {
-        debitAccountId = s.form.accountId().trim();
+        debitAccountId = String(s.form.accountId() || '').trim();
       }
 
       return {
@@ -227,8 +258,8 @@ define([
       if (s.isSelfTransfer()) {
         if (s.accounts().length < 2) return 'Load at least two active customer accounts.';
         if (!payload.debitAccountId || !payload.creditAccountId) return 'Select both accounts.';
-        const from = s.accounts().find((a) => a.accountId === payload.debitAccountId);
-        const to = s.accounts().find((a) => a.accountId === payload.creditAccountId);
+        const from = s.accounts().find((a) => String(a.accountId) === String(payload.debitAccountId));
+        const to = s.accounts().find((a) => String(a.accountId) === String(payload.creditAccountId));
         if (!from || !to) return 'Select accounts from the loaded customer account list.';
         if (from.currencyCode !== to.currencyCode) return 'Self-transfer accounts must use the same currency.';
       }
@@ -247,7 +278,10 @@ define([
       s.error('');
       try {
         const transaction = await app.services.transactions.transfer(payload);
-        await s.load(0);
+
+        app.setActiveAccount(payload.debitAccountId || payload.creditAccountId);
+        s.state.data([transaction].concat(s.state.data().filter((item) => item.transactionId !== transaction.transactionId)));
+
         s.close();
         app.notify(`${s.operationTitle()} completed.`, 'success');
       } catch (error) {

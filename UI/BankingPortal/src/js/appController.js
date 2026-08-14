@@ -172,6 +172,64 @@ define([
       () => new ArrayDataProvider(self.navItems(), { keyAttributes: "path" }),
     );
     self.go = (p) => router.go({ path: p });
+    const savedCustomerContext = (() => {
+      try { return JSON.parse(sessionStorage.getItem('moneybags.activeCustomer') || 'null'); } catch (_) { return null; }
+    })();
+    self.activeCustomer = ko.observable(savedCustomerContext);
+    self.activeTransactionCustomerId = ko.observable(
+      sessionStorage.getItem('moneybags.activeTransactionCustomerId')
+      || (savedCustomerContext && savedCustomerContext.customerId ? String(savedCustomerContext.customerId) : ''),
+    );
+    self.activeAccountId = ko.observable(
+      sessionStorage.getItem('moneybags.activeAccountId')
+      || (savedCustomerContext && savedCustomerContext.activeAccountId ? String(savedCustomerContext.activeAccountId) : ''),
+    );
+    self.hasActiveCustomer = ko.pureComputed(() => !!self.activeCustomer());
+    self.activeCustomerLabel = ko.pureComputed(() => {
+      const customer = self.activeCustomer();
+      return customer ? `${customer.name} · ${customer.cifNo}` : '';
+    });
+    self.setActiveCustomer = (customer) => {
+      if (!customer || !customer.customerId) return;
+      const context = {
+        customerId: String(customer.customerId),
+        cifNo: customer.cifNo || 'CIF pending',
+        name: [customer.firstName, customer.lastName].filter(Boolean).join(' ') || 'Customer',
+        status: customer.status || '',
+      };
+      self.activeCustomer(context);
+      self.activeTransactionCustomerId(context.customerId);
+      self.activeAccountId('');
+      sessionStorage.setItem('moneybags.activeTransactionCustomerId', context.customerId);
+      sessionStorage.removeItem('moneybags.activeAccountId');
+      sessionStorage.setItem('moneybags.activeCustomer', JSON.stringify(context));
+    };
+    self.setActiveAccount = (accountId) => {
+      const customer = self.activeCustomer();
+      if (!accountId) return;
+      const activeAccountId = String(accountId);
+      self.activeAccountId(activeAccountId);
+      sessionStorage.setItem('moneybags.activeAccountId', activeAccountId);
+      if (customer) {
+        const context = { ...customer, activeAccountId };
+        self.activeCustomer(context);
+        sessionStorage.setItem('moneybags.activeCustomer', JSON.stringify(context));
+      }
+    };
+    self.setTransactionCustomerId = (customerId) => {
+      if (!customerId) return;
+      const id = String(customerId);
+      self.activeTransactionCustomerId(id);
+      sessionStorage.setItem('moneybags.activeTransactionCustomerId', id);
+    };
+    self.clearActiveCustomer = () => {
+      self.activeCustomer(null);
+      self.activeTransactionCustomerId('');
+      self.activeAccountId('');
+      sessionStorage.removeItem('moneybags.activeCustomer');
+      sessionStorage.removeItem('moneybags.activeAccountId');
+      sessionStorage.removeItem('moneybags.activeTransactionCustomerId');
+    };
     self.customerToManage = ko.observable(null);
     self.openCustomer = (customerId) => {
       self.customerToManage(String(customerId));

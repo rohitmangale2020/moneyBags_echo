@@ -29,6 +29,7 @@
         required
         value="{{password}}"
         autocomplete="current-password"
+        data-bind="event:{keydown:submitOnEnter}"
       ></oj-input-password
       ><oj-button
         chroming="callToAction"
