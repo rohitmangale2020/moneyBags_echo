@@ -68,7 +68,11 @@
           </div>
         </div></oj-bind-if
       >
-      <div id="pageContent" class="mb-page">
+      <div
+        id="pageContent"
+        class="mb-page"
+        data-bind="css:{'mb-page-sidebar-collapsed':sidebarCollapsed}"
+      >
         <oj-bind-if test="[[session.isAuthenticated]]"
           ><header class="mb-topbar">
             <oj-button

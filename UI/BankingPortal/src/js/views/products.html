@@ -26,8 +26,8 @@
         ><span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span>
       </div>
       <small data-bind="text:productTypeName||productTypeCode"></small>
-      <h2 data-bind="text:productName"></h2>
-      <code data-bind="text:productCode"></code>
+      <h2 data-bind="text:$parent.productHeading($data)"></h2>
+      <code data-bind="text:$parent.productSubheading($data)"></code>
       <div class="mb-card-stats">
         <div>
           <small>Interest</small><strong data-bind="text:`${rate&&rate.interestRate||0}%`"></strong>
@@ -51,7 +51,7 @@
     <article class="mb-product-row">
       <div class="mb-product-row-identity">
         <span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span>
-        <div><small data-bind="text:productTypeName||productTypeCode"></small><strong data-bind="text:productName"></strong><code data-bind="text:productCode"></code></div>
+        <div><small data-bind="text:productTypeName||productTypeCode"></small><strong data-bind="text:$parent.productHeading($data)"></strong><code data-bind="text:$parent.productSubheading($data)"></code></div>
       </div>
       <dl class="mb-product-row-stats">
         <div><dt>Interest</dt><dd data-bind="text:`${rate&&rate.interestRate||0}%`"></dd></div>
@@ -71,13 +71,13 @@
       <oj-button on-oj-action="[[clearRetiredFilters]]" disabled="[[!retiredFiltersApplied()]]">Clear filters</oj-button>
     </div>
     <div class="mb-card-grid" data-bind="visible:!retiredCompact(),foreach:filteredRetiredProducts">
-      <article class="mb-card mb-card-retired"><div class="mb-card-top"><span class="mb-card-icon mb-product-icon" data-bind="css:$parent.productIcon($data)" aria-hidden="true"></span><span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span></div><small data-bind="text:productTypeName||productTypeCode"></small><h2 data-bind="text:productName"></h2><code data-bind="text:productCode"></code><div class="mb-card-stats"><div><small>Interest</small><strong data-bind="text:`${rate&&rate.interestRate||0}%`"></strong></div><div><small>Min balance</small><strong data-bind="text:$parent.money(minimumBalance,currency)"></strong></div><div><small>Monthly fee</small><strong data-bind="text:$parent.money(fee&&fee.monthlyMaintenanceFee,currency)"></strong></div></div><button class="mb-link" data-bind="click:()=>$parent.manage($data)">View details</button></article>
+      <article class="mb-card mb-card-retired"><div class="mb-card-top"><span class="mb-card-icon mb-product-icon" data-bind="css:$parent.productIcon($data)" aria-hidden="true"></span><span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span></div><small data-bind="text:productTypeName||productTypeCode"></small><h2 data-bind="text:$parent.productHeading($data)"></h2><code data-bind="text:$parent.productSubheading($data)"></code><div class="mb-card-stats"><div><small>Interest</small><strong data-bind="text:`${rate&&rate.interestRate||0}%`"></strong></div><div><small>Min balance</small><strong data-bind="text:$parent.money(minimumBalance,currency)"></strong></div><div><small>Monthly fee</small><strong data-bind="text:$parent.money(fee&&fee.monthlyMaintenanceFee,currency)"></strong></div></div><button class="mb-link" data-bind="click:()=>$parent.manage($data)">View details</button></article>
     </div>
     <div class="mb-product-list" data-bind="visible:retiredCompact,foreach:filteredRetiredProducts">
       <article class="mb-product-row mb-card-retired">
         <div class="mb-product-row-identity">
           <span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span>
-          <div><small data-bind="text:productTypeName||productTypeCode"></small><strong data-bind="text:productName"></strong><code data-bind="text:productCode"></code></div>
+          <div><small data-bind="text:productTypeName||productTypeCode"></small><strong data-bind="text:$parent.productHeading($data)"></strong><code data-bind="text:$parent.productSubheading($data)"></code></div>
         </div>
         <dl class="mb-product-row-stats">
           <div><dt>Interest</dt><dd data-bind="text:`${rate&&rate.interestRate||0}%`"></dd></div>
@@ -99,6 +99,7 @@
       <div class="mb-form mb-product-form">
         <oj-input-text label-hint="Product code" value="{{form().productCode}}"></oj-input-text>
         <oj-input-text label-hint="Product name" value="{{form().productName}}"></oj-input-text>
+        <label class="wide">Description<textarea data-bind="value:form().description"></textarea></label>
         <div class="mb-select-field mb-product-select"><label>Product type</label><select data-bind="value:formType">
             <option value="">Select type</option>
             <!-- ko foreach:types -->
@@ -148,5 +149,5 @@
       <oj-button chroming="callToAction" on-oj-action="[[saveType]]">Create type</oj-button>
     </div>
   </oj-dialog>
-  <oj-dialog id="productDetailDialog" class="mb-dialog mb-dialog-wide" dialog-title="Product details" cancel-behavior="icon"><div slot="body"><div class="mb-error" data-bind="visible:error,text:error"></div><div data-bind="with:selected"><div class="mb-detail-hero"><div><small data-bind="text:productCode"></small><h2 data-bind="text:productName"></h2><p data-bind="visible:description,text:description"></p></div><span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span></div><dl class="mb-kv three"><div><dt>Type</dt><dd data-bind="text:productTypeName"></dd></div><div><dt>Interest</dt><dd data-bind="text:`${rate&&rate.interestRate||0}%`"></dd></div><div><dt>Monthly fee</dt><dd data-bind="text:fee&&fee.monthlyMaintenanceFee"></dd></div><div><dt>Minimum</dt><dd data-bind="text:minimumBalance"></dd></div><div><dt>Maximum</dt><dd data-bind="text:maximumBalance"></dd></div><div><dt>Currency</dt><dd data-bind="text:currency"></dd></div></dl></div><div class="mb-detail-actions"><button class="mb-link" data-bind="visible:isAdmin() && selected() && selected().status==='ACTIVE',click:edit">Edit product</button><button class="mb-link danger" data-bind="visible:isAdmin() && selected() && selected().status==='ACTIVE',click:()=>retire(selected())">Retire</button></div><div class="mb-section-title"><small>ACTIVITY HISTORY</small><h3>Lifecycle changes</h3></div><div class="mb-table compact"><table><thead><tr><th>Change</th><th>Reason</th><th>By</th><th>Date</th></tr></thead><tbody data-bind="foreach:history"><tr><td data-bind="text:previousStatus===newStatus ? 'Product updated' : `${previousStatus} → ${newStatus}`"></td><td data-bind="text:changeReason"></td><td data-bind="text:changedBy"></td><td data-bind="text:changedDate"></td></tr></tbody></table></div></div></oj-dialog>
+  <oj-dialog id="productDetailDialog" class="mb-dialog mb-dialog-wide" dialog-title="Product details" cancel-behavior="icon"><div slot="body"><div class="mb-error" data-bind="visible:error,text:error"></div><div data-bind="with:selected"><div class="mb-detail-hero"><div><small data-bind="text:$parent.productSubheading($data)"></small><h2 data-bind="text:$parent.productHeading($data)"></h2><p data-bind="visible:description,text:description"></p></div><span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span></div><dl class="mb-kv three"><div><dt>Type</dt><dd data-bind="text:productTypeName"></dd></div><div><dt>Interest</dt><dd data-bind="text:`${rate&&rate.interestRate||0}%`"></dd></div><div><dt>Monthly fee</dt><dd data-bind="text:fee&&fee.monthlyMaintenanceFee"></dd></div><div><dt>Minimum</dt><dd data-bind="text:minimumBalance"></dd></div><div><dt>Maximum</dt><dd data-bind="text:maximumBalance"></dd></div><div><dt>Currency</dt><dd data-bind="text:currency"></dd></div></dl></div><div class="mb-detail-actions"><button class="mb-link" data-bind="visible:isAdmin() && selected() && selected().status==='ACTIVE',click:edit">Edit product</button><button class="mb-link danger" data-bind="visible:isAdmin() && selected() && selected().status==='ACTIVE',click:()=>retire(selected())">Retire</button></div><div class="mb-section-title"><small>ACTIVITY HISTORY</small><h3>Lifecycle changes</h3></div><div class="mb-table compact"><table><thead><tr><th>Change</th><th>Reason</th><th>By</th><th>Date</th></tr></thead><tbody data-bind="foreach:history"><tr><td data-bind="text:previousStatus===newStatus ? 'Product updated' : `${previousStatus} → ${newStatus}`"></td><td data-bind="text:changeReason"></td><td data-bind="text:changedBy"></td><td data-bind="text:changedDate"></td></tr></tbody></table></div></div></oj-dialog>
 </section>
