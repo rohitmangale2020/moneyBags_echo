@@ -46,6 +46,7 @@ public class DocumentServiceImpl implements DocumentService {
             throw new BadRequestException("Document file is required");
         }
         normalizeAndValidate(requestDto);
+        validateFileType(requestDto.getDocumentType(), file);
 
         String savedPath = saveFile(customerId, file);
 
@@ -94,11 +95,12 @@ public class DocumentServiceImpl implements DocumentService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Document not found with id " + docId + " for customer " + customerId));
 
+        normalizeAndValidate(requestDto);
         if (file != null && !file.isEmpty()) {
+            validateFileType(requestDto.getDocumentType(), file);
             String savedPath = saveFile(customerId, file);
             document.setFilePath(savedPath);
         }
-        normalizeAndValidate(requestDto);
 
         document.setDocumentType(requestDto.getDocumentType());
         document.setDocumentNumber(requestDto.getDocumentNumber());
@@ -165,6 +167,21 @@ public class DocumentServiceImpl implements DocumentService {
             throw new BadRequestException("Expiry date cannot be earlier than issue date");
         }
         if (request.getStatus() == null) request.setStatus(DocumentStatusType.UPLOADED);
+    }
+
+    private void validateFileType(DocumentType type, MultipartFile file) {
+        String fileName = file.getOriginalFilename() == null ? "" : file.getOriginalFilename().toLowerCase();
+        String contentType = file.getContentType() == null ? "" : file.getContentType().toLowerCase();
+        boolean imageDocument = type == DocumentType.PHOTO || type == DocumentType.SIGNATURE;
+        boolean isImage = contentType.equals("image/png") || contentType.equals("image/jpeg")
+                || fileName.endsWith(".png") || fileName.endsWith(".jpg") || fileName.endsWith(".jpeg");
+        boolean isPdf = contentType.equals("application/pdf") || fileName.endsWith(".pdf");
+        if (imageDocument && !isImage) {
+            throw new BadRequestException("Photo and signature documents must be PNG or JPEG images.");
+        }
+        if (!imageDocument && !isPdf) {
+            throw new BadRequestException("This document type must be uploaded as a PDF file.");
+        }
     }
 
     private DocumentResponse toResponse(DocumentEntity entity) {

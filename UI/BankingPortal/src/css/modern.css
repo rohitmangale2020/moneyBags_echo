@@ -1096,6 +1096,29 @@ body:not(:has(#navDrawer)) .mb-content {
   min-width: 0;
 }
 
+.mb-resume-search > label {
+  display: grid;
+  gap: 8px;
+  color: #526078;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.mb-resume-search > label > select {
+  width: 100%;
+}
+
+.mb-resume-search .mb-resume-kind > select,
+.mb-dialog .mb-select-field > select {
+  min-height: 78px;
+  padding: 30px 36px 7px 13px;
+}
+
+.mb-resume-search .mb-resume-kind > label,
+.mb-dialog .mb-select-field > label {
+  top: 13px;
+}
+
 .mb-resume-action {
   width: 100%;
   min-width: 0;
@@ -1199,8 +1222,17 @@ body:not(:has(#navDrawer)) .mb-content {
 
 .mb-form .mb-select-field > select {
   width: 100%;
-  min-height: 46px;
+  min-height: 78px;
   padding: 21px 36px 5px 13px;
+}
+
+.mb-workflow .mb-select-field > select {
+  min-height: 78px;
+  padding: 30px 36px 7px 13px;
+}
+
+.mb-workflow .mb-select-field > label {
+  top: 13px;
 }
 
 @media (max-width: 700px) {
@@ -1214,7 +1246,44 @@ body:not(:has(#navDrawer)) .mb-content {
 }
 
 .mb-directory-search {
-  grid-template-columns: 180px minmax(240px, 1fr) auto;
+  display: grid;
+  grid-template-columns: minmax(170px, 0.8fr) minmax(240px, 1.4fr) auto minmax(170px, 0.8fr);
+  gap: 16px;
+  align-items: end;
+}
+
+.mb-directory-search > label {
+  display: grid;
+  gap: 8px;
+  color: #526078;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.mb-directory-search > label > select,
+.mb-directory-search > oj-input-text {
+  width: 100%;
+}
+
+.mb-directory-search > oj-button {
+  align-self: end;
+  margin-bottom: 3px;
+}
+
+@media (max-width: 900px) {
+  .mb-directory-search {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .mb-directory-search {
+    grid-template-columns: 1fr;
+  }
+
+  .mb-directory-search > oj-button {
+    width: 100%;
+  }
 }
 
 .mb-id-search {

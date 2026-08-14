@@ -8,6 +8,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,8 +33,10 @@ public class CustomerController {
     }
 
     @GetMapping
-    public ResponseEntity<List<CustomerResponse>> getAllCustomers() {
-        return ResponseEntity.ok(customerService.getAllCustomers());
+    public ResponseEntity<Page<CustomerResponse>> getAllCustomers(
+            @PageableDefault(size = 10, sort = {"status", "createdAt"}) Pageable pageable,
+            @RequestParam(required = false) CustomerStatus status) {
+        return ResponseEntity.ok(customerService.getAllCustomers(pageable, status));
     }
 
     @PutMapping("/{customerId}")
@@ -70,6 +75,11 @@ public class CustomerController {
     @GetMapping("/search/phone/{phone}")
     public ResponseEntity<CustomerResponse> getByPhone(@PathVariable String phone) {
         return ResponseEntity.ok(customerService.getCustomerByPhone(phone));
+    }
+
+    @GetMapping("/search/first-name/{firstName}")
+    public ResponseEntity<List<CustomerResponse>> getByFirstName(@PathVariable String firstName) {
+        return ResponseEntity.ok(customerService.getCustomersByFirstName(firstName));
     }
 
     @GetMapping("/status/{status}")

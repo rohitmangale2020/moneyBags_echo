@@ -13,7 +13,7 @@ define(['services/apiClient'], function (api) {
       deactivate: (id) => api.delete(`/api/v1/users/${e(id)}`),
     },
     customers: {
-      list: () => api.get('/api/customers'),
+      list: (page = 0, size = 10, status = '') => api.get(`/api/customers?page=${e(page)}&size=${e(size)}${status ? `&status=${e(status)}` : ''}`),
       get: (id) => api.get(`/api/customers/${e(id)}`),
       create: (d) => api.post('/api/customers', d),
       update: (id, d) => api.put(`/api/customers/${e(id)}`, d),
@@ -23,6 +23,7 @@ define(['services/apiClient'], function (api) {
       byCif: (v) => api.get(`/api/customers/search/cif/${e(v)}`),
       byEmail: (v) => api.get(`/api/customers/search/email/${e(v)}`),
       byPhone: (v) => api.get(`/api/customers/search/phone/${e(v)}`),
+      byFirstName: (v) => api.get(`/api/customers/search/first-name/${e(v)}`),
       byStatus: (v) => api.get(`/api/customers/status/${e(v)}`),
       addresses: (id) => api.get(`/api/customers/${e(id)}/addresses`),
       address: (id, d) => api.post(`/api/customers/${e(id)}/addresses`, d),

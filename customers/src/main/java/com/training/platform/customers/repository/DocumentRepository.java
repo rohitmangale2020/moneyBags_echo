@@ -8,5 +8,6 @@ import java.util.Optional;
 
 public interface DocumentRepository extends JpaRepository<DocumentEntity, Long> {
     List<DocumentEntity> findByCustomerCustomerId(Long customerId);
+    boolean existsByCustomerCustomerId(Long customerId);
     Optional<DocumentEntity> findByDocIdAndCustomerCustomerId(Long docId, Long customerId);
 }

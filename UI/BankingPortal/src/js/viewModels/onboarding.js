@@ -1,4 +1,4 @@
-define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton', 'ojs/ojdatetimepicker'], function (ko, app) {
+define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojinputtext', 'ojs/ojbutton', 'ojs/ojdatetimepicker'], function (ko, app, indiaAddress) {
   'use strict';
 
   const today = () => new Date().toISOString().slice(0, 10);
@@ -43,7 +43,9 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton', 'ojs/ojd
     s.account = ko.observable(null);
     s.resumedOnboarding = ko.observable(false);
     s.file = ko.observable(null);
-    s.resumeKind = ko.observable('cif');
+    // Keep lookup neutral until the employee chooses the identifier type.
+    // This also prevents a long default value from making the closed select look wider.
+    s.resumeKind = ko.observable('');
     s.resumeValue = ko.observable('');
     s.verifiedBy = ko.pureComputed(() => String(app.session.userId() || ''));
     s.canProceedToAccount = ko.pureComputed(() =>
@@ -73,7 +75,7 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton', 'ojs/ojd
       pincode: ko.observable(''),
     };
     s.document = {
-      documentType: ko.observable('PAN'),
+      documentType: ko.observable(''),
       documentNumber: ko.observable(''),
       issueDate: ko.observable(''),
       expiryDate: ko.observable(''),
@@ -99,20 +101,30 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton', 'ojs/ojd
       country: ko.observable(''),
       pincode: ko.observable(''),
     };
+    s.indianStates = ko.observableArray(indiaAddress.states());
+    s.addressDistricts = ko.pureComputed(() => { s.indianStates(); return indiaAddress.districts(s.address.state()); });
+    s.nomineeDistricts = ko.pureComputed(() => { s.indianStates(); return indiaAddress.districts(s.nominee.state()); });
+    indiaAddress.load().then(() => s.indianStates(indiaAddress.states()));
+    s.address.state.subscribe(() => s.address.city(''));
+    s.nominee.state.subscribe(() => s.nominee.city(''));
     s.accountForm = {
       accountNumber: ko.observable(''),
       productId: ko.observable(''),
       ownershipType: ko.observable('INDIVIDUAL'),
       availableBalance: ko.observable(0),
     };
-    s.documentRequiresNumber = ko.pureComputed(() =>
-      !['PHOTO', 'SIGNATURE', 'SALARY_SLIP'].includes(s.document.documentType()),
-    );
+    s.documentRequiresNumber = ko.pureComputed(() => {
+      const type = s.document.documentType();
+      return Boolean(type) && !['PHOTO', 'SIGNATURE', 'SALARY_SLIP'].includes(type);
+    });
     s.documentShowsIssueDate = ko.pureComputed(() =>
       ['PASSPORT', 'DRIVING_LICENSE'].includes(s.document.documentType()),
     );
     s.documentRequiresExpiry = ko.pureComputed(() =>
       ['PASSPORT', 'DRIVING_LICENSE'].includes(s.document.documentType()),
+    );
+    s.documentFileAccept = ko.pureComputed(() =>
+      ['PHOTO', 'SIGNATURE'].includes(s.document.documentType()) ? '.png,.jpg,.jpeg' : 'application/pdf,.pdf',
     );
     s.document.documentType.subscribe(() => {
       if (!s.documentRequiresNumber()) s.document.documentNumber('');
@@ -219,7 +231,9 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton', 'ojs/ojd
         if (!values[field]) e[field] = `${field[0].toUpperCase()}${field.slice(1)} is required.`;
         else if (values[field].length > 100) e[field] = `${field[0].toUpperCase()}${field.slice(1)} cannot exceed 100 characters.`;
       });
-      if (!/^[1-9][0-9]{5}$/.test(values.pincode)) e.pincode = 'Enter a valid six-digit Indian pincode that does not begin with zero.';
+      try {
+        if (!await indiaAddress.validatePincode(values.state, values.city, values.pincode)) e.pincode = 'Enter a pincode valid for the selected state and district.';
+      } catch (error) { e.pincode = 'PIN validation is temporarily unavailable. Please try again.'; }
       if (!s.setErrors(e)) return;
       const result = await s.run(
         () => app.services.customers.address(s.customer().customerId, values),
@@ -232,13 +246,19 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton', 'ojs/ojd
     };
 
     s.choose = (_, event) => {
-      s.file(event.target.files && event.target.files[0]);
+      const selected = event.target.files && event.target.files[0];
+      const imageDocument = ['PHOTO', 'SIGNATURE'].includes(s.document.documentType());
+      const name = String((selected && selected.name) || '').toLowerCase();
+      const valid = imageDocument ? /\.(png|jpe?g)$/.test(name) : /\.pdf$/.test(name);
+      s.file(valid ? selected : null);
+      if (selected && !valid) s.fieldErrors(Object.assign({}, s.fieldErrors(), { file: imageDocument ? 'Upload a PNG or JPEG image.' : 'Upload a PDF file.' }));
       if (s.file()) s.fieldErrors(Object.assign({}, s.fieldErrors(), { file: '' }));
     };
     s.upload = async () => {
       const e = {};
       const type = s.document.documentType();
       const number = text(s.document.documentNumber()).toUpperCase();
+      if (!type) e.documentType = 'Select a document type.';
       if (s.documentRequiresNumber() && !number) e.documentNumber = 'Document number is required.';
       else if (number.length > 100) e.documentNumber = 'Document number cannot exceed 100 characters.';
       else if (type === 'PAN' && !/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(number)) e.documentNumber = 'Enter a PAN in the format AAAAA0000A.';
@@ -277,6 +297,8 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton', 'ojs/ojd
     };
 
     s.saveKyc = async () => {
+      if (!s.addressSaved()) return s.error('Add the customer address before verifying KYC.');
+      if (!s.uploadedDocuments().length) return s.error('Upload at least one document before verifying KYC.');
       const e = {};
       const score = 0;
       if (!s.kyc.kycDate()) e.kycDate = 'KYC date is required.';
@@ -303,7 +325,11 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton', 'ojs/ojd
           else if (field !== 'pincode' && value.length > (field === 'line1' ? 250 : 100)) e[`nominee${field[0].toUpperCase()}${field.slice(1)}`] = `${label} is too long.`;
         });
         if (text(s.nominee.line2()).length > 250) e.nomineeLine2 = 'Address line 2 cannot exceed 250 characters.';
-        if (text(s.nominee.pincode()) && !/^[1-9][0-9]{5}$/.test(text(s.nominee.pincode()))) e.nomineePincode = 'Enter a valid six-digit pincode.';
+        if (text(s.nominee.pincode())) {
+          try {
+            if (!await indiaAddress.validatePincode(text(s.nominee.state()), text(s.nominee.city()), text(s.nominee.pincode()))) e.nomineePincode = 'Enter a pincode valid for the selected state and district.';
+          } catch (error) { e.nomineePincode = 'PIN validation is temporarily unavailable. Please try again.'; }
+        }
       }
       if (!s.setErrors(e)) return;
 
@@ -370,6 +396,7 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton', 'ojs/ojd
 
     s.resume = async () => {
       const value = text(s.resumeValue());
+      if (!s.resumeKind()) return s.setErrors({ resumeValue: 'Select how you want to find the customer.' });
       if (!value) return s.setErrors({ resumeValue: 'Enter the customer ID, CIF, email, or phone to continue.' });
       const calls = {
         id: app.services.customers.get,
