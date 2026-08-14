@@ -66,7 +66,7 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
       occupation: ko.observable(''),
     };
     s.address = {
-      addressType: ko.observable('PERMANENT'),
+      addressType: ko.observable(''),
       line1: ko.observable(''),
       line2: ko.observable(''),
       city: ko.observable(''),
@@ -93,7 +93,7 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
       dob: ko.observable(''),
       phone: ko.observable(''),
       sharePercentage: ko.observable(100),
-      addressType: ko.observable('CURRENT'),
+      addressType: ko.observable(''),
       line1: ko.observable(''),
       line2: ko.observable(''),
       city: ko.observable(''),
@@ -224,6 +224,7 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
       const e = {};
       const values = {};
       Object.keys(s.address).forEach((key) => (values[key] = text(s.address[key]())));
+      if (!values.addressType) e.addressType = 'Select an address type.';
       if (!values.line1) e.line1 = 'Address line 1 is required.';
       else if (values.line1.length > 250) e.line1 = 'Address line 1 cannot exceed 250 characters.';
       if (values.line2.length > 250) e.line2 = 'Address line 2 cannot exceed 250 characters.';
@@ -317,6 +318,7 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
       const share = Number(s.nominee.sharePercentage());
       if (hasNominee && (!Number.isFinite(share) || share < 0.01 || share > 100)) e.sharePercentage = 'Nominee share must be between 0.01 and 100.';
       if (nomineeAddressStarted) {
+        if (!text(s.nominee.addressType())) e.nomineeAddressType = 'Select an address type for the nominee.';
         const nomineeAddress = ['line1', 'city', 'state', 'country', 'pincode'];
         nomineeAddress.forEach((field) => {
           const value = text(s.nominee[field]());
