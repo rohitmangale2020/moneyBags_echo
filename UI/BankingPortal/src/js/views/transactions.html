@@ -100,7 +100,7 @@
       <div class="mb-error" data-bind="visible:error,text:error"></div>
 
       <div class="mb-search-panel">
-        <oj-input-text label-hint="Customer ID" readonly="[[hasActiveCustomer()]]" value="{{form.customerId}}"></oj-input-text>
+        <oj-input-text label-hint="Customer ID" value="{{form.customerId}}"></oj-input-text>
         <span></span>
         <oj-button on-oj-action="[[loadCustomerAccounts]]" disabled="[[loadingAccounts]]">Load accounts</oj-button>
       </div>

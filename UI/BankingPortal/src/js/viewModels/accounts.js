@@ -159,8 +159,13 @@ define([
           availableBalance: Number(s.form.availableBalance()),
           closedAt: s.form.closedAt() || null,
         };
-        if (s.editingId()) await app.services.accounts.update(s.editingId(), payload);
-        else await app.services.accounts.create(payload);
+        const savedAccount = s.editingId()
+          ? await app.services.accounts.update(s.editingId(), payload)
+          : await app.services.accounts.create(payload);
+        if (app.setTransactionCustomerId) app.setTransactionCustomerId(payload.customerId);
+        if (savedAccount && savedAccount.accountId && app.setActiveAccount) {
+          app.setActiveAccount(savedAccount.accountId);
+        }
         document.getElementById('accountDialog').close();
         app.notify(s.editingId() ? 'Account updated.' : 'Account opened successfully.');
         await s.load();

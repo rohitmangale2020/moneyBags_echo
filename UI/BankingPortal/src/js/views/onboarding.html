@@ -124,11 +124,12 @@
         <oj-input-date
                 label-hint="Date of birth"
                 required
+                max="[[adultDobMax]]"
                 value="{{profile.dob}}"
         ></oj-input-date>
 
         <small class="mb-field-hint">
-          Required. Must be in the past; a nominee is required for customers under 18.
+          Required. Customer must be 18 years or older.
         </small>
 
         <small
@@ -569,14 +570,8 @@
 
     </div>
 
-    <h3
-            data-bind="text:nomineeRequired() ? 'Nominee (required for this minor customer)' : 'Optional nominee'"
-    ></h3>
-
-    <p
-            class="mb-help"
-            data-bind="text:nomineeRequired() ? 'This customer is under 18, so a nominee must be recorded before the assessment can be saved.' : 'Leave every nominee field empty to skip this section. A separate nominee address may be added when available.'"
-    ></p>
+    <h3>Optional nominee</h3>
+    <p class="mb-help">Leave every nominee field empty to skip this section. A separate nominee address may be added when available.</p>
 
     <div class="mb-form three">
 
@@ -905,26 +900,6 @@
         <small
                 class="mb-field-error"
                 data-bind="visible:fieldErrors().productId,text:fieldErrors().productId"
-        ></small>
-
-      </div>
-
-      <div>
-
-        <oj-input-text
-                label-hint="Approved account number"
-                required
-                maxlength="24"
-                value="{{accountForm.accountNumber}}"
-        ></oj-input-text>
-
-        <small class="mb-field-hint">
-          Required, maximum 24 characters.
-        </small>
-
-        <small
-                class="mb-field-error"
-                data-bind="visible:fieldErrors().accountNumber,text:fieldErrors().accountNumber"
         ></small>
 
       </div>

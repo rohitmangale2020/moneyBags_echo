@@ -138,7 +138,9 @@ define([
       s.form.debitAccountId('');
       s.form.creditAccountId('');
       s.form.accountId('');
-      s.form.customerId(s.hasActiveCustomer() ? s.activeCustomer().customerId : '');
+      s.form.customerId(s.hasActiveCustomer()
+        ? s.activeCustomer().customerId
+        : (app.activeTransactionCustomerId ? app.activeTransactionCustomerId() : ''));
       s.form.fromAccountId('');
       s.form.toAccountId('');
       s.form.amount('');
@@ -156,6 +158,7 @@ define([
     s.loadCustomerAccounts = async () => {
       const customerId = s.form.customerId().trim();
       if (!customerId) return s.error('Enter a customer ID first.');
+      if (app.setTransactionCustomerId) app.setTransactionCustomerId(customerId);
       s.loadingAccounts(true);
       s.error('');
       try {

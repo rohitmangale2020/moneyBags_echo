@@ -2,6 +2,11 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton', 'ojs/ojd
   'use strict';
 
   const today = () => new Date().toISOString().slice(0, 10);
+  const adultDobMax = () => {
+    const date = new Date();
+    date.setFullYear(date.getFullYear() - 18);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  };
   const text = (value) => String(value || '').trim();
   const dateValue = (value) => {
     const raw = text(value);
@@ -27,6 +32,7 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton', 'ojs/ojd
     s.busy = ko.observable(false);
     s.error = ko.observable('');
     s.fieldErrors = ko.observable({});
+    s.adultDobMax = adultDobMax();
     s.customer = ko.observable(null);
     s.profileSaved = ko.observable(false);
     s.addressSaved = ko.observable(false);
@@ -99,13 +105,6 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton', 'ojs/ojd
       ownershipType: ko.observable('INDIVIDUAL'),
       availableBalance: ko.observable(0),
     };
-    s.nomineeRequired = ko.pureComputed(() => {
-      const age = ageInYears(s.profile.dob());
-      return age !== null && age < 18;
-    });
-    s.nomineeRequired.subscribe((minor) => {
-      if (minor && !text(s.nominee.relationship())) s.nominee.relationship('Legal guardian');
-    });
     s.documentRequiresNumber = ko.pureComputed(() =>
       !['PHOTO', 'SIGNATURE', 'SALARY_SLIP'].includes(s.document.documentType()),
     );
@@ -174,16 +173,16 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton', 'ojs/ojd
       if (!s.profile.dob()) e.dob = 'Date of birth is required.';
       else if (!dateValue(s.profile.dob())) e.dob = 'Enter a valid date of birth.';
       else if (s.profile.dob() >= today()) e.dob = 'Date of birth must be in the past.';
+      else if (ageInYears(s.profile.dob()) < 18) e.dob = 'Customer must be at least 18 years old.';
       else if (ageInYears(s.profile.dob()) > 120) e.dob = 'Enter a realistic date of birth.';
       if (!s.profile.gender()) e.gender = 'Select a gender.';
 
 
       if (!phone) e.phone = 'Mobile number is required.';
-      else if (!/^[6-9][0-9]{9}$/.test(e.phone))
-      return s.error('Phone must be a valid 10-digit mobile number.');
+      else if (!/^[6-9][0-9]{9}$/.test(phone)) e.phone = 'Enter a valid 10-digit mobile number.';
       if (!email) e.email = 'Email address is required.';
-      else if (e.email && !/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/.test(d.email))
-        return s.error('Enter a valid email address.');
+      else if (!/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/.test(email))
+        e.email = 'Enter a valid email address.';
       else if (email.length > 254) e.email = 'Email cannot exceed 254 characters.';
       if (!occupation) e.occupation = 'Occupation is required.';
       else if (occupation.length > 100) e.occupation = 'Occupation cannot exceed 100 characters.';
@@ -285,8 +284,8 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton', 'ojs/ojd
       else if (s.kyc.kycDate() > today()) e.kycDate = 'KYC date cannot be in the future.';
       if (text(s.kyc.remarks()).length > 500) e.remarks = 'Remarks cannot exceed 500 characters.';
       const nomineeAddressStarted = Boolean(text(s.nominee.line1()) || text(s.nominee.line2()) || text(s.nominee.city()) || text(s.nominee.state()) || text(s.nominee.country()) || text(s.nominee.pincode()));
-      const hasNominee = Boolean(s.nomineeRequired() || text(s.nominee.nomineeName()) || text(s.nominee.relationship()) || text(s.nominee.dob()) || text(s.nominee.phone()) || nomineeAddressStarted);
-      if (hasNominee && !text(s.nominee.nomineeName())) e.nomineeName = s.nomineeRequired() ? 'A nominee is required because this customer is under 18.' : 'Nominee name is required when nominee details are entered.';
+      const hasNominee = Boolean(text(s.nominee.nomineeName()) || text(s.nominee.relationship()) || text(s.nominee.dob()) || text(s.nominee.phone()) || nomineeAddressStarted);
+      if (hasNominee && !text(s.nominee.nomineeName())) e.nomineeName = 'Nominee name is required when nominee details are entered.';
       if (text(s.nominee.nomineeName()).length > 150) e.nomineeName = 'Nominee name cannot exceed 150 characters.';
       if (hasNominee && !text(s.nominee.relationship())) e.relationship = 'Select the nominee relationship.';
       else if (text(s.nominee.relationship()).length > 100) e.relationship = 'Relationship cannot exceed 100 characters.';
@@ -322,7 +321,7 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton', 'ojs/ojd
         const nominee = {
           nomineeName: text(s.nominee.nomineeName()),
           relationship: text(s.nominee.relationship()) || null,
-          relationType: s.nomineeRequired() ? 'GUARDIAN' : 'NOMINEE',
+          relationType: 'NOMINEE',
           dob: s.nominee.dob() || null,
           phone: text(s.nominee.phone()),
           address: nomineeAddressStarted ? {
@@ -421,15 +420,12 @@ define(['knockout', 'appController', 'ojs/ojinputtext', 'ojs/ojbutton', 'ojs/ojd
       }
       const e = {};
       const product = s.products().find((item) => String(item.productId) === String(s.accountForm.productId()));
-      const accountNumber = text(s.accountForm.accountNumber());
       const openingBalance = Number(s.accountForm.availableBalance());
       if (!product) e.productId = 'Select an active banking product.';
-      if (!accountNumber) e.accountNumber = 'Approved account number is required.';
-      else if (accountNumber.length > 24) e.accountNumber = 'Account number cannot exceed 24 characters.';
       if (!Number.isFinite(openingBalance) || openingBalance < 0) e.availableBalance = 'Opening balance must be zero or a positive number.';
       if (!s.setErrors(e)) return;
       const payload = {
-        accountNumber,
+        accountNumber: null,
         customerId: String(s.customer().customerId),
         productId: String(product.productId),
         ownershipType: s.accountForm.ownershipType(),

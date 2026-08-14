@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.time.LocalDate;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -78,6 +79,10 @@ public class CustomerServiceImpl implements CustomerService {
         CustomerEntity existing = customerRepository.findById(customerId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Customer not found with id: " + customerId));
+
+        if (request.dob() != null) {
+            validateAdultDateOfBirth(request.dob());
+        }
 
         if (request.phone() != null
                 && !request.phone().equals(existing.getPhone())
@@ -181,6 +186,7 @@ public class CustomerServiceImpl implements CustomerService {
         if (request.dob() == null) {
             throw new BadRequestException("Date of birth is required");
         }
+        validateAdultDateOfBirth(request.dob());
         if (request.gender() == null) {
             throw new BadRequestException("Gender is required");
         }
@@ -195,5 +201,11 @@ public class CustomerServiceImpl implements CustomerService {
             cif = "CIF" + UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase();
         } while (customerRepository.existsByCifNo(cif));
         return cif;
+    }
+
+    private void validateAdultDateOfBirth(LocalDate dob) {
+        if (!dob.plusYears(18).isBefore(LocalDate.now().plusDays(1))) {
+            throw new BadRequestException("Customer must be at least 18 years old.");
+        }
     }
 }
