@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
+import org.springframework.web.client.ResourceAccessException;
 
 @RestController
 @RequestMapping("/auth")
@@ -47,12 +48,17 @@ class AuthController {
     }
 
     @PostMapping("/login")
-    ResponseEntity<TokenResponse> login(@Valid @RequestBody Credentials credentials) {
+    ResponseEntity<?> login(@Valid @RequestBody Credentials credentials) {
         UserResponse user;
         try {
             user = usersClient.post().uri("/internal/users/authenticate").body(credentials).retrieve().body(UserResponse.class);
         } catch (RestClientResponseException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            if (exception.getStatusCode().value() == HttpStatus.UNAUTHORIZED.value()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            return serviceUnavailable();
+        } catch (ResourceAccessException | IllegalStateException exception) {
+            return serviceUnavailable();
         }
         if (user == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         Instant now = Instant.now();
@@ -66,6 +72,14 @@ class AuthController {
 
     @GetMapping("/jwks")
     Map<String, Object> jwks() { return new JWKSet(rsaKey.toPublicJWK()).toJSONObject(); }
+
+    private ResponseEntity<Map<String, String>> serviceUnavailable() {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(Map.of(
+                        "error", "users_service_unavailable",
+                        "message", "The users service is temporarily unavailable. Please retry shortly."
+                ));
+    }
 
     record Credentials(@NotBlank String username, @NotBlank String password) { }
     record UserResponse(Long userId, String username, java.util.Set<String> roles) { }

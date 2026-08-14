@@ -11,5 +11,16 @@
     <dependency><groupId>org.springframework.cloud</groupId><artifactId>spring-cloud-starter-netflix-eureka-client</artifactId></dependency>
     <dependency><groupId>org.springframework.cloud</groupId><artifactId>spring-cloud-starter-loadbalancer</artifactId></dependency>
   </dependencies>
-  <build><plugins><plugin><groupId>org.springframework.boot</groupId><artifactId>spring-boot-maven-plugin</artifactId></plugin></plugins></build>
+  <build>
+    <resources>
+      <resource><directory>src/main/resources</directory></resource>
+      <resource>
+        <directory>${project.basedir}/../UI/BankingPortal/web</directory>
+        <targetPath>static</targetPath>
+      </resource>
+    </resources>
+    <plugins>
+      <plugin><groupId>org.springframework.boot</groupId><artifactId>spring-boot-maven-plugin</artifactId></plugin>
+    </plugins>
+  </build>
 </project>

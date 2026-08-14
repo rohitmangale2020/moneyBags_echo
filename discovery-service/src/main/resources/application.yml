@@ -1,4 +1,5 @@
 server:
+  address: 127.0.0.1
   port: ${DISCOVERY_SERVER_PORT:8761}
 
 spring:

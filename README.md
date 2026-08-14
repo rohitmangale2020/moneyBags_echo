@@ -1,11 +1,8 @@
 # Banking Platform
 
-A Maven multi-module Spring Boot starter containing six independent services:
-`users`, `customers`, `products`, `accounts`, `transactions`, and `audit`.
-
-Every service includes Spring Web, Spring Web Services, Spring Security, MySQL
-Driver, Spring Cloud Gateway, and Resilience4j. Eureka is intentionally not
-configured yet; it can be added later as a separate infrastructure service.
+A Maven multi-module Spring Boot platform containing discovery, security, API
+gateway, users, customers, products, accounts, transactions, and audit services.
+Business services use Oracle and register with the local Eureka discovery service.
 
 ## Security and Gateway
 
@@ -16,11 +13,9 @@ service prefixes. Requests without a valid Bearer token are rejected at the
 gateway; every downstream service also validates the same JWT independently.
 
 The security service delegates username/password verification to `users` and
-issues 15-minute RSA-signed access tokens with `ADMIN`, `CUSTOMER`, or
-`EMPLOYEE` roles. Passwords are stored as BCrypt hashes. Use
-`POST /auth/register` to create a `CUSTOMER`, then `POST /auth/login` to receive
-an access token. The users service exposes authenticated `GET /api/users/me`.
-An `ADMIN` may create accounts with any role through `POST /api/users`; configure
+issues RSA-signed access tokens with `ADMIN`, `CUSTOMER`, or `EMPLOYEE` roles.
+Passwords are stored as BCrypt hashes. Use `POST /auth/login` to receive an
+access token. An `ADMIN` may create users with any role; configure
 `BOOTSTRAP_ADMIN_USERNAME` and `BOOTSTRAP_ADMIN_PASSWORD` once to create the
 initial admin account.
 
@@ -32,10 +27,12 @@ or ports differ from the local defaults.
 
 ## Run
 
-Set MySQL connection values if needed (defaults point to local MySQL), then build:
+For a workstation deployment that colleagues can access through the company VPN, follow [VPN_DEPLOYMENT.md](VPN_DEPLOYMENT.md).
+
+Set the required Oracle connection environment variables, then build:
 
 ```powershell
-mvn clean verify
+.\scripts\build-platform.ps1
 ```
 
 Start a service, for example:
@@ -44,9 +41,9 @@ Start a service, for example:
 mvn -pl users spring-boot:run
 ```
 
-Start the services in this order: `users`, `security-service`, then
-`api-gateway-service`. For example, run `mvn -pl security-service
-spring-boot:run` after the users service is available.
+For the complete platform with readiness checks, use `scripts/start-all.ps1`.
+It starts discovery first, waits for each business service in Eureka, and starts
+security and the gateway only after their dependencies are ready.
 
 ## Accounts and statements
 
