@@ -24,7 +24,7 @@ define([
     const s = this;
     const initialRange = currentMonthRange();
     s.state = u.state([]);
-    s.accountId = ko.observable(app.activeAccountId ? app.activeAccountId() : '');
+    s.accountNumber = ko.observable('');
     s.entryType = ko.observable('ALL');
     s.channel = ko.observable('ALL');
     s.fromDate = ko.observable(initialRange.from);
@@ -46,7 +46,7 @@ define([
         const preferredAccount = accounts.find(
           (account) => String(account.accountId) === String(s.activeAccountId()),
         ) || accounts[0];
-        if (preferredAccount) s.accountId(String(preferredAccount.accountId));
+        if (preferredAccount) s.accountNumber(String(preferredAccount.accountNumber));
       } catch (_) {
         s.customerAccounts([]);
       }
@@ -69,20 +69,26 @@ define([
     });
 
     s.search = () => {
-      const accountId = String(s.accountId() || '').trim();
-      if (!accountId) return Promise.resolve(s.state.error('Account ID is required.'));
+      const accountNumber = String(s.accountNumber() || '').trim();
+      if (!accountNumber) return Promise.resolve(s.state.error('Account number is required.'));
       if (!s.fromDate() || !s.toDate()) {
         return Promise.resolve(s.state.error('Select both from and to dates.'));
       }
       if (s.fromDate() > s.toDate()) {
         return Promise.resolve(s.state.error('From date cannot be after to date.'));
       }
-      return s.state.run(() => app.services.statements.search(accountId, {
-        fromDate: s.fromDate(),
-        toDate: s.toDate(),
-        entryType: s.entryType(),
-        channel: s.channel(),
-      })).catch(() => null);
+      return s.state.run(async () => {
+        const accounts = u.list(await app.services.accounts.number(accountNumber));
+        if (!accounts.length) throw new Error('Account number was not found.');
+        const accountId = String(accounts[0].accountId);
+        if (app.setActiveAccount) app.setActiveAccount(accountId);
+        return app.services.statements.search(accountId, {
+          fromDate: s.fromDate(),
+          toDate: s.toDate(),
+          entryType: s.entryType(),
+          channel: s.channel(),
+        });
+      }).catch(() => null);
     };
 
     s.currentMonth = () => {
@@ -120,14 +126,11 @@ define([
         .join('\n');
       const link = document.createElement('a');
       link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-      link.download = `statement-${s.accountId()}-${s.fromDate()}-${s.toDate()}.csv`;
+      link.download = `statement-${s.accountNumber()}-${s.fromDate()}-${s.toDate()}.csv`;
       link.click();
       URL.revokeObjectURL(link.href);
     };
 
-    s.accountId.subscribe((accountId) => {
-      if (s.hasActiveCustomer() && accountId) app.setActiveAccount(accountId);
-    });
     s.loadActiveCustomerAccounts();
   }
   return VM;

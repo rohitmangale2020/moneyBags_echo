@@ -71,22 +71,11 @@ define([
       Array.from(new Set(s.state.data().map((transaction) => transaction.currencyCode).filter(Boolean))).sort(),
     );
     s.filteredTransactions = ko.pureComputed(() => {
-      const query = s.query().trim().toLowerCase();
       const from = s.dateFrom() ? new Date(`${s.dateFrom()}T00:00:00`).getTime() : null;
       const to = s.dateTo() ? new Date(`${s.dateTo()}T23:59:59.999`).getTime() : null;
       const transactions = s.state.data().filter((transaction) => {
-        const searchable = [
-          transaction.transactionRef,
-          transaction.transactionId,
-          transaction.debitAccountId,
-          transaction.creditAccountId,
-          transaction.initiatedByCustomerId,
-          transaction.externalBeneficiary,
-          transaction.description,
-        ].map((value) => String(value || '').toLowerCase()).join(' ');
         const initiated = timestamp(transaction.initiatedAt);
-        return (!query || searchable.includes(query))
-          && (s.typeFilter() === 'ALL' || transaction.transactionType === s.typeFilter())
+        return (s.typeFilter() === 'ALL' || transaction.transactionType === s.typeFilter())
           && (s.statusFilter() === 'ALL' || transaction.transactionStatus === s.statusFilter())
           && (s.currencyFilter() === 'ALL' || transaction.currencyCode === s.currencyFilter())
           && (from === null || initiated >= from)
@@ -97,8 +86,6 @@ define([
         'initiated-asc': (a, b) => timestamp(a.initiatedAt) - timestamp(b.initiatedAt),
         'amount-desc': (a, b) => Number(b.amount || 0) - Number(a.amount || 0),
         'amount-asc': (a, b) => Number(a.amount || 0) - Number(b.amount || 0),
-        'reference-asc': (a, b) => String(a.transactionRef || '').localeCompare(String(b.transactionRef || '')),
-        'reference-desc': (a, b) => String(b.transactionRef || '').localeCompare(String(a.transactionRef || '')),
       };
       return transactions.slice().sort(sorters[s.sortBy()] || sorters['initiated-desc']);
     });
@@ -111,6 +98,29 @@ define([
     });
     s.statusClass = (status) => String(status || '').toLowerCase();
     s.load = (requestedPage) => s.state.run(async () => {
+      const accountNumber = s.query().trim();
+      if (accountNumber) {
+        const accounts = u.list(await app.services.accounts.number(accountNumber));
+        if (!accounts.length) {
+          s.currentPage(0);
+          s.totalTransactions(0);
+          s.totalPages(0);
+          return [];
+        }
+        const accountId = String(accounts[0].accountId);
+        const [debits, credits] = await Promise.all([
+          app.services.transactions.find('debitAccountId', accountId),
+          app.services.transactions.find('creditAccountId', accountId),
+        ]);
+        const transactions = [...u.list(debits), ...u.list(credits)];
+        const uniqueTransactions = Array.from(
+          new Map(transactions.map((transaction) => [transaction.transactionId, transaction])).values(),
+        );
+        s.currentPage(0);
+        s.totalTransactions(uniqueTransactions.length);
+        s.totalPages(1);
+        return uniqueTransactions;
+      }
       const page = Number.isInteger(requestedPage) ? requestedPage : s.currentPage();
       const response = await app.services.transactions.list(page, s.pageSize);
       s.currentPage(Number(response.number || 0));
