@@ -3,6 +3,7 @@
 .idea/
 *.iml
 logs/
+.env
 postman/
 uploads/
 UI/BankingPortal/node_modules/
