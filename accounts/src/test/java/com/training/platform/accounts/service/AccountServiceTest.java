@@ -1,5 +1,6 @@
 package com.training.platform.accounts.service;
 
+import com.training.platform.auditclient.AuditClient;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
@@ -31,12 +32,14 @@ class AccountServiceTest {
     @Mock private AccountStatusHistoryRepository accountStatusHistoryRepository;
     @Mock private AccountTransferOperationRepository transferOperationRepository;
     @Mock private AccountBalanceOperationRepository balanceOperationRepository;
+    @Mock private AuditClient auditClient;
     @Mock private Account account;
     private AccountService accountService;
 
     @BeforeEach void setUp() {
         accountService = new AccountService(accountRepository, accountHolderRepository,
-                accountStatusHistoryRepository, transferOperationRepository, balanceOperationRepository);
+                accountStatusHistoryRepository, transferOperationRepository, balanceOperationRepository,
+                auditClient);
     }
 
     @Test void returnsAccountWhenIdExists() {

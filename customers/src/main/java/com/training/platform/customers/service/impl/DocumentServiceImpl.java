@@ -1,5 +1,6 @@
 package com.training.platform.customers.service.impl;
 
+import com.training.platform.auditclient.AuditClient;
 import com.training.platform.customers.dto.DocumentRequest;
 import com.training.platform.customers.dto.DocumentResponse;
 import com.training.platform.customers.constants.DocumentStatusType;
@@ -23,7 +24,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -33,6 +37,7 @@ public class DocumentServiceImpl implements DocumentService {
 
     private final DocumentRepository documentRepository;
     private final CustomerRepository customerRepository;
+    private final AuditClient auditClient;
 
     @Value("${app.upload.dir}")
     private String uploadDir;
@@ -65,6 +70,8 @@ public class DocumentServiceImpl implements DocumentService {
         entity.setUpdatedOn(LocalDateTime.now());
 
         DocumentEntity saved = documentRepository.save(entity);
+        auditDocumentChange(customerId, saved, "DOCUMENT_UPLOADED", "Customer document uploaded",
+                Map.of(), documentValues(saved));
         return toResponse(saved);
     }
 
@@ -85,7 +92,6 @@ public class DocumentServiceImpl implements DocumentService {
         DocumentEntity document = documentRepository.findByDocIdAndCustomerCustomerId(docId, customerId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Document not found with id " + docId + " for customer " + customerId));
-
         return toResponse(document);
     }
 
@@ -94,6 +100,8 @@ public class DocumentServiceImpl implements DocumentService {
         DocumentEntity document = documentRepository.findByDocIdAndCustomerCustomerId(docId, customerId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Document not found with id " + docId + " for customer " + customerId));
+        Map<String, Object> previousValues = documentValues(document);
+        String previousFilePath = document.getFilePath();
 
         normalizeAndValidate(requestDto);
         if (file != null && !file.isEmpty()) {
@@ -114,6 +122,13 @@ public class DocumentServiceImpl implements DocumentService {
         document.setUpdatedOn(LocalDateTime.now());
 
         DocumentEntity updated = documentRepository.save(document);
+        Map<String, Object> currentValues = documentValues(updated);
+        if (!Objects.equals(previousFilePath, updated.getFilePath())) {
+            previousValues.put("documentFile", "[REDACTED]");
+            currentValues.put("documentFile", "[REPLACED - REDACTED]");
+        }
+        auditDocumentChange(customerId, updated, "DOCUMENT_UPDATED", "Document fields changed",
+                previousValues, currentValues);
         return toResponse(updated);
     }
 
@@ -206,5 +221,43 @@ public class DocumentServiceImpl implements DocumentService {
         dto.setUpdatedBy(entity.getUpdatedBy());
 
         return dto;
+    }
+
+    private Map<String, Object> documentValues(DocumentEntity document) {
+        Map<String, Object> values = new LinkedHashMap<>();
+        values.put("documentType", document.getDocumentType() == null ? null : document.getDocumentType().name());
+        values.put("documentNumber", maskDocumentNumber(document.getDocumentNumber()));
+        values.put("issueDate", document.getIssueDate());
+        values.put("expiryDate", document.getExpiryDate());
+        values.put("status", document.getStatus() == null ? null : document.getStatus().name());
+        values.put("verifiedBy", document.getVerifiedBy());
+        values.put("verifiedOn", document.getVerifiedOn());
+        values.put("rejectedReason", document.getRejectedReason());
+        values.put("remarks", document.getRemarks());
+        return values;
+    }
+
+    private String maskDocumentNumber(String number) {
+        if (number == null || number.isBlank()) return null;
+        String lastFour = number.length() <= 4 ? number : number.substring(number.length() - 4);
+        return "****" + lastFour;
+    }
+
+    private void auditDocumentChange(Long customerId, DocumentEntity document, String action,
+                                     String description, Map<String, ?> previousValues,
+                                     Map<String, ?> newValues) {
+        Map<String, Object> changes = auditClient.changes(previousValues, newValues);
+        if (changes != null && changes.isEmpty()) return;
+        Map<String, Object> details = new LinkedHashMap<>();
+        details.put("customerId", customerId);
+        details.put("relatedEntityType", "DOCUMENT");
+        details.put("relatedEntityId", document.getDocId().toString());
+        details.put("previousStatus", previousValues.get("status"));
+        details.put("newStatus", newValues.get("status"));
+        if (changes != null) {
+            details.putAll(changes);
+            if (!previousValues.isEmpty()) description += ": " + changes.get("changedFields");
+        }
+        auditClient.success("customers", action, description, details);
     }
 }

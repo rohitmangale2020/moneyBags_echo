@@ -28,6 +28,8 @@ define([
     s.error = ko.observable('');
     s.operation = ko.observable('TRANSFER');
     s.busy = ko.observable(false);
+    s.submissionState = ko.observable('idle');
+    s.submissionMessage = ko.observable('');
     s.loadingAccounts = ko.observable(false);
     s.accounts = ko.observableArray([]);
     s.activeCustomer = app.activeCustomer;
@@ -71,22 +73,11 @@ define([
       Array.from(new Set(s.state.data().map((transaction) => transaction.currencyCode).filter(Boolean))).sort(),
     );
     s.filteredTransactions = ko.pureComputed(() => {
-      const query = s.query().trim().toLowerCase();
       const from = s.dateFrom() ? new Date(`${s.dateFrom()}T00:00:00`).getTime() : null;
       const to = s.dateTo() ? new Date(`${s.dateTo()}T23:59:59.999`).getTime() : null;
       const transactions = s.state.data().filter((transaction) => {
-        const searchable = [
-          transaction.transactionRef,
-          transaction.transactionId,
-          transaction.debitAccountId,
-          transaction.creditAccountId,
-          transaction.initiatedByCustomerId,
-          transaction.externalBeneficiary,
-          transaction.description,
-        ].map((value) => String(value || '').toLowerCase()).join(' ');
         const initiated = timestamp(transaction.initiatedAt);
-        return (!query || searchable.includes(query))
-          && (s.typeFilter() === 'ALL' || transaction.transactionType === s.typeFilter())
+        return (s.typeFilter() === 'ALL' || transaction.transactionType === s.typeFilter())
           && (s.statusFilter() === 'ALL' || transaction.transactionStatus === s.statusFilter())
           && (s.currencyFilter() === 'ALL' || transaction.currencyCode === s.currencyFilter())
           && (from === null || initiated >= from)
@@ -97,8 +88,6 @@ define([
         'initiated-asc': (a, b) => timestamp(a.initiatedAt) - timestamp(b.initiatedAt),
         'amount-desc': (a, b) => Number(b.amount || 0) - Number(a.amount || 0),
         'amount-asc': (a, b) => Number(a.amount || 0) - Number(b.amount || 0),
-        'reference-asc': (a, b) => String(a.transactionRef || '').localeCompare(String(b.transactionRef || '')),
-        'reference-desc': (a, b) => String(b.transactionRef || '').localeCompare(String(a.transactionRef || '')),
       };
       return transactions.slice().sort(sorters[s.sortBy()] || sorters['initiated-desc']);
     });
@@ -111,6 +100,29 @@ define([
     });
     s.statusClass = (status) => String(status || '').toLowerCase();
     s.load = (requestedPage) => s.state.run(async () => {
+      const accountNumber = s.query().trim();
+      if (accountNumber) {
+        const accounts = u.list(await app.services.accounts.number(accountNumber));
+        if (!accounts.length) {
+          s.currentPage(0);
+          s.totalTransactions(0);
+          s.totalPages(0);
+          return [];
+        }
+        const accountId = String(accounts[0].accountId);
+        const [debits, credits] = await Promise.all([
+          app.services.transactions.find('debitAccountId', accountId),
+          app.services.transactions.find('creditAccountId', accountId),
+        ]);
+        const transactions = [...u.list(debits), ...u.list(credits)];
+        const uniqueTransactions = Array.from(
+          new Map(transactions.map((transaction) => [transaction.transactionId, transaction])).values(),
+        );
+        s.currentPage(0);
+        s.totalTransactions(uniqueTransactions.length);
+        s.totalPages(1);
+        return uniqueTransactions;
+      }
       const page = Number.isInteger(requestedPage) ? requestedPage : s.currentPage();
       const response = await app.services.transactions.list(page, s.pageSize);
       s.currentPage(Number(response.number || 0));
@@ -151,7 +163,18 @@ define([
       if (s.hasActiveCustomer()) s.loadCustomerAccounts();
     };
 
+    let closeTimer = null;
+    const clearCloseTimer = () => {
+      if (closeTimer) window.clearTimeout(closeTimer);
+      closeTimer = null;
+    };
+    const closeAfter = (milliseconds) => {
+      clearCloseTimer();
+      closeTimer = window.setTimeout(() => s.close(), milliseconds);
+    };
+
     s.open = () => {
+      clearCloseTimer();
       s.form.transactionRef(u.ref());
       s.form.debitAccountId('');
       s.form.creditAccountId('');
@@ -167,11 +190,18 @@ define([
       s.useCustomerAccounts(s.hasActiveCustomer());
       s.operation('TRANSFER');
       s.error('');
+      s.submissionState('idle');
+      s.submissionMessage('');
       document.getElementById('transactionDialog').open();
       if (s.hasActiveCustomer()) s.loadCustomerAccounts();
     };
 
-    s.close = () => document.getElementById('transactionDialog').close();
+    s.close = () => {
+      clearCloseTimer();
+      document.getElementById('transactionDialog').close();
+      s.submissionState('idle');
+      s.submissionMessage('');
+    };
 
     s.loadCustomerAccounts = async () => {
       const customerId = s.form.customerId().trim();
@@ -276,19 +306,26 @@ define([
 
       s.busy(true);
       s.error('');
+      s.submissionState('submitting');
+      s.submissionMessage(`Posting ${s.operationTitle().toLowerCase()}...`);
       try {
         const transaction = await app.services.transactions.transfer(payload);
 
         app.setActiveAccount(payload.debitAccountId || payload.creditAccountId);
         s.state.data([transaction].concat(s.state.data().filter((item) => item.transactionId !== transaction.transactionId)));
 
-        s.close();
+        s.submissionState('success');
+        s.submissionMessage(`${s.operationTitle()} completed successfully.`);
         app.notify(`${s.operationTitle()} completed.`, 'success');
+        closeAfter(1400);
       } catch (error) {
         if (error.details && error.details.transactionId) {
           await s.load(0);
         }
-        s.error(error.message);
+        s.submissionState('failure');
+        s.submissionMessage(error.message || 'The transaction could not be completed.');
+        app.notify(`${s.operationTitle()} failed.`, 'error');
+        closeAfter(2600);
       } finally {
         s.busy(false);
       }

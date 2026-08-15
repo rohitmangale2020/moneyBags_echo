@@ -71,8 +71,11 @@ public class AccountBalanceOperation {
     }
 
     public String getTransactionRef() { return transactionRef; }
+    public String getOperationId() { return operationId; }
     public String getAccountId() { return accountId; }
     public AdjustmentType getAdjustmentType() { return adjustmentType; }
+    public BigDecimal getAmount() { return amount; }
+    public String getCurrencyCode() { return currencyCode; }
     public BigDecimal getBalanceAfter() { return balanceAfter; }
     public LocalDateTime getProcessedAt() { return processedAt; }
 }

@@ -1,0 +1,106 @@
+<section class="mb-stack mb-ledger-page">
+  <div class="mb-heading">
+    <div>
+      <small>FINANCE / ADMINISTRATION</small>
+      <h1>General ledger</h1>
+      <p>Review immutable debit and credit postings, reconcile clearing activity, and post a balanced manual adjustment.</p>
+    </div>
+    <oj-button chroming="callToAction" on-oj-action="[[openPost]]">Post ledger entry</oj-button>
+  </div>
+
+  <div class="mb-error" data-bind="visible:accountState.error,text:accountState.error"></div>
+  <div class="mb-ledger-accounts" data-bind="foreach:accountState.data">
+    <button type="button" class="mb-ledger-account" data-bind="click:$parent.selectAccount">
+      <span class="mb-ledger-account-type" data-bind="text:$parent.accountType(accountType)"></span>
+      <strong data-bind="text:name"></strong>
+      <code data-bind="text:code"></code>
+      <span class="mb-ledger-balance" data-bind="text:$parent.money(currentBalance,'INR')"></span>
+    </button>
+  </div>
+
+  <div class="mb-filter-panel mb-filter-panel-ledger">
+    <label>Ledger account
+      <select data-bind="value:accountCode,disable:transactionRef().trim()">
+        <option value="">Choose an account</option>
+        <!-- ko foreach:accountState.data --><option data-bind="value:code,text:`${code} · ${name}`"></option><!-- /ko -->
+      </select>
+    </label>
+    <label>Transaction reference
+      <input type="search" placeholder="e.g. TXN-10002" data-bind="value:transactionRef,valueUpdate:'input',disable:accountCode().trim()" />
+    </label>
+    <label>Direction
+      <select data-bind="value:entryType"><option value="ALL">All entries</option><option value="DEBIT">Debits</option><option value="CREDIT">Credits</option></select>
+    </label>
+    <label>Currency
+      <select data-bind="value:currency"><option value="ALL">All currencies</option><!-- ko foreach:currencies --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select>
+    </label>
+    <label>From date<input type="date" data-bind="value:dateFrom" /></label>
+    <label>To date<input type="date" data-bind="value:dateTo" /></label>
+    <label class="mb-filter-search">Search loaded entries<input type="search" placeholder="Account, customer, reference or narration" data-bind="value:query,valueUpdate:'input'" /></label>
+    <label>Sort by
+      <select data-bind="value:sortBy"><option value="date-desc">Newest first</option><option value="date-asc">Oldest first</option><option value="amount-desc">Highest amount</option><option value="account-asc">Account A–Z</option></select>
+    </label>
+    <div class="mb-filter-actions">
+      <button type="button" class="mb-link" data-bind="click:clearFilters">Clear filters</button>
+      <oj-button chroming="callToAction" on-oj-action="[[loadEntries]]" disabled="[[entryState.loading]]">Load entries</oj-button>
+    </div>
+  </div>
+
+  <div class="mb-list-meta"><strong data-bind="text:resultSummary"></strong><span data-bind="text:selectedScope"></span></div>
+  <div class="mb-error" data-bind="visible:entryState.error,text:entryState.error"></div>
+  <div class="mb-loading" data-bind="visible:entryState.loading">Loading ledger entries...</div>
+  <div class="mb-table mb-ledger-table" data-bind="visible:filteredEntries().length && !entryState.loading()">
+    <table>
+      <thead><tr><th>Date</th><th>Ledger account</th><th>Customer account</th><th>Description</th><th>Debit</th><th>Credit</th><th>Status</th></tr></thead>
+      <tbody data-bind="foreach:filteredEntries">
+        <tr>
+          <td data-bind="text:$parent.date(createdAt)"></td>
+          <td><code data-bind="text:ledgerAccountCode"></code></td>
+          <td data-bind="text:customerAccountId || '—'"></td>
+          <td data-bind="text:description || '—'"></td>
+          <td class="debit" data-bind="text:entryType === 'DEBIT' ? $parent.money(amount,currencyCode) : '—'"></td>
+          <td class="credit" data-bind="text:entryType === 'CREDIT' ? $parent.money(amount,currencyCode) : '—'"></td>
+          <td><span class="mb-badge" data-bind="text:status,css:$parent.entryClass(entryType)"></span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="mb-empty" data-bind="visible:!entryState.loading()&&!entryState.error()&&!filteredEntries().length">
+    Select a ledger account or enter a transaction reference to review postings.
+  </div>
+
+  <oj-dialog id="ledgerPostingDialog" class="mb-dialog" dialog-title="Post balanced ledger entry" cancel-behavior="icon">
+    <div slot="body" class="mb-stack">
+      <div class="mb-info">Posted entries are immutable. To correct a posted entry, create a new balanced reversing entry.</div>
+      <div class="mb-error" data-bind="visible:postingError,text:postingError"></div>
+      <div class="mb-form mb-ledger-posting-header">
+        <label>Transaction reference<input type="text" maxlength="40" data-bind="value:posting.transactionRef" /></label>
+        <label>Posting date<input type="date" data-bind="value:posting.postingDate" /></label>
+        <label>Currency<input type="text" maxlength="3" data-bind="value:posting.currencyCode" /></label>
+        <label class="wide">Narration<input type="text" maxlength="500" placeholder="Reason for this entry" data-bind="value:posting.description" /></label>
+      </div>
+      <div class="mb-ledger-lines">
+        <div class="mb-ledger-line-head"><span>Ledger account</span><span>Customer account</span><span>Direction</span><span>Amount</span><span>Narration</span><span></span></div>
+        <!-- ko foreach:posting.items -->
+        <div class="mb-ledger-line">
+          <select data-bind="value:ledgerAccountCode,options:$parent.accountState.data,optionsText:'code',optionsValue:'code',optionsCaption:'Choose account'"></select>
+          <input type="text" maxlength="36" placeholder="Optional account ID" data-bind="value:customerAccountId" />
+          <select data-bind="value:entryType"><option value="DEBIT">Debit</option><option value="CREDIT">Credit</option></select>
+          <input type="number" min="0.0001" step="0.0001" placeholder="0.00" data-bind="value:amount" />
+          <input type="text" maxlength="500" placeholder="Optional line narration" data-bind="value:description" />
+          <button type="button" class="mb-line-remove" aria-label="Remove ledger line" title="Remove ledger line" data-bind="click:$parent.removeLine,enable:$parent.posting.items().length > 2">×</button>
+        </div>
+        <!-- /ko -->
+      </div>
+      <div class="mb-ledger-posting-footer">
+        <button type="button" class="mb-link" data-bind="click:addLine">Add line</button>
+        <div class="mb-ledger-totals" data-bind="css:{balanced:isBalanced(),unbalanced:!isBalanced()}">
+          <span>Debits <strong data-bind="text:money(totalDebits(),posting.currencyCode())"></strong></span>
+          <span>Credits <strong data-bind="text:money(totalCredits(),posting.currencyCode())"></strong></span>
+          <em data-bind="text:isBalanced() ? 'Balanced' : 'Not balanced'"></em>
+        </div>
+      </div>
+    </div>
+    <div slot="footer" class="mb-dialog-actions"><oj-button on-oj-action="[[closePost]]" disabled="[[postingBusy]]">Cancel</oj-button><oj-button chroming="callToAction" on-oj-action="[[submitPosting]]" disabled="[[postingBusy || !isBalanced()]]">Post entry</oj-button></div>
+  </oj-dialog>
+</section>

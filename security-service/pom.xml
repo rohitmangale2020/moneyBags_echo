@@ -4,6 +4,7 @@
   <parent><groupId>com.training</groupId><artifactId>banking-platform</artifactId><version>0.0.1-SNAPSHOT</version></parent>
   <artifactId>security-service</artifactId><name>security-service</name>
   <dependencies>
+    <dependency><groupId>com.training</groupId><artifactId>audit-client</artifactId><version>${project.version}</version></dependency>
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-web</artifactId></dependency>
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-security</artifactId></dependency>
     <dependency><groupId>org.springframework.security</groupId><artifactId>spring-security-oauth2-jose</artifactId></dependency>

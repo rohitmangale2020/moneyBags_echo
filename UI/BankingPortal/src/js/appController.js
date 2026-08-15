@@ -34,6 +34,10 @@ define([
     const self = this;
     self.session = session;
     self.services = services;
+    // Keep the login view mounted until both the profile lookup and dashboard
+    // navigation have completed.  The access token is stored earlier, so using
+    // session.isAuthenticated here would briefly render both app states.
+    self.isAppShellReady = ko.observable(false);
     self.KnockoutTemplateUtils = KnockoutTemplateUtils;
     self.toasts = ko.observableArray([]);
     self.manner = ko.observable("polite");
@@ -112,11 +116,19 @@ define([
         },
       },
       {
+        path: "ledger",
+        detail: {
+          label: "Ledger",
+          iconClass: "oj-ux-ico-bank",
+          roles: ["ADMIN"],
+        },
+      },
+      {
         path: "audit",
         detail: {
           label: "Audit logs",
           iconClass: "oj-ux-ico-history",
-          roles: ["ADMIN"],
+          roles: ["ADMIN", "AUDITOR"],
         },
       },
       {
@@ -189,6 +201,9 @@ define([
       || (savedCustomerContext && savedCustomerContext.activeAccountId ? String(savedCustomerContext.activeAccountId) : ''),
     );
     self.hasActiveCustomer = ko.pureComputed(() => !!self.activeCustomer());
+    self.showActiveCustomerContext = ko.pureComputed(
+      () => self.isAppShellReady() && self.hasActiveCustomer(),
+    );
     self.activeCustomerLabel = ko.pureComputed(() => {
       const customer = self.activeCustomer();
       return customer ? `${customer.name} · ${customer.cifNo}` : '';
@@ -246,14 +261,17 @@ define([
       return router.go({ path: "customers" });
     };
     self.completeLogin = async () => {
+      self.isAppShellReady(false);
       try {
         session.profile(await services.users.get(session.userId()));
       } catch (_) {
         session.profile(null);
       }
-      return router.go({ path: "dashboard" });
+      await router.go({ path: "dashboard" });
+      self.isAppShellReady(true);
     };
     self.signOut = () => {
+      self.isAppShellReady(false);
       session.clear();
       router.go({ path: "login" });
     };
@@ -296,6 +314,7 @@ define([
       }
     });
     window.addEventListener("moneybags-session-expired", () => {
+      self.isAppShellReady(false);
       session.clear();
       self.notify("Your session expired. Please sign in again.", "warning");
       router.go({ path: "login" });

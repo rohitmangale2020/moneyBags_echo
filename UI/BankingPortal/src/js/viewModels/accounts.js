@@ -25,12 +25,17 @@ define([
     s.movingAccountId = ko.observable(null);
     s.selectedAccount = ko.observable(null);
     s.query = ko.observable('');
+    s.searchCustomerId = ko.observable(null);
     s.statusFilter = ko.observable('ALL');
     s.ownershipFilter = ko.observable('ALL');
     s.currencyFilter = ko.observable('ALL');
     s.sortBy = ko.observable('opened-desc');
     s.products = ko.observableArray([]);
     s.selectedProduct = ko.pureComputed(() => s.products().find((product) => String(product.productId) === String(s.form.productId())) || null);
+    s.productLabel = ko.pureComputed(() => {
+      const product = s.selectedProduct();
+      return product ? `${product.productName} · ${product.productCode}` : s.form.productId();
+    });
     s.selectedProductMinimum = ko.pureComputed(() => Number(s.selectedProduct()?.minimumBalance || 0));
     s.selectedProductRule = ko.pureComputed(() => {
       const product = s.selectedProduct();
@@ -41,12 +46,15 @@ define([
         : 'No minimum opening balance for this product.';
     });
     s.editingId = ko.observable(null);
+    s.closingAccount = ko.observable(false);
+    s.closeDateMin = new Date().toISOString().slice(0, 10);
     s.error = ko.observable('');
     s.activeCustomer = app.activeCustomer;
     s.hasActiveCustomer = app.hasActiveCustomer;
     s.form = {
       accountNumber: ko.observable(''),
       customerId: ko.observable(''),
+      customerCif: ko.observable(''),
       productId: ko.observable(''),
       ownershipType: ko.observable('INDIVIDUAL'),
       availableBalance: ko.observable(0),
@@ -60,16 +68,11 @@ define([
       Array.from(new Set(s.state.data().map((account) => account.currencyCode).filter(Boolean))).sort(),
     );
     s.filteredAccounts = ko.pureComputed(() => {
-      const query = s.query().trim().toLowerCase();
       const accounts = s.state.data().filter((account) => {
-        const inCustomerContext = !s.hasActiveCustomer()
-          || String(account.customerId) === String(s.activeCustomer().customerId);
-        const searchable = [
-          account.accountNumber,
-          account.customerName,
-          account.productName,
-        ].map((value) => String(value || '').toLowerCase()).join(' ');
-        return inCustomerContext && (!query || searchable.includes(query))
+        const customerId = s.searchCustomerId()
+          || (s.hasActiveCustomer() ? s.activeCustomer().customerId : null);
+        const inCustomerContext = !customerId || String(account.customerId) === String(customerId);
+        return inCustomerContext
           && (s.statusFilter() === 'ALL' || account.status === s.statusFilter())
           && (s.ownershipFilter() === 'ALL' || account.ownershipType === s.ownershipFilter())
           && (s.currencyFilter() === 'ALL' || account.currencyCode === s.currencyFilter());
@@ -170,6 +173,74 @@ define([
     s.loadMore = () => {
       if (!s.state.loading() && s.currentPage() < s.totalPages() - 1) s.load(s.currentPage() + 1);
     };
+    s.search = () => {
+      const searchValue = s.query().trim();
+      if (!searchValue) {
+        s.searchCustomerId(null);
+        return s.load(0);
+      }
+      return /^CIF/i.test(searchValue)
+        ? s.searchByCustomerCif(searchValue)
+        : s.searchByAccountNumber(searchValue);
+    };
+    s.searchByCustomerCif = (cifNo) => {
+      return s.state.run(async () => {
+        const customer = await app.services.customers.byCif(cifNo);
+        s.searchCustomerId(String(customer.customerId));
+        const accounts = u.list(await app.services.accounts.customer(customer.customerId));
+        const productsResult = await Promise.allSettled([app.services.products.list()]);
+        const products = productsResult[0].status === 'fulfilled' ? u.list(productsResult[0].value) : [];
+        const productNames = new Map(products.map((product) => [String(product.productId), product.productName]));
+        const productDetails = new Map(products.map((product) => [String(product.productId), product]));
+        const customerName = [customer.firstName, customer.lastName].filter(Boolean).join(' ');
+        const loadedAccounts = accounts.map((account) => Object.assign({}, account, {
+          customerName: account.customerName || customerName,
+          productName: account.productName || productNames.get(String(account.productId)) || '',
+          productTypeCode: account.productTypeCode || productDetails.get(String(account.productId))?.productTypeCode || '',
+          productStatus: account.productStatus || productDetails.get(String(account.productId))?.status || '',
+          balanceDisplay: ko.observable(0),
+        }));
+        s.currentPage(0);
+        s.totalAccounts(loadedAccounts.length);
+        s.totalPages(1);
+        s.lastLoadedAccounts = loadedAccounts;
+        return loadedAccounts;
+      }).then((accounts) => {
+        if (accounts) s.animateBalances(s.lastLoadedAccounts);
+        return accounts;
+      }).catch(() => null);
+    };
+    s.searchByAccountNumber = (accountNumber) => s.state.run(async () => {
+      const accounts = u.list(await app.services.accounts.number(accountNumber));
+      if (!accounts.length) throw new Error('Account number was not found.');
+      const account = accounts[0];
+      s.searchCustomerId(account.customerId ? String(account.customerId) : null);
+      const [customerResult, productsResult] = await Promise.allSettled([
+        account.customerId ? app.services.customers.get(account.customerId) : Promise.resolve(null),
+        app.services.products.list(),
+      ]);
+      const customer = customerResult.status === 'fulfilled' ? customerResult.value : null;
+      const products = productsResult.status === 'fulfilled' ? u.list(productsResult.value) : [];
+      const product = products.find((item) => String(item.productId) === String(account.productId));
+      const customerName = customer
+        ? [customer.firstName, customer.lastName].filter(Boolean).join(' ')
+        : '';
+      const loadedAccount = Object.assign({}, account, {
+        customerName: account.customerName || customerName,
+        productName: account.productName || product?.productName || '',
+        productTypeCode: account.productTypeCode || product?.productTypeCode || '',
+        productStatus: account.productStatus || product?.status || '',
+        balanceDisplay: ko.observable(0),
+      });
+      s.currentPage(0);
+      s.totalAccounts(1);
+      s.totalPages(1);
+      s.lastLoadedAccounts = [loadedAccount];
+      return [loadedAccount];
+    }).then((accounts) => {
+      if (accounts) s.animateBalances(s.lastLoadedAccounts);
+      return accounts;
+    }).catch(() => null);
     s.startCardDrag = (account, event) => {
       s.draggedAccount(account);
       s.selectedAccount(account);
@@ -272,6 +343,7 @@ define([
     };
     s.clearFilters = () => {
       s.query('');
+      s.searchCustomerId(null);
       s.statusFilter('ALL');
       s.ownershipFilter('ALL');
       s.currencyFilter('ALL');
@@ -283,12 +355,14 @@ define([
       s.error('');
       s.form.accountNumber('');
       s.form.customerId(s.hasActiveCustomer() ? s.activeCustomer().customerId : '');
+      s.form.customerCif(s.hasActiveCustomer() ? s.activeCustomer().cifNo : '');
       s.form.productId('');
       s.form.ownershipType('INDIVIDUAL');
       s.form.availableBalance(0);
       s.form.status('ACTIVE');
       s.form.currencyCode('INR');
       s.form.closedAt(null);
+      s.closingAccount(false);
       try {
         const products = (await app.services.products.list()).filter((p) => p.status === 'ACTIVE');
         s.products(products);
@@ -303,17 +377,36 @@ define([
       s.error('');
       s.form.accountNumber(x.accountNumber);
       s.form.customerId(x.customerId);
+      s.form.customerCif('');
       s.form.productId(x.productId);
       s.form.ownershipType(x.ownershipType);
       s.form.availableBalance(x.availableBalance);
       s.form.status(x.status);
       s.form.currencyCode(x.currencyCode);
-      s.form.closedAt(x.closedAt);
+      s.form.closedAt(x.closedAt ? String(x.closedAt).slice(0, 10) : '');
+      s.closingAccount(x.status === 'CLOSED');
       try {
-        s.products(await app.services.products.list());
-        s.form.productId(String(x.productId));
+        const [productsResult, customerResult] = await Promise.allSettled([
+          app.services.products.list(),
+          app.services.customers.get(x.customerId),
+        ]);
+        if (productsResult.status !== 'fulfilled') throw productsResult.reason;
+        const products = u.list(productsResult.value);
+        s.products(products);
+        const selectedProduct = products.find((product) =>
+          String(product.productId) === String(x.productId)
+          || String(product.productCode) === String(x.productId));
+        s.form.productId(String(selectedProduct ? selectedProduct.productId : x.productId));
+        if (customerResult.status === 'fulfilled') {
+          s.form.customerCif(customerResult.value.cifNo || '');
+        }
         document.getElementById('accountDialog').open();
       } catch (e) { app.notify(e.message, 'error'); }
+    };
+    s.closeAccount = () => {
+      s.closingAccount(true);
+      s.form.status('CLOSED');
+      if (!s.form.closedAt()) s.form.closedAt(s.closeDateMin);
     };
     s.create = async () => {
       const p = s.products().find((x) => String(x.productId) === String(s.form.productId()));
@@ -333,7 +426,8 @@ define([
           status: s.editingId() ? s.form.status() : 'ACTIVE',
           currencyCode: s.editingId() ? s.form.currencyCode() : p.currency,
           availableBalance: Number(s.form.availableBalance()),
-          closedAt: s.form.closedAt() || null,
+          closedAt: s.closingAccount() && s.form.closedAt()
+            ? `${s.form.closedAt()}T00:00:00` : null,
         };
         const savedAccount = s.editingId()
           ? await app.services.accounts.update(s.editingId(), payload)

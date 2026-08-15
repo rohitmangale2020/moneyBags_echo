@@ -1,5 +1,6 @@
 package com.training.platform.transactions.service;
 
+import com.training.platform.auditclient.AuditClient;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -8,6 +9,9 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.startsWith;
 
 import com.training.platform.transactions.entity.BankTransaction;
 import com.training.platform.transactions.entity.TransactionStatus;
@@ -38,12 +42,14 @@ class BankTransactionServiceBehaviorTest {
     @Mock private TransactionEventOutboxRepository outboxRepository;
     @Mock private AccountsClient accountsClient;
     @Mock private CustomersClient customersClient;
+    @Mock private AuditClient auditClient;
+    @Mock private LedgerService ledgerService;
     private BankTransactionService transactionService;
 
     @BeforeEach
     void setUp() {
         transactionService = new BankTransactionService(transactionRepository, statementRepository,
-                outboxRepository, accountsClient, customersClient, new ObjectMapper());
+                outboxRepository, accountsClient, customersClient, new ObjectMapper(), auditClient, ledgerService);
     }
 
     @Test
@@ -121,6 +127,10 @@ class BankTransactionServiceBehaviorTest {
     @Test
     void completedTransferCreatesBankStyleStatementDescriptionsAndAmounts() {
         BankTransaction transfer = validTransaction("REF-100");
+        when(auditClient.changes(anyMap(), anyMap())).thenReturn(java.util.Map.of(
+                "changedFields", "transactionStatus",
+                "oldValuesJson", "{}",
+                "newValuesJson", "{}"));
         when(transactionRepository.findByTransactionRef("REF-100")).thenReturn(Optional.empty());
         when(transactionRepository.saveAndFlush(transfer)).thenReturn(transfer);
         when(transactionRepository.save(transfer)).thenReturn(transfer);
@@ -148,6 +158,10 @@ class BankTransactionServiceBehaviorTest {
                 () -> assertEquals(new BigDecimal("100.00"), saved.get(1).getDepositAmount()),
                 () -> assertEquals("INTERNAL TRANSFER FROM ALICE SENDER A/C XX9012 | REF REF-100",
                         saved.get(1).getDescription()));
+        verify(auditClient).success(eq("transactions"), eq("TRANSACTION_INITIATED"),
+                eq("Transaction initiated"), anyMap());
+        verify(auditClient).success(eq("transactions"), eq("TRANSACTION_COMPLETED"),
+                startsWith("Transaction completed"), anyMap());
     }
 
     private static BankTransaction validTransaction(String reference) {

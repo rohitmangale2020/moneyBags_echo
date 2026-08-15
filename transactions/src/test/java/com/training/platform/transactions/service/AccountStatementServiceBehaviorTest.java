@@ -1,5 +1,6 @@
 package com.training.platform.transactions.service;
 
+import com.training.platform.auditclient.AuditClient;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -26,11 +27,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class AccountStatementServiceBehaviorTest {
     @Mock private AccountStatementRepository statementRepository;
     @Mock private BankTransactionRepository transactionRepository;
+    @Mock private AuditClient auditClient;
     private AccountStatementService statementService;
 
     @BeforeEach
     void setUp() {
-        statementService = new AccountStatementService(statementRepository, transactionRepository);
+        statementService = new AccountStatementService(statementRepository, transactionRepository, auditClient);
     }
 
     @Test

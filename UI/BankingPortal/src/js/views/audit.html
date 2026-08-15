@@ -1,24 +1,202 @@
-<section class="mb-stack">
+<section class="mb-stack mb-audit-page">
   <div class="mb-heading">
-    <div>
-      <small>COMPLIANCE / AUDIT</small>
-      <h1>Audit and investigation</h1>
-      <p>Read-only evidence will appear here when the service exposes a query contract.</p>
+    <div class="mb-account-intro">
+      <div>
+        <small>ADMINISTRATION / AUDIT</small>
+        <h1>Audit activity</h1>
+        <p>Review important banking activity in plain language. Open an event only when you need its changes or technical trace.</p>
+      </div>
+      <oj-button chroming="outlined" on-oj-action="[[refresh]]" disabled="[[state.loading]]">
+        Refresh
+      </oj-button>
     </div>
   </div>
-  <div class="mb-limitation">
-    <span class="oj-ux-ico-history"></span>
-    <div>
-      <small>BACKEND CAPABILITY UNAVAILABLE</small>
-      <h2>Audit Service has no HTTP endpoints</h2>
-      <p>
-        The repository contains the Audit Service application and security configuration, but no
-        controller, request/response model, or gateway-readable query operation. The frontend does
-        not fabricate audit records.
-      </p>
-      <div class="mb-info">
-        Backend remains read-only. An audit query API requires a separate backend change.
+
+<!--  <nav class="mb-audit-tabs" role="tablist" aria-label="Audit service">-->
+<!--    &lt;!&ndash; ko foreach: categories &ndash;&gt;-->
+<!--    <button type="button" role="tab"-->
+<!--      data-bind="click:$parent.selectCategory,-->
+<!--        css:{active:$parent.activeCategory()===id},-->
+<!--        attr:{'aria-selected':$parent.activeCategory()===id,'aria-controls':'audit-log-panel'}">-->
+<!--      <small data-bind="text:eyebrow"></small>-->
+<!--      <strong data-bind="text:label"></strong>-->
+<!--      <span data-bind="text:description"></span>-->
+<!--    </button>-->
+<!--    &lt;!&ndash; /ko &ndash;&gt;-->
+<!--  </nav>-->
+
+  <div id="audit-log-panel" class="mb-audit-panel" role="tabpanel">
+<!--    <div class="mb-audit-panel-heading">-->
+<!--      <div>-->
+<!--        <small data-bind="text:activeConfig().eyebrow + ' AUDIT'">AUDIT</small>-->
+<!--        <h2 data-bind="text:activeConfig().label + ' activity'"></h2>-->
+<!--        <p data-bind="text:activeConfig().description"></p>-->
+<!--      </div>-->
+<!--      <div class="mb-audit-legend" aria-label="Audit outcomes">-->
+<!--        <span><i class="success"></i>Success</span>-->
+<!--        <span><i class="failed"></i>Failed</span>-->
+<!--        <span><i class="rejected"></i>Rejected</span>-->
+<!--      </div>-->
+<!--    </div>-->
+
+    <div class="mb-filter-panel mb-audit-filters">
+      <label class="mb-filter-search">Search this service
+        <input type="search" placeholder="Activity, person, reference or summary" data-bind="value:query,valueUpdate:'input'" />
+      </label>
+      <label>Status
+        <select data-bind="value:outcomeFilter">
+          <option value="ALL">All statuses</option>
+          <option value="SUCCESS">Success</option>
+          <option value="FAILED">Failed</option>
+          <option value="REJECTED">Rejected</option>
+        </select>
+      </label>
+      <div class="mb-audit-service-filter" data-bind="visible:activeCategory()==='all'">
+        <span class="mb-audit-filter-label">Services</span>
+        <details class="mb-audit-service-picker" data-audit-checklist>
+          <summary><span data-bind="text:serviceFilterSummary"></span></summary>
+          <div class="mb-audit-service-menu">
+            <div class="mb-audit-service-actions">
+              <button type="button" data-bind="click:clearAllServices">Clear all</button>
+              <button type="button" data-bind="click:selectDefaultServices">Default</button>
+              <button type="button" data-bind="click:selectAllServices">Select all</button>
+            </div>
+            <div class="mb-audit-service-options" data-bind="foreach:serviceCategories">
+              <label>
+                <input type="checkbox" data-bind="checked:$parent.serviceFilters,checkedValue:id" />
+                <strong data-bind="text:label"></strong>
+              </label>
+            </div>
+          </div>
+        </details>
+      </div>
+      <label>Activity
+        <select data-bind="value:actionFilter">
+          <option value="ALL">All activities</option>
+          <!-- ko foreach:actions --><option data-bind="value:$data,text:$parent.humanize($data)"></option><!-- /ko -->
+        </select>
+      </label>
+      <label>From date<input type="date" data-bind="value:dateFrom" /></label>
+      <label>To date<input type="date" data-bind="value:dateTo" /></label>
+      <label>Sort by
+        <select data-bind="value:sortBy">
+          <option value="created-desc">Newest first</option>
+          <option value="created-asc">Oldest first</option>
+          <option value="activity-asc">Activity A–Z</option>
+          <option value="actor-asc">Maker A–Z</option>
+          <option value="outcome-asc">Status A–Z</option>
+        </select>
+      </label>
+      <div class="mb-filter-actions">
+        <button type="button" class="mb-link" data-bind="click:clearFilters">Clear filters</button>
       </div>
     </div>
+
+    <div class="mb-list-meta mb-audit-list-meta" data-bind="visible:!state.loading()">
+      <strong data-bind="text:resultSummary"></strong>
+      <span>IDs and raw details are available inside each event.</span>
+    </div>
+
+    <div class="mb-error" data-bind="visible:state.error">
+      <span data-bind="text:state.error"></span>
+      <button type="button" data-bind="click:refresh">Retry</button>
+    </div>
+    <div class="mb-account-page-loader mb-table-loader" data-bind="visible:state.loading" role="status" aria-live="polite">
+      <span class="mb-account-page-spinner" aria-hidden="true"></span>
+      <strong data-bind="text:'Loading ' + activeConfig().label.toLowerCase() + ' audits'"></strong>
+      <small>Collecting the newest activity and preparing readable changes…</small>
+    </div>
+
+    <div class="mb-table mb-audit-table" data-bind="visible:pagedLogs().length && !state.loading()">
+      <table>
+        <thead><tr><th>When</th><th>Activity</th><th>Subject</th><th>Important details</th><th>Maker</th><th>Status</th></tr></thead>
+        <tbody data-bind="foreach:pagedLogs">
+        <tr tabindex="0" data-bind="click:$parent.openDetails,event:{keydown:$parent.handleRowKey},attr:{'aria-label':'View ' + $parent.activityTitle($data) + ' details'}">
+            <td><time data-bind="text:$parent.date(createdAt),attr:{datetime:createdAt}"></time></td>
+            <td><small class="mb-audit-service-tag" data-bind="visible:$parent.activeCategory()==='all',text:$parent.serviceLabel($data)"></small><strong data-bind="text:$parent.activityTitle($data)"></strong><small data-bind="visible:$parent.activityCaption($data),text:$parent.activityCaption($data)"></small></td>
+            <td class="mb-audit-subject"><strong data-bind="text:$parent.subject($data)"></strong><small data-bind="visible:$parent.subjectIdentifier($data),text:$parent.subjectIdentifier($data)"></small></td>
+            <td><span data-bind="text:$parent.context($data)"></span><small data-bind="visible:$parent.contextNote($data),text:$parent.contextNote($data)"></small></td>
+            <td><span data-bind="text:$parent.actor($data)"></span><small data-bind="text:$parent.humanize(actorType)"></small></td>
+            <td><span class="mb-audit-outcome" data-bind="text:$parent.humanize(outcome),css:$parent.outcomeClass(outcome)"></span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mb-audit-cards" data-bind="foreach:pagedLogs,visible:pagedLogs().length && !state.loading()">
+      <article tabindex="0" role="button" data-bind="click:$parent.openDetails,event:{keydown:$parent.handleRowKey},attr:{'aria-label':'View ' + $parent.activityTitle($data) + ' details'}">
+        <header><time data-bind="text:$parent.date(createdAt)"></time><span class="mb-audit-outcome" data-bind="text:$parent.humanize(outcome),css:$parent.outcomeClass(outcome)"></span></header>
+        <small class="mb-audit-service-tag" data-bind="visible:$parent.activeCategory()==='all',text:$parent.serviceLabel($data)"></small>
+        <h3 data-bind="text:$parent.activityTitle($data)"></h3>
+        <p data-bind="visible:$parent.activityCaption($data),text:$parent.activityCaption($data)"></p>
+        <dl>
+          <div><dt>Subject</dt><dd class="mb-audit-subject"><strong data-bind="text:$parent.subject($data)"></strong><small data-bind="visible:$parent.subjectIdentifier($data),text:$parent.subjectIdentifier($data)"></small></dd></div>
+          <div><dt>Details</dt><dd data-bind="text:$parent.context($data)"></dd></div>
+          <div><dt>Maker</dt><dd data-bind="text:$parent.actor($data)"></dd></div>
+        </dl>
+      </article>
+    </div>
+
+    <div class="mb-pagination mb-audit-pagination" data-bind="visible:totalViewPages() > 1">
+      <oj-button on-oj-action="[[previousPage]]" disabled="[[currentPage() === 0]]">Previous</oj-button>
+      <span data-bind="text:pageSummary"></span>
+      <label>Rows
+        <select data-bind="value:pageSize"><option value="10">10</option><option value="20">20</option><option value="50">50</option></select>
+      </label>
+      <oj-button on-oj-action="[[nextPage]]" disabled="[[currentPage() >= totalViewPages() - 1]]">Next</oj-button>
+    </div>
+
+    <div class="mb-empty" data-bind="visible:!pagedLogs().length && !state.loading() && !state.error()">
+      <strong>No audit activity matches these filters.</strong>
+      <span>Clear the filters or select another service.</span>
+    </div>
   </div>
+
+  <oj-dialog id="auditDetailDialog" class="mb-dialog mb-dialog-xl mb-audit-dialog" dialog-title="[[detailTitle]]" cancel-behavior="icon">
+    <div slot="body" data-bind="with:selectedLog">
+      <div class="mb-audit-detail-hero">
+        <div>
+          <small data-bind="text:$parent.serviceLabel($data) + ' audit · ' + $parent.date(createdAt)"></small>
+          <h2 data-bind="text:$parent.activityTitle($data)"></h2>
+          <p data-bind="text:$parent.detailDescription"></p>
+        </div>
+        <span class="mb-audit-outcome large" data-bind="text:$parent.humanize(outcome),css:$parent.outcomeClass(outcome)"></span>
+      </div>
+
+      <section class="mb-audit-detail-section">
+        <div class="mb-section-title"><small>EVENT CONTEXT</small><h3>What happened</h3></div>
+        <dl class="mb-audit-detail-grid">
+          <div><dt>When</dt><dd data-bind="text:$parent.date(createdAt)"></dd></div>
+          <div><dt>Maker</dt><dd data-bind="text:$parent.actor($data)"></dd></div>
+          <div><dt>Maker type</dt><dd data-bind="text:$parent.humanize(actorType)"></dd></div>
+          <!-- ko foreach:$parent.selectedFields --><div><dt data-bind="text:label"></dt><dd data-bind="text:value"></dd></div><!-- /ko -->
+        </dl>
+      </section>
+
+      <section class="mb-audit-detail-section" data-bind="visible:$parent.selectedChanges().length">
+        <div class="mb-section-title"><small>FIELD COMPARISON</small><h3>Old and new values</h3></div>
+        <div class="mb-audit-changes">
+          <div class="mb-audit-change-head"><span>Field</span><span>Previous value</span><span>New value</span></div>
+          <!-- ko foreach:$parent.selectedChanges -->
+          <div class="mb-audit-change-row"><strong data-bind="text:field"></strong><span class="before" data-bind="text:previous"></span><span class="after" data-bind="text:current"></span></div>
+          <!-- /ko -->
+        </div>
+      </section>
+
+      <section class="mb-audit-detail-section" data-bind="visible:$data.errorMessage || $data.failureReason || $data.errorCode">
+        <div class="mb-section-title"><small>FAILURE INFORMATION</small><h3>Why it did not complete</h3></div>
+        <div class="mb-audit-failure"><span data-bind="text:$parent.failureSummary($data)"></span></div>
+      </section>
+
+      <details class="mb-audit-technical" data-bind="visible:$parent.selectedTechnical().length || $data.userAgent">
+        <summary>Technical trace</summary>
+        <p>Use these identifiers when tracing the same operation across services.</p>
+        <dl>
+          <!-- ko foreach:$parent.selectedTechnical --><div><dt data-bind="text:label"></dt><dd data-bind="text:value"></dd></div><!-- /ko -->
+          <div data-bind="visible:$data.userAgent"><dt>User agent</dt><dd data-bind="text:$data.userAgent"></dd></div>
+        </dl>
+      </details>
+    </div>
+    <div slot="footer" class="mb-dialog-actions"><oj-button on-oj-action="[[closeDetails]]">Close</oj-button></div>
+  </oj-dialog>
 </section>

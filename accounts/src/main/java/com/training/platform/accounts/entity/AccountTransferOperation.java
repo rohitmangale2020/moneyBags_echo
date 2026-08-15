@@ -88,9 +88,12 @@ public class AccountTransferOperation {
     }
 
     public String getTransactionRef() { return transactionRef; }
+    public String getOperationId() { return operationId; }
     public String getDebitAccountId() { return debitAccountId; }
     public String getCreditAccountId() { return creditAccountId; }
     public BigDecimal getDebitBalanceAfter() { return debitBalanceAfter; }
     public BigDecimal getCreditBalanceAfter() { return creditBalanceAfter; }
+    public BigDecimal getAmount() { return amount; }
+    public String getCurrencyCode() { return currencyCode; }
     public LocalDateTime getProcessedAt() { return processedAt; }
 }

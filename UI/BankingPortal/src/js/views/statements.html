@@ -9,12 +9,12 @@
   </div>
 
   <div class="mb-filter-panel mb-filter-panel-statements">
-    <label class="mb-filter-search">Account ID
-      <input type="search" placeholder="Required account ID" data-bind="value:accountId,valueUpdate:'input'" />
+    <label class="mb-filter-search">Account number
+      <input type="search" inputmode="numeric" placeholder="Required account number" data-bind="value:accountNumber,valueUpdate:'input'" />
     </label>
     <!-- ko if:hasActiveCustomer() -->
     <label>Active customer account
-      <select data-bind="value:accountId,options:customerAccounts,optionsText:'accountNumber',optionsValue:'accountId'"></select>
+      <select data-bind="value:accountNumber,options:customerAccounts,optionsText:'accountNumber',optionsValue:'accountNumber'"></select>
     </label>
     <!-- /ko -->
     <label>Movement
@@ -84,6 +84,6 @@
     </table>
   </div>
   <div class="mb-empty" data-bind="visible:!state.loading()&&!state.error()&&!filteredStatements().length">
-    Enter an account ID to load this month's statement, or change the date range and filters.
+    Enter an account number to load this month's statement, or change the date range and filters.
   </div>
 </section>
