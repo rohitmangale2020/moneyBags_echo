@@ -51,11 +51,10 @@
   <div class="mb-loading" data-bind="visible:entryState.loading">Loading ledger entries...</div>
   <div class="mb-table mb-ledger-table" data-bind="visible:filteredEntries().length && !entryState.loading()">
     <table>
-      <thead><tr><th>Date</th><th>Reference</th><th>Ledger account</th><th>Customer account</th><th>Description</th><th>Debit</th><th>Credit</th><th>Status</th></tr></thead>
+      <thead><tr><th>Date</th><th>Ledger account</th><th>Customer account</th><th>Description</th><th>Debit</th><th>Credit</th><th>Status</th></tr></thead>
       <tbody data-bind="foreach:filteredEntries">
         <tr>
-          <td data-bind="text:$parent.date(postingDate)"></td>
-          <td><strong data-bind="text:transactionRef"></strong><small data-bind="text:`Line ${lineNumber}`"></small></td>
+          <td data-bind="text:$parent.date(createdAt)"></td>
           <td><code data-bind="text:ledgerAccountCode"></code></td>
           <td data-bind="text:customerAccountId || '—'"></td>
           <td data-bind="text:description || '—'"></td>

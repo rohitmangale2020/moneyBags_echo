@@ -28,6 +28,8 @@ define([
     s.error = ko.observable('');
     s.operation = ko.observable('TRANSFER');
     s.busy = ko.observable(false);
+    s.submissionState = ko.observable('idle');
+    s.submissionMessage = ko.observable('');
     s.loadingAccounts = ko.observable(false);
     s.accounts = ko.observableArray([]);
     s.activeCustomer = app.activeCustomer;
@@ -161,7 +163,18 @@ define([
       if (s.hasActiveCustomer()) s.loadCustomerAccounts();
     };
 
+    let closeTimer = null;
+    const clearCloseTimer = () => {
+      if (closeTimer) window.clearTimeout(closeTimer);
+      closeTimer = null;
+    };
+    const closeAfter = (milliseconds) => {
+      clearCloseTimer();
+      closeTimer = window.setTimeout(() => s.close(), milliseconds);
+    };
+
     s.open = () => {
+      clearCloseTimer();
       s.form.transactionRef(u.ref());
       s.form.debitAccountId('');
       s.form.creditAccountId('');
@@ -177,11 +190,18 @@ define([
       s.useCustomerAccounts(s.hasActiveCustomer());
       s.operation('TRANSFER');
       s.error('');
+      s.submissionState('idle');
+      s.submissionMessage('');
       document.getElementById('transactionDialog').open();
       if (s.hasActiveCustomer()) s.loadCustomerAccounts();
     };
 
-    s.close = () => document.getElementById('transactionDialog').close();
+    s.close = () => {
+      clearCloseTimer();
+      document.getElementById('transactionDialog').close();
+      s.submissionState('idle');
+      s.submissionMessage('');
+    };
 
     s.loadCustomerAccounts = async () => {
       const customerId = s.form.customerId().trim();
@@ -286,19 +306,26 @@ define([
 
       s.busy(true);
       s.error('');
+      s.submissionState('submitting');
+      s.submissionMessage(`Posting ${s.operationTitle().toLowerCase()}...`);
       try {
         const transaction = await app.services.transactions.transfer(payload);
 
         app.setActiveAccount(payload.debitAccountId || payload.creditAccountId);
         s.state.data([transaction].concat(s.state.data().filter((item) => item.transactionId !== transaction.transactionId)));
 
-        s.close();
+        s.submissionState('success');
+        s.submissionMessage(`${s.operationTitle()} completed successfully.`);
         app.notify(`${s.operationTitle()} completed.`, 'success');
+        closeAfter(1400);
       } catch (error) {
         if (error.details && error.details.transactionId) {
           await s.load(0);
         }
-        s.error(error.message);
+        s.submissionState('failure');
+        s.submissionMessage(error.message || 'The transaction could not be completed.');
+        app.notify(`${s.operationTitle()} failed.`, 'error');
+        closeAfter(2600);
       } finally {
         s.busy(false);
       }

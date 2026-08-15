@@ -12,6 +12,19 @@ define([
     return Number.isNaN(parsed) ? 0 : parsed;
   };
   const today = () => new Date().toISOString().slice(0, 10);
+  const normalizeEntries = (payload) => u.list(payload).filter(Boolean).map((entry) => ({
+    ...entry,
+    transactionRef: entry.transactionRef || entry.transaction_ref || '',
+    lineNumber: entry.lineNumber || entry.line_number || 0,
+    ledgerAccountCode: entry.ledgerAccountCode || entry.ledger_account_code || '',
+    customerAccountId: entry.customerAccountId || entry.customer_account_id || '',
+    entryType: entry.entryType || entry.entry_type || '',
+    currencyCode: entry.currencyCode || entry.currency_code || '',
+    postingDate: entry.postingDate || entry.posting_date || '',
+    createdAt: entry.createdAt || entry.created_at || '',
+    description: entry.description || '',
+    status: entry.status || '',
+  }));
 
   function VM() {
     const s = this;
@@ -46,13 +59,13 @@ define([
 
     s.money = u.money;
     s.date = (value) => value
-      ? new Intl.DateTimeFormat('en-IN', { dateStyle: 'medium' }).format(new Date(`${value}T00:00:00`))
+      ? new Intl.DateTimeFormat('en-IN', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value))
       : '—';
     s.accountType = (type) => String(type || '').replace(/_/g, ' ').toLowerCase()
       .replace(/\b\w/g, (letter) => letter.toUpperCase());
     s.entryClass = (type) => String(type || '').toLowerCase();
     s.currencies = ko.pureComputed(() => Array.from(new Set(
-      s.entryState.data().map((entry) => entry.currencyCode).filter(Boolean),
+      (Array.isArray(s.entryState.data()) ? s.entryState.data() : []).map((entry) => entry.currencyCode).filter(Boolean),
     )).sort());
     s.selectedScope = ko.pureComputed(() => {
       if (s.transactionRef().trim()) return `Transaction ${s.transactionRef().trim()}`;
@@ -61,27 +74,28 @@ define([
     });
     s.filteredEntries = ko.pureComputed(() => {
       const text = s.query().trim().toLowerCase();
-      const from = s.dateFrom() ? dateValue(s.dateFrom()) : null;
-      const to = s.dateTo() ? dateValue(s.dateTo()) : null;
+      const from = s.dateFrom() ? dateValue(`${s.dateFrom()}T00:00:00`) : null;
+      const to = s.dateTo() ? dateValue(`${s.dateTo()}T23:59:59.999`) : null;
       const sorters = {
-        'date-desc': (a, b) => dateValue(b.postingDate) - dateValue(a.postingDate) || b.lineNumber - a.lineNumber,
-        'date-asc': (a, b) => dateValue(a.postingDate) - dateValue(b.postingDate) || a.lineNumber - b.lineNumber,
+        'date-desc': (a, b) => dateValue(b.createdAt) - dateValue(a.createdAt) || b.lineNumber - a.lineNumber,
+        'date-asc': (a, b) => dateValue(a.createdAt) - dateValue(b.createdAt) || a.lineNumber - b.lineNumber,
         'amount-desc': (a, b) => Number(b.amount || 0) - Number(a.amount || 0),
         'account-asc': (a, b) => String(a.ledgerAccountCode || '').localeCompare(String(b.ledgerAccountCode || '')),
       };
-      return s.entryState.data().filter((entry) => {
+      const loadedEntries = Array.isArray(s.entryState.data()) ? s.entryState.data() : [];
+      return loadedEntries.filter((entry) => {
         const searchable = [entry.transactionRef, entry.ledgerAccountCode, entry.customerAccountId, entry.description]
           .filter(Boolean).join(' ').toLowerCase();
-        const postingDate = dateValue(entry.postingDate);
+        const createdAt = dateValue(entry.createdAt);
         return (!text || searchable.includes(text))
           && (s.entryType() === 'ALL' || entry.entryType === s.entryType())
           && (s.currency() === 'ALL' || entry.currencyCode === s.currency())
-          && (from === null || postingDate >= from)
-          && (to === null || postingDate <= to);
+          && (from === null || createdAt >= from)
+          && (to === null || createdAt <= to);
       }).slice().sort(sorters[s.sortBy()] || sorters['date-desc']);
     });
     s.resultSummary = ko.pureComputed(() => {
-      const loaded = s.entryState.data().length;
+      const loaded = Array.isArray(s.entryState.data()) ? s.entryState.data().length : 0;
       const shown = s.filteredEntries().length;
       return shown === loaded ? `${loaded} ledger ${loaded === 1 ? 'entry' : 'entries'}` : `${shown} of ${loaded} entries`;
     });
@@ -92,7 +106,8 @@ define([
     s.isBalanced = ko.pureComputed(() => s.totalDebits() > 0
       && Math.abs(s.totalDebits() - s.totalCredits()) < 0.00001);
 
-    s.loadAccounts = () => s.accountState.run(() => app.services.ledger.accounts()).catch(() => null);
+    s.loadAccounts = () => s.accountState.run(async () => u.list(await app.services.ledger.accounts()))
+      .catch(() => null);
     s.loadEntries = () => {
       const transactionRef = s.transactionRef().trim();
       const accountCode = s.accountCode().trim().toUpperCase();
@@ -104,7 +119,8 @@ define([
         s.entryState.error('Use either an account code or a transaction reference, not both.');
         return Promise.resolve();
       }
-      return s.entryState.run(() => app.services.ledger.entries({ transactionRef, accountCode })).catch(() => null);
+      return s.entryState.run(async () => normalizeEntries(await app.services.ledger.entries({ transactionRef, accountCode })))
+        .catch(() => null);
     };
     s.selectAccount = (account) => {
       s.transactionRef('');
@@ -156,10 +172,10 @@ define([
       s.postingBusy(true);
       s.postingError('');
       try {
-        const entries = await app.services.ledger.post(payload);
+        const postedEntries = await app.services.ledger.post(payload);
         s.transactionRef(payload.transactionRef);
         s.accountCode('');
-        s.entryState.data(entries);
+        s.entryState.data(normalizeEntries(postedEntries));
         await s.loadAccounts();
         s.closePost();
         app.notify('Balanced ledger entry posted.', 'success');

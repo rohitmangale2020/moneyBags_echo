@@ -92,8 +92,16 @@
     No transactions match the selected filters.
   </div>
 
-  <oj-dialog id="transactionDialog" class="mb-dialog" dialog-title="Post transaction" cancel-behavior="icon">
+  <oj-dialog id="transactionDialog" class="mb-dialog" dialog-title="Post transaction" cancel-behavior="none">
     <div slot="body" class="mb-stack">
+      <div class="mb-transaction-submit-state" data-bind="visible:submissionState() !== 'idle',css:submissionState">
+        <span class="mb-transaction-submit-spinner" data-bind="visible:submissionState() === 'submitting'" aria-hidden="true"></span>
+        <span class="mb-transaction-submit-icon" data-bind="visible:submissionState() === 'success'" aria-hidden="true">✓</span>
+        <span class="mb-transaction-submit-icon" data-bind="visible:submissionState() === 'failure'" aria-hidden="true">!</span>
+        <strong data-bind="text:submissionState() === 'submitting' ? 'Processing transaction' : submissionState() === 'success' ? 'Transaction complete' : 'Transaction failed'"></strong>
+        <p data-bind="text:submissionMessage"></p>
+      </div>
+      <div class="mb-stack" data-bind="visible:submissionState() === 'idle'">
       <div>
         <small>TRANSACTION TYPE</small>
         <h2 data-bind="text:operationTitle"></h2>
@@ -166,8 +174,9 @@
       <div class="mb-info">
         Every submission uses a hidden idempotency reference, so retrying the same request cannot post balances twice.
       </div>
+      </div>
     </div>
-    <div slot="footer" class="mb-dialog-actions">
+    <div slot="footer" class="mb-dialog-actions" data-bind="visible:submissionState() === 'idle'">
       <oj-button on-oj-action="[[close]]" disabled="[[busy]]">Cancel</oj-button>
       <oj-button chroming="callToAction" on-oj-action="[[submit]]" disabled="[[busy]]">Post transaction</oj-button>
     </div>
