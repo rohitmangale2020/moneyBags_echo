@@ -1,0 +1,19 @@
+.mb-account-page-loader-legacy {
+  display: none !important;
+}
+
+.mb-table-loader {
+  position: static;
+  inset: auto;
+  z-index: auto;
+  display: grid;
+  min-height: 300px;
+  place-content: center;
+  justify-items: center;
+  gap: 12px;
+  border: 1px solid #d7e5f6;
+  border-radius: 14px;
+  background: rgba(237, 243, 250, 0.88);
+  color: var(--acct-ink);
+  text-align: center;
+}

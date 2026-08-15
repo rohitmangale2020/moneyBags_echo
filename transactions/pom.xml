@@ -3,6 +3,8 @@
     <modelVersion>4.0.0</modelVersion><parent><groupId>com.training</groupId><artifactId>banking-platform</artifactId><version>0.0.1-SNAPSHOT</version></parent><artifactId>transactions</artifactId><name>transactions-service</name>
     <dependencies>
 
+        <dependency><groupId>com.training</groupId><artifactId>audit-client</artifactId><version>${project.version}</version></dependency>
+
         <!-- Spring Boot Web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

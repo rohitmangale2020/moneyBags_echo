@@ -1,5 +1,6 @@
 package com.training.platform.users.service.impl;
 
+import com.training.platform.auditclient.AuditClient;
 import com.training.platform.users.dto.CreateUserRequest;
 import com.training.platform.users.dto.UpdateUserRequest;
 import com.training.platform.users.dto.UserProfileRequest;
@@ -41,6 +42,9 @@ class UserServiceImplTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private AuditClient auditClient;
 
     @InjectMocks
     private UserServiceImpl userService;

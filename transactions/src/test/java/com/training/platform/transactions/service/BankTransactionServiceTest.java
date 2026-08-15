@@ -1,5 +1,6 @@
 package com.training.platform.transactions.service;
 
+import com.training.platform.auditclient.AuditClient;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
@@ -31,12 +32,14 @@ class BankTransactionServiceTest {
     @Mock private TransactionEventOutboxRepository outboxRepository;
     @Mock private AccountsClient accountsClient;
     @Mock private CustomersClient customersClient;
+    @Mock private AuditClient auditClient;
+    @Mock private LedgerService ledgerService;
     @Mock private BankTransaction transaction;
     private BankTransactionService transactionService;
 
     @BeforeEach void setUp() {
         transactionService = new BankTransactionService(transactionRepository, statementRepository,
-                outboxRepository, accountsClient, customersClient, new ObjectMapper());
+                outboxRepository, accountsClient, customersClient, new ObjectMapper(), auditClient, ledgerService);
     }
 
     @Test void returnsTransactionWhenReferenceExists() {

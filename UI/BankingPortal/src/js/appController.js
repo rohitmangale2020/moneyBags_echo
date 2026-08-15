@@ -112,11 +112,19 @@ define([
         },
       },
       {
+        path: "ledger",
+        detail: {
+          label: "Ledger",
+          iconClass: "oj-ux-ico-bank",
+          roles: ["ADMIN"],
+        },
+      },
+      {
         path: "audit",
         detail: {
           label: "Audit logs",
           iconClass: "oj-ux-ico-history",
-          roles: ["ADMIN"],
+          roles: ["ADMIN", "AUDITOR"],
         },
       },
       {

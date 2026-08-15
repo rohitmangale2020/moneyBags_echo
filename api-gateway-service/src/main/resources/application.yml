@@ -34,6 +34,9 @@ spring:
             - id: statements-service
               uri: lb://transactions-service
               predicates: ["Path=/api/statements,/api/statements/**"]
+            - id: ledger-service
+              uri: lb://transactions-service
+              predicates: ["Path=/api/ledger,/api/ledger/**"]
             - id: audit-service
               uri: lb://audit-service
               predicates: ["Path=/api/audit,/api/audit/**"]
@@ -44,4 +47,11 @@ eureka:
       defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka}
     register-with-eureka: true
     fetch-registry: true
+
+services:
+  audit:
+    base-url: ${SERVICES_AUDIT_BASE_URL:http://localhost:8086}
+
+audit:
+  internal-key: ${AUDIT_INTERNAL_KEY:local-audit-key}
 

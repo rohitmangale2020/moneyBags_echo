@@ -44,9 +44,15 @@ Start a service, for example:
 mvn -pl users spring-boot:run
 ```
 
-Start the services in this order: `users`, `security-service`, then
-`api-gateway-service`. For example, run `mvn -pl security-service
-spring-boot:run` after the users service is available.
+Start the services in this order: `discovery-service`, `audit`, the business
+services (`users`, `customers`, `products`, `accounts`, `transactions`),
+`security-service`, and finally `api-gateway-service`.
+
+For audit persistence, start `audit` before the business services. The local
+default audit URL is `http://localhost:8086`; override it with
+`SERVICES_AUDIT_BASE_URL` when needed. All services and the audit service must
+share the same `AUDIT_INTERNAL_KEY`. The audit service creates/updates its seven
+audit tables through Hibernate when it starts against Oracle.
 
 ## Accounts and statements
 
@@ -63,3 +69,26 @@ GET /api/statements?accountId=<id>
 
 Optional filters are `fromDate`, `toDate`, `entryType`, and `channel`. Supported channels
 are `WITHDRAWAL`, `DEPOSIT`, `SELF_TRANSFER`, and `INTERNAL_TRANSFER`.
+
+## Ledger
+
+The transactions service has a small immutable double-entry ledger. It uses only
+`ledger_account` and `ledger_entry`; a journal header is deliberately not stored.
+The entries sharing a `transactionRef` are the ledger posting and must balance.
+Completed deposits and withdrawals produce two entries, while internal transfers
+produce four entries through the `INTERNAL_CLEARING` account.
+
+The service bootstraps `CASH_ON_HAND`, `CUSTOMER_DEPOSITS`, and
+`INTERNAL_CLEARING`. Ledger APIs are available through the gateway:
+
+```text
+GET  /api/ledger/accounts
+POST /api/ledger/accounts
+GET  /api/ledger/entries?transactionRef=<reference>
+GET  /api/ledger/entries?accountCode=<code>
+POST /api/ledger/entries
+```
+
+`transactions/src/main/resources/db/ledger-schema-oracle.sql` is the reference
+Oracle DDL for managed environments. Local development creates these tables using
+the existing Hibernate `ddl-auto=update` setting.

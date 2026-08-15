@@ -1,5 +1,6 @@
 package com.training.platform.customers.service.impl;
 
+import com.training.platform.auditclient.AuditClient;
 import com.training.platform.customers.dto.AddressRequest;
 import com.training.platform.customers.dto.AddressResponse;
 import com.training.platform.customers.entity.AddressEntity;
@@ -15,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,6 +28,7 @@ public class AddressServiceImpl implements AddressService {
     private final AddressRepository addressRepository;
     private final CustomerRepository customerRepository;
     private final AddressMapper addressMapper;
+    private final AuditClient auditClient;
 
     @Override
     public AddressResponse addAddress(Long customerId, AddressRequest request) {
@@ -39,6 +43,8 @@ public class AddressServiceImpl implements AddressService {
         addressEntity.setCustomer(customer);
 
         AddressEntity saved = addressRepository.save(addressEntity);
+        auditAddressChange(customerId, saved, "ADDRESS_ADDED", "Customer address added",
+                Map.of(), addressValues(saved));
         return addressMapper.toResponse(saved);
     }
 
@@ -72,9 +78,12 @@ public class AddressServiceImpl implements AddressService {
                                 "Address not found with id: " + addressId + " for customer: " + customerId
                         ));
 
+        Map<String, Object> previousValues = addressValues(existing);
         addressMapper.updateEntity(existing, request);
 
         AddressEntity saved = addressRepository.save(existing);
+        auditAddressChange(customerId, saved, "ADDRESS_UPDATED", "Address fields changed",
+                previousValues, addressValues(saved));
         return addressMapper.toResponse(saved);
     }
 
@@ -89,7 +98,10 @@ public class AddressServiceImpl implements AddressService {
                                 "Address not found with id: " + addressId + " for customer: " + customerId
                         ));
 
+        Map<String, Object> previousValues = addressValues(existing);
         addressRepository.delete(existing);
+        auditAddressChange(customerId, existing, "ADDRESS_DELETED", "Customer address deleted",
+                previousValues, Map.of());
     }
 
     private void validateAddressRequest(AddressRequest request) {
@@ -114,5 +126,32 @@ public class AddressServiceImpl implements AddressService {
         if (request.pincode() == null || request.pincode().isBlank()) {
             throw new BadRequestException("Pincode is required");
         }
+    }
+
+    private Map<String, Object> addressValues(AddressEntity address) {
+        Map<String, Object> values = new LinkedHashMap<>();
+        values.put("addressType", address.getAddressType() == null ? null : address.getAddressType().name());
+        values.put("line1", address.getLine1());
+        values.put("line2", address.getLine2());
+        values.put("city", address.getCity());
+        values.put("state", address.getState());
+        values.put("country", address.getCountry());
+        values.put("pincode", address.getPincode());
+        return values;
+    }
+
+    private void auditAddressChange(Long customerId, AddressEntity address, String action, String description,
+                                    Map<String, ?> previousValues, Map<String, ?> newValues) {
+        Map<String, Object> changes = auditClient.changes(previousValues, newValues);
+        if (changes != null && changes.isEmpty()) return;
+        Map<String, Object> details = new LinkedHashMap<>();
+        details.put("customerId", customerId);
+        details.put("relatedEntityType", "ADDRESS");
+        details.put("relatedEntityId", address.getAddressId().toString());
+        if (changes != null) {
+            details.putAll(changes);
+            if (!previousValues.isEmpty() && !newValues.isEmpty()) description += ": " + changes.get("changedFields");
+        }
+        auditClient.success("customers", action, description, details);
     }
 }

@@ -1,5 +1,6 @@
 package com.training.platform.customers.service.impl;
 
+import com.training.platform.auditclient.AuditClient;
 import com.training.platform.customers.constants.CustomerStatus;
 import com.training.platform.customers.constants.KycStatusType;
 import com.training.platform.customers.dto.CustomerRequest;
@@ -20,7 +21,9 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.time.LocalDate;
+import java.util.LinkedHashMap;
 import java.util.UUID;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,6 +34,7 @@ public class CustomerServiceImpl implements CustomerService {
     private final CustomerRepository customerRepository;
     private final KycRepository kycRepository;
     private final CustomerMapper customerMapper;
+    private final AuditClient auditClient;
 
     @Override
     public CustomerResponse createCustomer(CustomerRequest request) {
@@ -51,6 +55,8 @@ public class CustomerServiceImpl implements CustomerService {
         customerEntity.setStatus(CustomerStatus.NEW);
 
         CustomerEntity saved = customerRepository.save(customerEntity);
+        auditCustomerChange(saved, "CUSTOMER_CREATED", "Customer profile created",
+                Map.of(), customerValues(saved));
         return customerMapper.toResponse(saved);
     }
 
@@ -82,6 +88,7 @@ public class CustomerServiceImpl implements CustomerService {
         CustomerEntity existing = customerRepository.findById(customerId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Customer not found with id: " + customerId));
+        Map<String, Object> previousValues = customerValues(existing);
 
         if (request.dob() != null) {
             validateAdultDateOfBirth(request.dob());
@@ -103,6 +110,8 @@ public class CustomerServiceImpl implements CustomerService {
         customerMapper.updateEntity(existing, request);
 
         CustomerEntity saved = customerRepository.save(existing);
+        auditCustomerChange(saved, "CUSTOMER_UPDATED", "Customer fields changed",
+                previousValues, customerValues(saved));
         return customerMapper.toResponse(saved);
     }
 
@@ -112,8 +121,11 @@ public class CustomerServiceImpl implements CustomerService {
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Customer not found with id: " + customerId));
 
+        String previousStatus = customer.getStatus().name();
         customer.setStatus(CustomerStatus.INACTIVE);
         customerRepository.save(customer);
+        auditStatusChange(customer, "CUSTOMER_DEACTIVATED", "Customer deactivated",
+                previousStatus, CustomerStatus.INACTIVE.name());
     }
 
     @Override
@@ -129,8 +141,12 @@ public class CustomerServiceImpl implements CustomerService {
             throw new BadRequestException("Customer cannot be activated until KYC is verified");
         }
 
+        String previousStatus = customer.getStatus().name();
         customer.setStatus(CustomerStatus.ACTIVE);
-        return customerMapper.toResponse(customerRepository.save(customer));
+        CustomerEntity saved = customerRepository.save(customer);
+        auditStatusChange(saved, "CUSTOMER_ACTIVATED", "Customer activated",
+                previousStatus, CustomerStatus.ACTIVE.name());
+        return customerMapper.toResponse(saved);
     }
 
     @Override
@@ -139,8 +155,12 @@ public class CustomerServiceImpl implements CustomerService {
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Customer not found with id: " + customerId));
 
+        String previousStatus = customer.getStatus().name();
         customer.setStatus(CustomerStatus.INACTIVE);
-        return customerMapper.toResponse(customerRepository.save(customer));
+        CustomerEntity saved = customerRepository.save(customer);
+        auditStatusChange(saved, "CUSTOMER_DEACTIVATED", "Customer deactivated",
+                previousStatus, CustomerStatus.INACTIVE.name());
+        return customerMapper.toResponse(saved);
     }
 
     @Override
@@ -219,5 +239,45 @@ public class CustomerServiceImpl implements CustomerService {
         if (!dob.plusYears(18).isBefore(LocalDate.now().plusDays(1))) {
             throw new BadRequestException("Customer must be at least 18 years old.");
         }
+    }
+
+    private Map<String, Object> customerValues(CustomerEntity customer) {
+        Map<String, Object> values = new LinkedHashMap<>();
+        values.put("cifNo", customer.getCifNo());
+        values.put("firstName", customer.getFirstName());
+        values.put("lastName", customer.getLastName());
+        values.put("dob", customer.getDob());
+        values.put("gender", customer.getGender() == null ? null : customer.getGender().name());
+        values.put("phone", customer.getPhone());
+        values.put("email", customer.getEmail());
+        values.put("occupation", customer.getOccupation());
+        values.put("status", customer.getStatus() == null ? null : customer.getStatus().name());
+        return values;
+    }
+
+    private void auditCustomerChange(CustomerEntity customer, String action, String description,
+                                     Map<String, ?> previousValues, Map<String, ?> newValues) {
+        Map<String, Object> changes = auditClient.changes(previousValues, newValues);
+        if (changes != null && changes.isEmpty()) return;
+        Map<String, Object> details = new LinkedHashMap<>();
+        details.put("customerId", customer.getCustomerId());
+        details.put("newStatus", customer.getStatus() == null ? null : customer.getStatus().name());
+        if (changes != null) {
+            details.putAll(changes);
+            if (!previousValues.isEmpty()) description += ": " + changes.get("changedFields");
+        }
+        auditClient.success("customers", action, description, details);
+    }
+
+    private void auditStatusChange(CustomerEntity customer, String action, String description,
+                                   String previousStatus, String newStatus) {
+        Map<String, Object> details = new LinkedHashMap<>();
+        details.put("customerId", customer.getCustomerId());
+        details.put("previousStatus", previousStatus);
+        details.put("newStatus", newStatus);
+        Map<String, Object> changes = auditClient.changes(
+                Map.of("status", previousStatus), Map.of("status", newStatus));
+        if (changes != null) details.putAll(changes);
+        auditClient.success("customers", action, description, details);
     }
 }
