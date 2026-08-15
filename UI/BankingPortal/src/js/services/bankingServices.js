@@ -61,9 +61,10 @@ define(['services/apiClient'], function (api) {
       createType: (d) => api.post('/api/v1/product-types', d),
       get: (c) => api.get(`/api/v1/products/${e(c)}`),
       history: (c) => api.get(`/api/v1/products/${e(c)}/status-history`),
+      retirementImpact: (c) => api.get(`/api/v1/products/${e(c)}/retirement-impact`),
       update: (c, d) => api.put(`/api/v1/products/${e(c)}`, d),
       status: (c, s, r) => api.patch(`/api/v1/products/${e(c)}/status`, { status: s, reason: r }),
-      retire: (c) => api.delete(`/api/v1/products/${e(c)}`),
+      retire: (c, d) => api.post(`/api/v1/products/${e(c)}/retire`, d),
     },
     accounts: {
       list: (page, size) => api.get(page === undefined ? '/api/accounts' : `/api/accounts?page=${e(page)}&size=${e(size || 10)}`),

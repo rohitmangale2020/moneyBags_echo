@@ -9,6 +9,7 @@ import com.bank.product.domain.ProductType;
 import com.bank.product.repository.ProductFeeRepository;
 import com.bank.product.repository.ProductRepository;
 import com.bank.product.repository.ProductRateRepository;
+import com.bank.product.repository.ProductRetirementImpactRepository;
 import com.bank.product.repository.ProductTermRepository;
 import com.bank.product.repository.ProductStatusHistoryRepository;
 import com.bank.product.repository.ProductTypeRepository;
@@ -18,7 +19,11 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.core.Authentication;
+import org.springframework.beans.factory.annotation.Value;
+import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 @Service @RequiredArgsConstructor @Transactional
 public class ProductService {
@@ -28,6 +33,11 @@ public class ProductService {
     private final ProductTermRepository terms;
     private final ProductFeeRepository fees;
     private final ProductStatusHistoryRepository statusHistory;
+    private final ProductRetirementImpactRepository retirementImpact;
+
+    @Value("${app.retirement-risk.medium-customer-count:11}") private long mediumRiskCustomerCount;
+    @Value("${app.retirement-risk.high-customer-count:101}") private long highRiskCustomerCount;
+    @Value("${app.retirement-risk.high-balance:1000000}") private BigDecimal highRiskBalance;
 
     public ProductResponse create(ProductRequest request) {
         if (products.findByProductCode(request.productCode()).isPresent()) throw new IllegalArgumentException("Product code already exists");
@@ -64,17 +74,27 @@ public class ProductService {
     public ProductResponse updateStatus(String productCode, StatusRequest request) {
         Product product = getByCode(productCode);
         if ("RETIRED".equals(product.getStatus())) throw new IllegalArgumentException("A retired product cannot be changed");
+        if ("RETIRED".equals(request.status())) throw new IllegalArgumentException("Use the retirement flow so customer impact is assessed and recorded");
         String previousStatus = product.getStatus(); product.setStatus(request.status()); product = products.save(product);
         recordHistory(product, previousStatus, request.status(), request.reason());
         return toResponse(product);
     }
-    public void retire(String productCode) {
+    public void retire(String productCode, String migrationProductCode) {
         Product product = getByCode(productCode);
         if ("RETIRED".equals(product.getStatus())) throw new IllegalArgumentException("Product is already retired");
+        ProductRetirementImpactResponse impact = retirementImpact(product);
+        Product migrationProduct = migrationProduct(product, impact, migrationProductCode);
+        int migratedAccountCount = migrationProduct == null ? 0 : retirementImpact.migrateRelevantAccounts(
+                String.valueOf(product.getProductId()), String.valueOf(migrationProduct.getProductId()));
         String previousStatus = product.getStatus();
         product.setStatus("RETIRED");
         product = products.save(product);
-        recordHistory(product, previousStatus, "RETIRED", "Product retired");
+        recordHistory(product, previousStatus, "RETIRED", retirementAuditReason(impact, migrationProduct, migratedAccountCount));
+    }
+
+    @Transactional(readOnly = true)
+    public ProductRetirementImpactResponse retirementImpact(String productCode) {
+        return retirementImpact(getByCode(productCode));
     }
 
     private Product get(Long id) { return products.findById(id).orElseThrow(() -> new EntityNotFoundException("Product " + id + " was not found")); }
@@ -86,6 +106,83 @@ public class ProductService {
         ProductStatusHistory history = new ProductStatusHistory();
         history.setProduct(product); history.setPreviousStatus(previousStatus); history.setNewStatus(newStatus);
         history.setChangeReason(reason); statusHistory.save(history);
+    }
+
+    private ProductRetirementImpactResponse retirementImpact(Product product) {
+        ProductRetirementImpactRepository.ImpactTotals totals = retirementImpact.findTotals(String.valueOf(product.getProductId()));
+        Map<String, Long> accountsByStatus = retirementImpact.countByStatus(String.valueOf(product.getProductId()));
+        return new ProductRetirementImpactResponse(
+                product.getProductCode(), totals.accountCount(), totals.customerCount(), accountsByStatus,
+                totals.frozenCount(), totals.totalBalance(), riskLevel(totals), recommendations(product));
+    }
+
+    private String riskLevel(ProductRetirementImpactRepository.ImpactTotals totals) {
+        if (totals.accountCount() == 0) return "NO_IMPACT";
+        if (totals.frozenCount() > 0 || totals.customerCount() >= highRiskCustomerCount
+                || totals.totalBalance().compareTo(highRiskBalance) >= 0) return "HIGH";
+        if (totals.customerCount() >= mediumRiskCustomerCount) return "MEDIUM";
+        return "LOW";
+    }
+
+    private List<ProductMigrationRecommendation> recommendations(Product retiringProduct) {
+        return products.findByStatus("ACTIVE").stream()
+                .filter(candidate -> !candidate.getProductId().equals(retiringProduct.getProductId()))
+                .filter(candidate -> candidate.getCurrency().equals(retiringProduct.getCurrency()))
+                .filter(candidate -> candidate.getProductType().getProductTypeCode().equals(retiringProduct.getProductType().getProductTypeCode()))
+                .map(candidate -> recommendation(retiringProduct, candidate))
+                .sorted(Comparator.comparingInt(ProductMigrationRecommendation::compatibilityScore).reversed()
+                        .thenComparing(ProductMigrationRecommendation::productName))
+                .toList();
+    }
+
+    private ProductMigrationRecommendation recommendation(Product retiring, Product candidate) {
+        int score = 75;
+        if (balanceDifference(retiring, candidate).compareTo(BigDecimal.ZERO) == 0) score += 15;
+        ProductRate oldRate = rates.findByProductProductId(retiring.getProductId()).orElse(null);
+        ProductRate newRate = rates.findByProductProductId(candidate.getProductId()).orElse(null);
+        if (decimalDifference(oldRate == null ? null : oldRate.getInterestRate(), newRate == null ? null : newRate.getInterestRate()).compareTo(BigDecimal.ONE) <= 0) score += 10;
+        String reason = "Same product type; " + balanceReason(retiring, candidate)
+                + "; compatible active product";
+        return new ProductMigrationRecommendation(candidate.getProductId(), candidate.getProductCode(), candidate.getProductName(), score, reason);
+    }
+
+    private BigDecimal balanceDifference(Product left, Product right) {
+        return decimalDifference(left.getMinimumBalance(), right.getMinimumBalance());
+    }
+
+    private BigDecimal decimalDifference(BigDecimal left, BigDecimal right) {
+        return (left == null ? BigDecimal.ZERO : left).subtract(right == null ? BigDecimal.ZERO : right).abs();
+    }
+
+    private String balanceReason(Product retiring, Product candidate) {
+        BigDecimal retiringMinimum = retiring.getMinimumBalance() == null ? BigDecimal.ZERO : retiring.getMinimumBalance();
+        BigDecimal candidateMinimum = candidate.getMinimumBalance() == null ? BigDecimal.ZERO : candidate.getMinimumBalance();
+        int comparison = candidateMinimum.compareTo(retiringMinimum);
+        if (comparison == 0) return "same minimum balance";
+        return comparison < 0 ? "lower minimum balance" : "higher minimum balance";
+    }
+
+    private Product migrationProduct(Product retiringProduct, ProductRetirementImpactResponse impact, String migrationProductCode) {
+        if (impact.affectedAccountCount() == 0) return null;
+        if (migrationProductCode == null || migrationProductCode.isBlank())
+            throw new IllegalArgumentException("Select an active product of the same type before retiring this product");
+        Product migrationProduct = getByCode(migrationProductCode);
+        if (migrationProduct.getProductId().equals(retiringProduct.getProductId()))
+            throw new IllegalArgumentException("The retiring product cannot be its own migration target");
+        if (!"ACTIVE".equals(migrationProduct.getStatus()))
+            throw new IllegalArgumentException("The selected migration product is not active");
+        if (!migrationProduct.getCurrency().equals(retiringProduct.getCurrency()))
+            throw new IllegalArgumentException("The selected migration product must use the same currency");
+        if (!migrationProduct.getProductType().getProductTypeCode().equals(retiringProduct.getProductType().getProductTypeCode()))
+            throw new IllegalArgumentException("The selected migration product must have the same product type");
+        return migrationProduct;
+    }
+
+    private String retirementAuditReason(ProductRetirementImpactResponse impact, Product migrationProduct, int migratedAccountCount) {
+        String suggestedProduct = migrationProduct == null ? "none" : migrationProduct.getProductCode();
+        return "Retirement impact: " + impact.riskLevel() + "; customers=" + impact.affectedCustomerCount()
+                + "; accounts=" + impact.affectedAccountCount() + "; frozen=" + impact.frozenAccountCount()
+                + "; balance=" + impact.totalAvailableBalance() + "; migrated=" + migratedAccountCount + "; target=" + suggestedProduct;
     }
     private void apply(Product p, ProductRequest r) {
         if (r.minimumBalance() != null && r.maximumBalance() != null && r.minimumBalance().compareTo(r.maximumBalance()) > 0) throw new IllegalArgumentException("Minimum balance cannot exceed maximum balance");
