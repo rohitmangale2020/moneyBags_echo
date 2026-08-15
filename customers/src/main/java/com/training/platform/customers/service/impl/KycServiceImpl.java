@@ -10,6 +10,8 @@ import com.training.platform.customers.exception.DuplicateResourceException;
 import com.training.platform.customers.exception.ResourceNotFoundException;
 import com.training.platform.customers.repository.CustomerRepository;
 import com.training.platform.customers.repository.KycRepository;
+import com.training.platform.customers.repository.AddressRepository;
+import com.training.platform.customers.repository.DocumentRepository;
 import com.training.platform.customers.security.CurrentUser;
 import com.training.platform.customers.service.KycService;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +28,8 @@ public class KycServiceImpl implements KycService {
     private final KycRepository kycRepository;
     private final CustomerRepository customerRepository;
     private final AuditClient auditClient;
+    private final AddressRepository addressRepository;
+    private final DocumentRepository documentRepository;
 
     @Override
     public KycResponse createKyc(Long customerId, KycRequest requestDto) {
@@ -35,6 +39,7 @@ public class KycServiceImpl implements KycService {
         if (kycRepository.existsByCustomerCustomerId(customerId)) {
             throw new DuplicateResourceException("KYC already exists for customer id " + customerId);
         }
+        validateVerificationEvidence(customerId, requestDto);
 
         KycEntity kyc = new KycEntity();
         kyc.setCustomer(customer);
@@ -80,6 +85,7 @@ public class KycServiceImpl implements KycService {
         if (requestDto.getKycStatus() == null) {
             throw new BadRequestException("KYC status is required");
         }
+        validateVerificationEvidence(customerId, requestDto);
 
         kyc.setKycStatus(requestDto.getKycStatus());
         kyc.setKycDate(requestDto.getKycDate());
@@ -155,6 +161,19 @@ public class KycServiceImpl implements KycService {
             if (!previousValues.isEmpty()) description += ": " + changes.get("changedFields");
         }
         auditClient.success("customers", action, description, details);
+      
+    }
+    private void validateVerificationEvidence(Long customerId, KycRequest requestDto) {
+        if (requestDto == null || requestDto.getKycStatus() == null
+                || !requestDto.getKycStatus().name().equalsIgnoreCase("VERIFIED")) {
+            return;
+        }
+        if (!addressRepository.existsByCustomerCustomerId(customerId)) {
+            throw new BadRequestException("At least one customer address is required before KYC can be verified.");
+        }
+        if (!documentRepository.existsByCustomerCustomerId(customerId)) {
+            throw new BadRequestException("At least one customer document is required before KYC can be verified.");
+        }
     }
 
-}
+

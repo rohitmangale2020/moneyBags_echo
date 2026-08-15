@@ -89,6 +89,9 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     public void deleteAddress(Long customerId, Long addressId) {
+        if (addressRepository.findByCustomerCustomerId(customerId).size() <= 1) {
+            throw new BadRequestException("A customer must have at least one address.");
+        }
         AddressEntity existing = addressRepository.findByAddressIdAndCustomerCustomerId(addressId, customerId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(

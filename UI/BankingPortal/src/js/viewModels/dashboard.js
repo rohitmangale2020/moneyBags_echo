@@ -57,7 +57,7 @@ define(['knockout', 'appController', 'viewModels/util'], function (ko, app, u) {
             app.services.customers.list(),
             app.services.products.list(),
           ]);
-          return { users: u.list(values[0]), customers: values[1], products: values[2] };
+          return { users: u.list(values[0]), customers: u.list(values[1]), products: values[2] };
         })
         .catch(() => null);
     self.load();

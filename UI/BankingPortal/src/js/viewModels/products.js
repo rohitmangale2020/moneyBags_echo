@@ -96,6 +96,8 @@ define([
     };
     s.error = ko.observable('');
     s.money = u.money;
+    s.productHeading = (product) => product.productCode;
+    s.productSubheading = (product) => product.productName;
     s.selectedProductType = ko.pureComputed(() => s.formType());
     s.isFixedDeposit = ko.pureComputed(() => s.selectedProductType() === 'FD');
     s.isRecurringDeposit = ko.pureComputed(() => s.selectedProductType() === 'RD');

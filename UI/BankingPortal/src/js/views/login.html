@@ -36,9 +36,7 @@
         class="mb-full"
         disabled="[[loading]]"
         on-oj-action="[[submit]]"
-        ><oj-bind-text
-          value="[[loading()?'Signing in…':'Sign in securely']]"
-        ></oj-bind-text></oj-button
+        ><span data-bind="text:loading()?'Signing in…':'Sign in securely'"></span></oj-button
       ><small class="mb-secure-note">Your session is stored only in this browser tab.</small>
     </form>
   </div>

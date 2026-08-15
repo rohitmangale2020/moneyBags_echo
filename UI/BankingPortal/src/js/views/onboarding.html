@@ -14,15 +14,15 @@
       <p>Find a customer by an approved identifier and open their record for review or update.</p>
     </div>
     <div class="mb-resume-search">
-      <label>
-        Find by
+      <div class="mb-plain-select mb-resume-kind">
         <select data-bind="value:resumeKind">
+          <option value="" disabled>Find by</option>
           <option value="cif">CIF number</option>
           <option value="id">Customer ID</option>
           <option value="email">Email</option>
           <option value="phone">Phone</option>
         </select>
-      </label>
+      </div>
 
       <div>
         <oj-input-text
@@ -138,14 +138,12 @@
         ></small>
       </div>
 
-      <div class="mb-select-field">
-        <label for="customerGender">Gender</label>
-
+      <div class="mb-plain-select">
         <select
                 id="customerGender"
                 data-bind="value:profile.gender"
         >
-          <option value="">Select gender</option>
+          <option value="" disabled>Gender</option>
           <option value="MALE">Male</option>
           <option value="FEMALE">Female</option>
           <option value="OTHER">Other</option>
@@ -256,13 +254,12 @@
 
     <div class="mb-form three">
 
-      <div class="mb-select-field">
-        <label for="customerAddressType">Address type</label>
-
+      <div class="mb-plain-select">
         <select
                 id="customerAddressType"
                 data-bind="value:address.addressType"
         >
+          <option value="" disabled>Address type</option>
           <option>CURRENT</option>
           <option>PERMANENT</option>
           <option>OFFICE</option>
@@ -310,27 +307,8 @@
         ></small>
       </div>
 
-      <div>
-        <oj-input-text
-                label-hint="City"
-                required
-                maxlength="100"
-                value="{{address.city}}"
-        ></oj-input-text>
-
-        <small
-                class="mb-field-error"
-                data-bind="visible:fieldErrors().city,text:fieldErrors().city"
-        ></small>
-      </div>
-
-      <div>
-        <oj-input-text
-                label-hint="State"
-                required
-                maxlength="100"
-                value="{{address.state}}"
-        ></oj-input-text>
+      <div class="mb-plain-select">
+        <select id="customerState" aria-label="State" data-bind="value:address.state"><option value="" disabled>State</option><!-- ko foreach:indianStates --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select>
 
         <small
                 class="mb-field-error"
@@ -338,7 +316,12 @@
         ></small>
       </div>
 
-      <div>
+      <div class="mb-plain-select">
+        <select id="customerDistrict" aria-label="City or district" data-bind="value:address.city,enable:address.state"><option value="" disabled>City / district</option><!-- ko foreach:addressDistricts --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select>
+        <small class="mb-field-error" data-bind="visible:fieldErrors().city,text:fieldErrors().city"></small>
+      </div>
+
+      <div class="wide">
         <oj-input-text
                 label-hint="Pincode"
                 required
@@ -395,10 +378,9 @@
 
     <div class="mb-form three">
 
-      <label>
-        Document type
-
+      <div class="mb-plain-select">
         <select data-bind="value:document.documentType">
+          <option value="" disabled>Document type</option>
           <option>PAN</option>
           <option>AADHAAR</option>
           <option>PASSPORT</option>
@@ -407,7 +389,7 @@
           <option>PHOTO</option>
           <option>SIGNATURE</option>
         </select>
-      </label>
+      </div>
 
       <!-- ko if:documentRequiresNumber -->
       <div>
@@ -466,8 +448,7 @@
 
           <input
                   type="file"
-                  accept="application/pdf,image/*"
-                  data-bind="event:{change:choose}"
+          data-bind="attr:{accept:documentFileAccept},event:{change:choose}"
           />
         </label>
 
@@ -588,14 +569,12 @@
         ></small>
       </div>
 
-      <div class="mb-select-field">
-        <label for="nomineeRelationship">Relationship</label>
-
+      <div class="mb-plain-select">
         <select
                 id="nomineeRelationship"
                 data-bind="value:nominee.relationship"
         >
-          <option value="">Select relationship</option>
+          <option value="" disabled>Relationship</option>
           <option value="Legal guardian">Legal guardian</option>
           <option value="Parent">Parent</option>
           <option value="Spouse">Spouse</option>
@@ -680,13 +659,12 @@
 
     <div class="mb-form three mb-nominee-address">
 
-      <div class="mb-select-field">
-        <label for="nomineeAddressType">Address type</label>
-
+      <div class="mb-plain-select">
         <select
                 id="nomineeAddressType"
                 data-bind="value:nominee.addressType"
         >
+          <option value="" disabled>Address type</option>
           <option>CURRENT</option>
           <option>PERMANENT</option>
           <option>OFFICE</option>
@@ -732,30 +710,18 @@
         ></small>
       </div>
 
-      <div>
-        <oj-input-text
-                label-hint="City"
-                maxlength="100"
-                value="{{nominee.city}}"
-        ></oj-input-text>
-
-        <small
-                class="mb-field-error"
-                data-bind="visible:fieldErrors().nomineeCity,text:fieldErrors().nomineeCity"
-        ></small>
-      </div>
-
-      <div>
-        <oj-input-text
-                label-hint="State"
-                maxlength="100"
-                value="{{nominee.state}}"
-        ></oj-input-text>
+      <div class="mb-plain-select">
+        <select id="nomineeState" aria-label="Nominee state" data-bind="value:nominee.state"><option value="" disabled>State</option><!-- ko foreach:indianStates --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select>
 
         <small
                 class="mb-field-error"
                 data-bind="visible:fieldErrors().nomineeState,text:fieldErrors().nomineeState"
         ></small>
+      </div>
+
+      <div class="mb-plain-select">
+        <select id="nomineeDistrict" aria-label="Nominee city or district" data-bind="value:nominee.city,enable:nominee.state"><option value="" disabled>City / district</option><!-- ko foreach:nomineeDistricts --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select>
+        <small class="mb-field-error" data-bind="visible:fieldErrors().nomineeCity,text:fieldErrors().nomineeCity"></small>
       </div>
 
       <div>

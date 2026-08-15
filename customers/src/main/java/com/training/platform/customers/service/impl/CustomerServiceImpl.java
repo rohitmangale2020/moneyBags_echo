@@ -16,6 +16,8 @@ import com.training.platform.customers.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.time.LocalDate;
@@ -69,11 +71,12 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<CustomerResponse> getAllCustomers() {
-        return customerRepository.findAll()
-                .stream()
-                .map(customerMapper::toResponse)
-                .collect(Collectors.toList());
+    public Page<CustomerResponse> getAllCustomers(Pageable pageable, CustomerStatus status) {
+        Page<CustomerEntity> customers = status == null
+                ? customerRepository.findAll(pageable)
+                : customerRepository.findByStatus(status, pageable);
+        return customers
+                .map(customerMapper::toResponse);
     }
 
     @Override
@@ -191,6 +194,15 @@ public class CustomerServiceImpl implements CustomerService {
     @Transactional(readOnly = true)
     public List<CustomerResponse> getCustomersByStatus(CustomerStatus status) {
         return customerRepository.findByStatus(status)
+                .stream()
+                .map(customerMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CustomerResponse> getCustomersByFirstName(String firstName) {
+        return customerRepository.findByFirstNameContainingIgnoreCase(firstName)
                 .stream()
                 .map(customerMapper::toResponse)
                 .collect(Collectors.toList());
