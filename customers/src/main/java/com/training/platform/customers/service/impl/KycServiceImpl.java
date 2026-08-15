@@ -161,8 +161,9 @@ public class KycServiceImpl implements KycService {
             if (!previousValues.isEmpty()) description += ": " + changes.get("changedFields");
         }
         auditClient.success("customers", action, description, details);
-      
+
     }
+
     private void validateVerificationEvidence(Long customerId, KycRequest requestDto) {
         if (requestDto == null || requestDto.getKycStatus() == null
                 || !requestDto.getKycStatus().name().equalsIgnoreCase("VERIFIED")) {
@@ -175,5 +176,5 @@ public class KycServiceImpl implements KycService {
             throw new BadRequestException("At least one customer document is required before KYC can be verified.");
         }
     }
-
+}
 
