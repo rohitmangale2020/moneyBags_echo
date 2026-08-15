@@ -43,20 +43,33 @@
       <label class="mb-filter-search">Search this service
         <input type="search" placeholder="Activity, person, reference or summary" data-bind="value:query,valueUpdate:'input'" />
       </label>
-      <label>Outcome
+      <label>Status
         <select data-bind="value:outcomeFilter">
-          <option value="ALL">All outcomes</option>
+          <option value="ALL">All statuses</option>
           <option value="SUCCESS">Success</option>
           <option value="FAILED">Failed</option>
           <option value="REJECTED">Rejected</option>
         </select>
       </label>
-      <label data-bind="visible:activeCategory()==='all'">Service
-        <select data-bind="value:serviceFilter">
-          <option value="ALL">All services</option>
-          <!-- ko foreach:categories --><!-- ko if:id!=='all' --><option data-bind="value:id,text:label"></option><!-- /ko --><!-- /ko -->
-        </select>
-      </label>
+      <div class="mb-audit-service-filter" data-bind="visible:activeCategory()==='all'">
+        <span class="mb-audit-filter-label">Services</span>
+        <details class="mb-audit-service-picker" data-audit-checklist>
+          <summary><span data-bind="text:serviceFilterSummary"></span></summary>
+          <div class="mb-audit-service-menu">
+            <div class="mb-audit-service-actions">
+              <button type="button" data-bind="click:clearAllServices">Clear all</button>
+              <button type="button" data-bind="click:selectDefaultServices">Default</button>
+              <button type="button" data-bind="click:selectAllServices">Select all</button>
+            </div>
+            <div class="mb-audit-service-options" data-bind="foreach:serviceCategories">
+              <label>
+                <input type="checkbox" data-bind="checked:$parent.serviceFilters,checkedValue:id" />
+                <strong data-bind="text:label"></strong>
+              </label>
+            </div>
+          </div>
+        </details>
+      </div>
       <label>Activity
         <select data-bind="value:actionFilter">
           <option value="ALL">All activities</option>
@@ -70,8 +83,8 @@
           <option value="created-desc">Newest first</option>
           <option value="created-asc">Oldest first</option>
           <option value="activity-asc">Activity A–Z</option>
-          <option value="actor-asc">Actor A–Z</option>
-          <option value="outcome-asc">Outcome A–Z</option>
+          <option value="actor-asc">Maker A–Z</option>
+          <option value="outcome-asc">Status A–Z</option>
         </select>
       </label>
       <div class="mb-filter-actions">
@@ -79,7 +92,7 @@
       </div>
     </div>
 
-    <div class="mb-list-meta mb-audit-list-meta">
+    <div class="mb-list-meta mb-audit-list-meta" data-bind="visible:!state.loading()">
       <strong data-bind="text:resultSummary"></strong>
       <span>IDs and raw details are available inside each event.</span>
     </div>
@@ -96,29 +109,31 @@
 
     <div class="mb-table mb-audit-table" data-bind="visible:pagedLogs().length && !state.loading()">
       <table>
-        <thead><tr><th>When</th><th>Activity</th><th>Subject</th><th>Important details</th><th>Actor</th><th>Result</th><th><span class="sendOffScreen">Open</span></th></tr></thead>
+        <thead><tr><th>When</th><th>Activity</th><th>Subject</th><th>Important details</th><th>Maker</th><th>Status</th></tr></thead>
         <tbody data-bind="foreach:pagedLogs">
-          <tr tabindex="0" data-bind="click:$parent.openDetails,event:{keydown:$parent.handleRowKey},attr:{'aria-label':'Open ' + $parent.activityTitle($data) + ' details'}">
+        <tr tabindex="0" data-bind="click:$parent.openDetails,event:{keydown:$parent.handleRowKey},attr:{'aria-label':'View ' + $parent.activityTitle($data) + ' details'}">
             <td><time data-bind="text:$parent.date(createdAt),attr:{datetime:createdAt}"></time></td>
             <td><small class="mb-audit-service-tag" data-bind="visible:$parent.activeCategory()==='all',text:$parent.serviceLabel($data)"></small><strong data-bind="text:$parent.activityTitle($data)"></strong><small data-bind="visible:$parent.activityCaption($data),text:$parent.activityCaption($data)"></small></td>
-            <td><strong data-bind="text:$parent.subject($data)"></strong></td>
+            <td class="mb-audit-subject"><strong data-bind="text:$parent.subject($data)"></strong><small data-bind="visible:$parent.subjectIdentifier($data),text:$parent.subjectIdentifier($data)"></small></td>
             <td><span data-bind="text:$parent.context($data)"></span><small data-bind="visible:$parent.contextNote($data),text:$parent.contextNote($data)"></small></td>
             <td><span data-bind="text:$parent.actor($data)"></span><small data-bind="text:$parent.humanize(actorType)"></small></td>
             <td><span class="mb-audit-outcome" data-bind="text:$parent.humanize(outcome),css:$parent.outcomeClass(outcome)"></span></td>
-            <td><button type="button" class="mb-audit-open" aria-label="View audit details" data-bind="click:function(data,event){event.stopPropagation();$parent.openDetails(data);}">›</button></td>
           </tr>
         </tbody>
       </table>
     </div>
 
     <div class="mb-audit-cards" data-bind="foreach:pagedLogs,visible:pagedLogs().length && !state.loading()">
-      <article tabindex="0" data-bind="click:$parent.openDetails,event:{keydown:$parent.handleRowKey}">
+      <article tabindex="0" role="button" data-bind="click:$parent.openDetails,event:{keydown:$parent.handleRowKey},attr:{'aria-label':'View ' + $parent.activityTitle($data) + ' details'}">
         <header><time data-bind="text:$parent.date(createdAt)"></time><span class="mb-audit-outcome" data-bind="text:$parent.humanize(outcome),css:$parent.outcomeClass(outcome)"></span></header>
         <small class="mb-audit-service-tag" data-bind="visible:$parent.activeCategory()==='all',text:$parent.serviceLabel($data)"></small>
         <h3 data-bind="text:$parent.activityTitle($data)"></h3>
         <p data-bind="visible:$parent.activityCaption($data),text:$parent.activityCaption($data)"></p>
-        <dl><div><dt>Subject</dt><dd data-bind="text:$parent.subject($data)"></dd></div><div><dt>Details</dt><dd data-bind="text:$parent.context($data)"></dd></div><div><dt>Actor</dt><dd data-bind="text:$parent.actor($data)"></dd></div></dl>
-        <button type="button" class="mb-link" data-bind="click:function(data,event){event.stopPropagation();$parent.openDetails(data);}">View details</button>
+        <dl>
+          <div><dt>Subject</dt><dd class="mb-audit-subject"><strong data-bind="text:$parent.subject($data)"></strong><small data-bind="visible:$parent.subjectIdentifier($data),text:$parent.subjectIdentifier($data)"></small></dd></div>
+          <div><dt>Details</dt><dd data-bind="text:$parent.context($data)"></dd></div>
+          <div><dt>Maker</dt><dd data-bind="text:$parent.actor($data)"></dd></div>
+        </dl>
       </article>
     </div>
 
@@ -152,8 +167,8 @@
         <div class="mb-section-title"><small>EVENT CONTEXT</small><h3>What happened</h3></div>
         <dl class="mb-audit-detail-grid">
           <div><dt>When</dt><dd data-bind="text:$parent.date(createdAt)"></dd></div>
-          <div><dt>Actor</dt><dd data-bind="text:$parent.actor($data)"></dd></div>
-          <div><dt>Actor type</dt><dd data-bind="text:$parent.humanize(actorType)"></dd></div>
+          <div><dt>Maker</dt><dd data-bind="text:$parent.actor($data)"></dd></div>
+          <div><dt>Maker type</dt><dd data-bind="text:$parent.humanize(actorType)"></dd></div>
           <!-- ko foreach:$parent.selectedFields --><div><dt data-bind="text:label"></dt><dd data-bind="text:value"></dd></div><!-- /ko -->
         </dl>
       </section>
