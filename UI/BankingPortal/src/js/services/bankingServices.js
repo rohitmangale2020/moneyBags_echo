@@ -3,6 +3,15 @@ define(['services/apiClient'], function (api) {
   const e = encodeURIComponent;
   return {
     auth: { login: (u, p) => api.post('/auth/login', { username: u, password: p }) },
+    assistant: {
+      chat: (message, customerId, transactionId, accountId, module) => api.post('/oda/assistant/chat', {
+        message,
+        customerId: customerId ? Number(customerId) : null,
+        transactionId: transactionId || null,
+        accountId: accountId || null,
+        module: module || null,
+      }),
+    },
     users: {
       list: () => api.get('/api/v1/users?page=0&size=100&sort=id,desc'),
       get: (id) => api.get(`/api/v1/users/${e(id)}`),

@@ -1,0 +1,50 @@
+<section class="mb-stack">
+  <div class="mb-heading">
+    <div>
+      <small>ODA / BANKING ASSISTANT</small>
+      <h1>Guided banking assistance</h1>
+      <p>Get explainable, read-only customer context, transaction reviews, process guidance, and product options.</p>
+    </div>
+  </div>
+
+  <div class="mb-panel">
+    <div class="mb-info">The assistant cannot move money, edit records, reveal passwords, or bypass approval controls.</div>
+    <div class="mb-form three">
+      <label class="wide">Ask the assistant<textarea rows="3" maxlength="1000" data-bind="value:message"></textarea></label>
+      <label data-bind="visible:isStaff">Customer ID <input type="number" min="1" placeholder="Required for Customer 360" data-bind="value:customerId" /></label>
+      <label data-bind="visible:isStaff">Transaction ID <input type="text" placeholder="Required for review" data-bind="value:transactionId" /></label>
+      <label data-bind="visible:isStaff">Account ID <input type="text" placeholder="Required for account overview" data-bind="value:accountId" /></label>
+    </div>
+    <div class="mb-dialog-actions">
+      <button type="button" class="mb-link" data-bind="click:useCustomerBriefing,visible:isStaff">Customer 360</button>
+      <button type="button" class="mb-link" data-bind="click:useTransactionReview,visible:isStaff">Review transaction</button>
+      <button type="button" class="mb-link" data-bind="click:useProductRecommendation">Recommend products</button>
+      <button type="button" class="mb-link" data-bind="click:useAccountOverview,visible:isStaff">Account overview</button>
+      <button type="button" class="mb-link" data-bind="click:usePolicyHelp">Policy help</button>
+      <oj-button chroming="callToAction" on-oj-action="[[send]]" disabled="[[loading]]">Ask assistant</oj-button>
+    </div>
+  </div>
+
+  <div class="mb-loading" data-bind="visible:loading">Reviewing approved banking data…</div>
+  <div class="mb-error" data-bind="visible:error"><span data-bind="text:error"></span></div>
+
+  <article class="mb-panel" data-bind="visible:hasResponse,with:response">
+    <small data-bind="text:intent"></small>
+    <h2>Assistant response</h2>
+    <p data-bind="text:answer"></p>
+    <div class="mb-info"><strong data-bind="text:policy.decision"></strong><span data-bind="text:': ' + policy.rationale"></span></div>
+    <section data-bind="visible:nextSteps && nextSteps.length">
+      <h3>Next steps</h3>
+      <ol data-bind="foreach:nextSteps"><li data-bind="text:$data"></li></ol>
+    </section>
+    <section data-bind="visible:recommendations && recommendations.length">
+      <h3>Product options</h3>
+      <ul data-bind="foreach:recommendations"><li><strong data-bind="text:productName"></strong><span data-bind="text:': ' + reason"></span></li></ul>
+    </section>
+    <details data-bind="visible:evidence && evidence.length"><summary>Supporting evidence</summary><ul data-bind="foreach:evidence"><li><strong data-bind="text:source"></strong><span data-bind="text:': ' + summary"></span></li></ul></details>
+  </article>
+  <article class="mb-panel" data-bind="visible:history().length">
+    <small>THIS SESSION</small><h2>Conversation history</h2>
+    <div data-bind="foreach:history"><p><strong data-bind="text:intent"></strong><br/><span data-bind="text:answer"></span></p></div>
+  </article>
+</section>
