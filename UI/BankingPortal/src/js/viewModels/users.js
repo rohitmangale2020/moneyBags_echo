@@ -126,9 +126,17 @@ define([
     s.nextPage = () => {
       if (!s.state.loading() && s.currentPage() < s.totalPages() - 1) s.load(s.currentPage() + 1);
     };
+    s.search = () => {
+      if (s.searchTimer) window.clearTimeout(s.searchTimer);
+      s.searchTimer = null;
+      return s.load(0);
+    };
     s.query.subscribe(() => {
       if (s.searchTimer) window.clearTimeout(s.searchTimer);
-      s.searchTimer = window.setTimeout(() => s.load(0), 300);
+      s.searchTimer = window.setTimeout(() => {
+        s.searchTimer = null;
+        s.load(0);
+      }, 300);
     });
     s.open = () => {
       s.editingId(null);

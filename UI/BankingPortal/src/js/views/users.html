@@ -7,11 +7,18 @@
     </div>
     <oj-button chroming="callToAction" on-oj-action="[[open]]">Create user</oj-button>
   </div>
-  <oj-input-text
-    class="mb-search"
-    placeholder="Search username, name, or email"
-    value="{{query}}"
-  ></oj-input-text>
+  <div class="mb-search-panel">
+    <label>Search users
+      <oj-input-text
+        aria-label="Search users"
+        placeholder="Username, name, or email"
+        value="{{query}}"
+        on-oj-value-action="[[search]]"
+      ></oj-input-text>
+    </label>
+    <span></span>
+    <oj-button chroming="callToAction" on-oj-action="[[search]]">Search</oj-button>
+  </div>
   <div class="mb-error" data-bind="visible:state.error">
     <span data-bind="text:state.error"></span><button data-bind="click:load">Retry</button>
   </div>
