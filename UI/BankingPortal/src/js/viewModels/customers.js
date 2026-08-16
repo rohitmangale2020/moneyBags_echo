@@ -53,15 +53,19 @@ define([
     s.addressForm = ko.observable(addressBlank());
     s.documentRequiresExpiry = ko.observable(false);
     s.documentRequiresNumber = ko.observable(false);
+    s.documentShowsIssueDate = ko.observable(false);
     s.documentFileAccept = ko.observable('application/pdf,.pdf');
     s.setDocumentExpiryRequirement = (type) => {
       const documentType = String(type || '');
       const needsExpiry = ['PASSPORT', 'DRIVING_LICENSE'].includes(documentType);
       const needsNumber = Boolean(documentType) && !['PHOTO', 'SIGNATURE', 'SALARY_SLIP'].includes(documentType);
+      const showsIssueDate = !['PHOTO', 'SIGNATURE'].includes(documentType);
       s.documentRequiresExpiry(needsExpiry);
       s.documentRequiresNumber(needsNumber);
+      s.documentShowsIssueDate(showsIssueDate);
       s.documentFileAccept(['PHOTO', 'SIGNATURE'].includes(documentType) ? '.png,.jpg,.jpeg' : 'application/pdf,.pdf');
       if (!needsNumber && s.documentForm()) s.documentForm().documentNumber = '';
+      if (!showsIssueDate && s.documentForm()) s.documentForm().issueDate = '';
       if (!needsExpiry && s.documentForm()) s.documentForm().expiryDate = '';
     };
     s.onDocumentTypeChange = (_, event) => s.setDocumentExpiryRequirement(event.target.value);
@@ -305,7 +309,7 @@ define([
       if (file && !valid) s.error(imageDocument ? 'Upload a PNG or JPEG image.' : 'Upload a PDF file.');
     };
     s.saveDocument = async () => {
-      const raw = ko.toJS(s.documentForm()), docId = raw.docId, d = clean({ documentType: raw.documentType, documentNumber: s.documentRequiresNumber() ? raw.documentNumber : null, issueDate: raw.issueDate, expiryDate: s.documentRequiresExpiry() ? raw.expiryDate : null, status: raw.status, verifiedBy: null, rejectedReason: raw.rejectedReason, remarks: raw.remarks, updatedBy: raw.updatedBy }), id = s.selected().customerId, file = s.documentFile();
+      const raw = ko.toJS(s.documentForm()), docId = raw.docId, d = clean({ documentType: raw.documentType, documentNumber: s.documentRequiresNumber() ? raw.documentNumber : null, issueDate: s.documentShowsIssueDate() ? raw.issueDate : null, expiryDate: s.documentRequiresExpiry() ? raw.expiryDate : null, status: raw.status, verifiedBy: null, rejectedReason: raw.rejectedReason, remarks: raw.remarks, updatedBy: raw.updatedBy }), id = s.selected().customerId, file = s.documentFile();
       if (!d.documentType) return s.error('Select a document type.');
       if ((s.documentRequiresNumber() && !d.documentNumber) || (!docId && !file)) return s.error(s.documentRequiresNumber() ? 'Document number and file are required.' : 'A document file is required.');
       if (d.issueDate && new Date(d.issueDate) > new Date()) return s.error('Document issue date cannot be in the future.');
