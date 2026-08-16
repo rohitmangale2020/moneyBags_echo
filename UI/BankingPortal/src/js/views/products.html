@@ -97,10 +97,10 @@
     ><div slot="body">
       <div class="mb-error" data-bind="visible:error,text:error"></div>
       <div class="mb-form mb-product-form">
-        <oj-input-text label-hint="Product code" value="{{form().productCode}}"></oj-input-text>
-        <oj-input-text label-hint="Product name" value="{{form().productName}}"></oj-input-text>
-        <label class="wide">Description<textarea data-bind="value:form().description"></textarea></label>
-        <div class="mb-select-field mb-product-select"><label>Product type</label><select data-bind="value:formType">
+        <oj-input-text label-hint="Product code" help.instruction="Unique code: &lt;TYPE&gt;_&lt;LEVEL&gt;; use CC for credit cards, e.g. CC_CLASSIC." value="{{form().productCode}}"></oj-input-text>
+        <oj-input-text label-hint="Product name" help.instruction="Customer-facing product name." value="{{form().productName}}"></oj-input-text>
+        <label class="wide">Description <span class="mb-tooltip" tabindex="0" role="img" aria-label="Brief product summary and key conditions." data-tooltip="Brief product summary and key conditions.">i</span><textarea data-bind="value:form().description"></textarea></label>
+        <div class="mb-select-field mb-product-select"><label>Product type <span class="mb-tooltip" tabindex="0" role="img" aria-label="Choose the category this product belongs to." data-tooltip="Choose the category this product belongs to.">i</span></label><select data-bind="value:formType">
             <option value="">Select type</option>
             <!-- ko foreach:types -->
             <option
@@ -108,17 +108,17 @@
             ></option>
             <!-- /ko -->
           </select></div>
-        <oj-input-text label-hint="Currency" value="{{form().currency}}" readonly="true"></oj-input-text>
-        <oj-input-text data-bind="visible:hasProductType() && !isCreditCard()" label-hint="Minimum balance" value="{{form().minimumBalance}}"></oj-input-text>
-        <oj-input-text data-bind="visible:hasProductType() && !isCreditCard()" label-hint="Maximum balance" value="{{form().maximumBalance}}"></oj-input-text>
-        <oj-input-text data-bind="visible:isInterestBearing" label-hint="Interest rate %" value="{{form().rate.interestRate}}"></oj-input-text>
-        <oj-input-text data-bind="visible:hasProductType" label-hint="Monthly fee" value="{{form().fee.monthlyMaintenanceFee}}"></oj-input-text>
-        <oj-input-text data-bind="visible:isTermDeposit" label-hint="Tenure months" value="{{form().term.tenureMonths}}"></oj-input-text>
-        <oj-input-text data-bind="visible:isTermDeposit" label-hint="Lock-in period (months)" value="{{form().term.lockInPeriod}}"></oj-input-text>
-        <oj-input-text data-bind="visible:isRecurringDeposit" label-hint="Installment amount" value="{{form().term.installmentAmount}}"></oj-input-text>
-        <oj-input-text data-bind="visible:isRecurringDeposit" label-hint="Installment frequency" value="{{form().term.installmentFrequency}}"></oj-input-text>
-        <oj-input-text data-bind="visible:isTermDeposit" label-hint="Maturity instruction" value="{{form().term.maturityInstruction}}"></oj-input-text>
-        <div class="mb-product-toggle" data-bind="visible:isTermDeposit"><span>Premature withdrawal</span><oj-switch aria-label="Allow premature withdrawal" value="{{form().term.prematureWithdrawalAllowed}}"></oj-switch></div>
+        <oj-input-text label-hint="Currency" help.instruction="Product currency. Currently INR." value="{{form().currency}}" readonly="true"></oj-input-text>
+        <oj-input-text data-bind="visible:hasProductType() && !isCreditCard()" label-hint="Minimum balance" help.instruction="Minimum INR balance. Cannot exceed maximum balance." value="{{form().minimumBalance}}"></oj-input-text>
+        <oj-input-text data-bind="visible:hasProductType() && !isCreditCard()" label-hint="Maximum balance" help.instruction="Maximum INR balance. Must be at least the minimum." value="{{form().maximumBalance}}"></oj-input-text>
+        <oj-input-text data-bind="visible:isInterestBearing" label-hint="Interest rate %" help.instruction="Annual interest rate for savings and deposit products." value="{{form().rate.interestRate}}"></oj-input-text>
+        <oj-input-text data-bind="visible:hasProductType" label-hint="Monthly fee" help.instruction="Monthly fee in INR. Enter 0 if none." value="{{form().fee.monthlyMaintenanceFee}}"></oj-input-text>
+        <oj-input-text data-bind="visible:isTermDeposit" label-hint="Tenure months" help.instruction="Deposit term in whole months. Required for FD and RD." value="{{form().term.tenureMonths}}"></oj-input-text>
+        <oj-input-text data-bind="visible:isTermDeposit" label-hint="Lock-in period (months)" help.instruction="Months before early withdrawal is allowed." value="{{form().term.lockInPeriod}}"></oj-input-text>
+        <oj-input-text data-bind="visible:isRecurringDeposit" label-hint="Installment amount" help.instruction="Amount per installment in INR. Required for RD." value="{{form().term.installmentAmount}}"></oj-input-text>
+        <oj-input-text data-bind="visible:isRecurringDeposit" label-hint="Installment frequency" help.instruction="Installment interval, e.g. MONTHLY. Required for RD." value="{{form().term.installmentFrequency}}"></oj-input-text>
+        <oj-input-text data-bind="visible:isTermDeposit" label-hint="Maturity instruction" help.instruction="Action at maturity, e.g. CREDIT_TO_ACCOUNT or RENEW." value="{{form().term.maturityInstruction}}"></oj-input-text>
+        <div class="mb-product-toggle" data-bind="visible:isTermDeposit"><span>Premature withdrawal <span class="mb-tooltip" tabindex="0" role="img" aria-label="Allow withdrawal before maturity." data-tooltip="Allow withdrawal before maturity.">i</span></span><oj-switch aria-label="Allow premature withdrawal" value="{{form().term.prematureWithdrawalAllowed}}"></oj-switch></div>
       </div>
     </div>
     <div slot="footer" class="mb-dialog-actions mb-product-dialog-actions">
@@ -136,10 +136,10 @@
     <div slot="body">
       <div class="mb-error" data-bind="visible:error,text:error"></div>
       <div class="mb-form">
-        <oj-input-text label-hint="Type code" value="{{typeForm.productTypeCode}}"></oj-input-text>
-        <oj-input-text label-hint="Type name" value="{{typeForm.productTypeName}}"></oj-input-text>
+        <oj-input-text label-hint="Type code" help.instruction="Unique category code, e.g. RD, SAVINGS, FD, or CREDIT_CARD." value="{{typeForm.productTypeCode}}"></oj-input-text>
+        <oj-input-text label-hint="Type name" help.instruction="Display name for the product category, e.g. classic credit card." value="{{typeForm.productTypeName}}"></oj-input-text>
         <label class="wide"
-          >Description<textarea data-bind="value:typeForm.description"></textarea>
+          >Description <span class="mb-tooltip" tabindex="0" role="img" aria-label="Short description of this product category." data-tooltip="Short description of this product category.">i</span><textarea data-bind="value:typeForm.description"></textarea>
         </label>
         <div class="mb-info wide">New product types are created as <strong>ACTIVE</strong>.</div>
       </div>
