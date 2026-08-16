@@ -12,8 +12,13 @@
       >Onboard customer</oj-button
     >
   </div>
-  <div class="mb-loading" data-bind="visible:state.loading">Loading dashboard data…</div>
-  <div class="mb-metrics" data-bind="foreach:cards">
+  <div class="mb-dashboard-body mb-stack">
+    <div class="mb-account-page-loader" data-bind="visible:state.loading()" role="status" aria-live="polite">
+      <span class="mb-account-page-spinner" aria-hidden="true"></span>
+      <strong>Loading dashboard</strong>
+      <small>Preparing live banking data…</small>
+    </div>
+    <div class="mb-metrics" data-bind="foreach:cards">
     <article>
       <span class="mb-metric-icon" data-bind="css:tone" aria-hidden="true">
         <i data-bind="css:iconClass"></i>
@@ -25,7 +30,7 @@
     <strong>Dashboard data could not be loaded</strong><span data-bind="text:state.error"></span
     ><button data-bind="click:load">Retry</button>
   </div>
-  <oj-bind-if test="[[isCustomer()]]"
+    <oj-bind-if test="[[isCustomer()]]"
     ><div class="mb-limitation">
       <span class="oj-ux-ico-shield"></span>
       <div>
@@ -81,5 +86,6 @@
         </button>
       </article>
     </div></oj-bind-if
-  >
+    >
+  </div>
 </section>
