@@ -7,11 +7,18 @@
     </div>
     <oj-button chroming="callToAction" on-oj-action="[[open]]">Create user</oj-button>
   </div>
-  <oj-input-text
-    class="mb-search"
-    placeholder="Search username, name, or email"
-    value="{{query}}"
-  ></oj-input-text>
+  <div class="mb-search-panel">
+    <label>Search users
+      <oj-input-text
+        aria-label="Search users"
+        placeholder="Username, name, or email"
+        value="{{query}}"
+        on-oj-value-action="[[search]]"
+      ></oj-input-text>
+    </label>
+    <span></span>
+    <oj-button chroming="callToAction" on-oj-action="[[search]]">Search</oj-button>
+  </div>
   <div class="mb-error" data-bind="visible:state.error">
     <span data-bind="text:state.error"></span><button data-bind="click:load">Retry</button>
   </div>
@@ -27,7 +34,7 @@
           <th>Actions</th>
         </tr>
       </thead>
-      <tbody data-bind="foreach:filtered">
+      <tbody data-bind="foreach:users">
         <tr data-bind="click:openDetails,css:{'mb-clickable-row':detailsAvailable,'mb-static-row':!detailsAvailable},attr:{tabindex:detailsAvailable?0:-1,'aria-label':detailsAvailable?'View details for '+username:null}">
           <td>
             <strong
@@ -69,7 +76,12 @@
         </tr>
       </tbody>
     </table>
-    <div class="mb-empty" data-bind="visible:!state.loading()&&!filtered().length">
+    <div class="mb-pagination" data-bind="visible:totalUsers()">
+      <span data-bind="text:`Page ${currentPage() + 1} of ${totalPages()} · ${totalUsers()} users`"></span>
+      <oj-button on-oj-action="[[previousPage]]" disabled="[[state.loading() || currentPage() === 0]]">Previous</oj-button>
+      <oj-button on-oj-action="[[nextPage]]" disabled="[[state.loading() || currentPage() >= totalPages() - 1]]">Next</oj-button>
+    </div>
+    <div class="mb-empty" data-bind="visible:!state.loading()&&!users().length">
       No matching users found.
     </div>
   </div>

@@ -4,7 +4,7 @@ define(['services/apiClient'], function (api) {
   return {
     auth: { login: (u, p) => api.post('/auth/login', { username: u, password: p }) },
     users: {
-      list: () => api.get('/api/v1/users?page=0&size=100&sort=id,desc'),
+      list: (page = 0, size = 20, query = '') => api.get(`/api/v1/users?page=${e(page)}&size=${e(size)}${query ? `&q=${e(query)}` : ''}`),
       get: (id) => api.get(`/api/v1/users/${e(id)}`),
       create: (d) => api.post('/api/v1/users', d),
       update: (id, d) => api.put(`/api/v1/users/${e(id)}`, d),
