@@ -9,6 +9,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.GrantedAuthority;
@@ -29,6 +31,13 @@ import org.springframework.web.client.RestClientException;
 @RestController
 @RequestMapping("/oda/assistant")
 public class OdaAssistantController {
+    private static final Pattern CUSTOMER_NAME_PATTERN = Pattern.compile("\\bcustomer(?:\\s+(?:named|called))?\\s+([\\p{L}'-]+)(?:\\s+([\\p{L}'-]+))?");
+    private static final Set<String> CUSTOMER_QUERY_WORDS = Set.of("account", "details", "information", "info", "profile", "status");
+    private static final Set<String> BANKING_TERMS = Set.of(
+            "account", "balance", "bank", "banking", "beneficiary", "card", "cash", "credit", "customer",
+            "deposit", "dispute", "emi", "fixed deposit", "fraud", "fund", "interest", "kyc", "ledger",
+            "loan", "money", "nominee", "overdraft", "password", "payment", "pin", "product", "rate",
+            "statement", "transfer", "transaction", "upi", "withdraw", "withdrawal");
     private final RestClient customers;
     private final RestClient accounts;
     private final RestClient transactions;
@@ -50,13 +59,26 @@ public class OdaAssistantController {
         String message = request.message().toLowerCase(Locale.ROOT);
         String token = authentication.getToken().getTokenValue();
         if (mentionsCustomerBriefing(message)) return customerBriefing(request.customerId(), token, authentication);
+        if (isRecommendation(message)) return recommendProducts(request.customerId(), token, authentication);
+        if (mentionsCustomer(message) || request.customerId() != null) return customerProfile(request.customerId(), message, token, authentication);
+        if (!isBankingQuestion(message)) return outOfScopeResponse();
         if (mentionsTransactionReview(message)) return reviewTransaction(request.transactionId(), token, authentication);
         if (mentionsAccountOverview(message) || (request.accountId() != null && !request.accountId().isBlank())) return accountOverview(request.accountId(), token, authentication);
-        if (isRecommendation(message)) return recommendProducts(request.customerId(), token, authentication);
         if (mentionsPolicy(message)) return policyAnswer(message, request.module());
         if (request.transactionId() != null && !request.transactionId().isBlank()) return reviewTransaction(request.transactionId(), token, authentication);
         if (request.customerId() != null) return customerBriefing(request.customerId(), token, authentication);
         return guidedOperation(message, authentication);
+    }
+
+    private boolean isBankingQuestion(String message) {
+        return BANKING_TERMS.stream().anyMatch(message::contains);
+    }
+
+    private AssistantResponse outOfScopeResponse() {
+        return new AssistantResponse("OUT_OF_SCOPE",
+                "I can help only with banking questions, or customer-specific questions when a Customer ID is provided.",
+                List.of(), List.of("Please ask a banking-related question or provide a Customer ID for a customer question."), List.of(),
+                policy("RESTRICTED", "This assistant is limited to banking support and authorized customer information."));
     }
 
     private AssistantResponse customerBriefing(Long customerId, String token, JwtAuthenticationToken authentication) {
@@ -79,6 +101,48 @@ public class OdaAssistantController {
         return new AssistantResponse("CUSTOMER_360", answer, evidence, steps, List.of(), policy("ALLOW", "Employee or admin role and customerId are required."));
     }
 
+    private AssistantResponse customerProfile(Long customerId, String message, String token, JwtAuthenticationToken authentication) {
+        requireEmployee(authentication, "Customer information");
+        Customer customer = resolveCustomer(customerId, message, token);
+        String answer = customerAnswer(customer, message);
+        return new AssistantResponse("CUSTOMER_PROFILE", answer,
+                List.of(new Evidence("customers-service", "customer", customer.customerId().toString(),
+                        "Customer profile retrieved for " + customer.firstName() + " " + customer.lastName() + ".")),
+                List.of("Use the customer workspace to review or update records through the approved workflow."), List.of(),
+                policy("ALLOW", "Employee or admin role plus a Customer ID or an unambiguous customer name are required to view customer information."),
+                new CustomerProfile(customer.customerId(), customer.firstName() + " " + customer.lastName(), customer.status(),
+                        customer.cifNo(), customer.phone(), customer.email(), customer.occupation(), customer.dob()));
+    }
+
+    private Customer resolveCustomer(Long customerId, String message, String token) {
+        if (customerId != null) return get(customers, "/api/customers/{id}", token, Customer.class, customerId);
+        Matcher matcher = CUSTOMER_NAME_PATTERN.matcher(message);
+        if (!matcher.find() || CUSTOMER_QUERY_WORDS.contains(matcher.group(1))) {
+            throw new AssistantInputException("Provide a Customer ID or the customer's name, for example: status for customer Rishabh Singh.");
+        }
+        String firstName = matcher.group(1);
+        String lastName = matcher.group(2);
+        List<Customer> matches = getList(customers, "/api/customers/search/first-name/{firstName}", token, Customer[].class, firstName)
+                .stream()
+                .filter(customer -> lastName == null || lastName.equalsIgnoreCase(customer.lastName()))
+                .toList();
+        if (matches.isEmpty()) throw new AssistantInputException("No customer matched that name. Provide the Customer ID to continue.");
+        if (matches.size() > 1) throw new AssistantInputException("More than one customer matched that name. Provide the Customer ID to continue.");
+        return matches.get(0);
+    }
+
+    private String customerAnswer(Customer customer, String message) {
+        String fullName = customer.firstName() + " " + customer.lastName();
+        if (message.contains("status")) return "Customer " + fullName + " is " + customer.status() + ".";
+        if (message.contains("email")) return "The recorded email for " + fullName + " is " + value(customer.email()) + ".";
+        if (message.contains("phone") || message.contains("contact")) return "The recorded phone number for " + fullName + " is " + value(customer.phone()) + ".";
+        if (message.contains("occupation")) return "The recorded occupation for " + fullName + " is " + value(customer.occupation()) + ".";
+        if (message.contains("dob") || message.contains("birth")) return "The recorded date of birth for " + fullName + " is " + value(customer.dob()) + ".";
+        if (message.contains("cif")) return "The CIF for " + fullName + " is " + value(customer.cifNo()) + ".";
+        return "Customer snapshot for " + fullName + ": status " + customer.status() + ", CIF " + value(customer.cifNo())
+                + ", contact " + value(customer.phone()) + ", " + value(customer.email()) + ", occupation " + value(customer.occupation()) + ".";
+    }
+
     private AssistantResponse reviewTransaction(String transactionId, String token, JwtAuthenticationToken authentication) {
         requireEmployee(authentication, "Transaction reviews");
         if (transactionId == null || transactionId.isBlank()) throw new AssistantInputException("Provide transactionId to review a transaction.");
@@ -98,14 +162,24 @@ public class OdaAssistantController {
 
     private AssistantResponse accountOverview(String accountId, String token, JwtAuthenticationToken authentication) {
         requireEmployee(authentication, "Account overviews");
-        if (accountId == null || accountId.isBlank()) throw new AssistantInputException("Provide accountId to review an account.");
-        Account account = get(accounts, "/api/accounts/{id}", token, Account.class, accountId);
+        if (accountId == null || accountId.isBlank()) throw new AssistantInputException("Provide an Account ID or 12-digit account number to review an account.");
+        Account account = resolveAccount(accountId, token);
         String answer = "Account " + account.accountNumber() + " is " + account.status() + " with available balance "
                 + account.availableBalance() + " " + account.currencyCode() + ".";
         return new AssistantResponse("ACCOUNT_OVERVIEW", answer,
                 List.of(new Evidence("accounts-service", "account", account.accountId(), "Account status " + account.status())),
                 List.of("Confirm the customer and account context.", "Review holds, status, and balance before proposing an operation.", "Use the approved account workflow for any change."), List.of(),
                 policy("ALLOW", "Employee or admin role and an accountId are required."));
+    }
+
+    private Account resolveAccount(String accountReference, String token) {
+        if (accountReference.matches("\\d{12}")) {
+            List<Account> matches = getList(accounts, "/api/accounts?accountNumber={accountNumber}", token,
+                    Account[].class, accountReference);
+            if (matches.isEmpty()) throw new AssistantInputException("No account matched that account number.");
+            return matches.get(0);
+        }
+        return get(accounts, "/api/accounts/{id}", token, Account.class, accountReference);
     }
 
     private AssistantResponse policyAnswer(String message, String module) {
@@ -124,7 +198,7 @@ public class OdaAssistantController {
     private AssistantResponse recommendProducts(Long customerId, String token, JwtAuthenticationToken authentication) {
         List<Product> active = getList(products, "/api/v1/products", token, Product[].class).stream()
                 .filter(product -> "ACTIVE".equalsIgnoreCase(product.status())).toList();
-        if (customerId == null) return generalRecommendations(active);
+        if (customerId == null) throw new AssistantInputException("Provide customerId for recommendations based on balance, transactions, minimum balance, and interest rate.");
         requireEmployee(authentication, "Customer-specific product recommendations");
         List<Account> customerAccounts = getList(accounts, "/api/accounts?customerId={id}", token, Account[].class, customerId);
         BigDecimal totalBalance = customerAccounts.stream().map(Account::availableBalance).filter(java.util.Objects::nonNull)
@@ -132,11 +206,15 @@ public class OdaAssistantController {
         List<Transaction> history = customerAccounts.stream().flatMap(account -> transactionHistory(account.accountId(), token).stream())
                 .collect(java.util.stream.Collectors.collectingAndThen(java.util.stream.Collectors.toMap(Transaction::transactionId, transaction -> transaction, (left, right) -> left, java.util.LinkedHashMap::new), map -> List.copyOf(map.values())));
         long completedTransactions = history.stream().filter(transaction -> "COMPLETED".equalsIgnoreCase(transaction.transactionStatus())).count();
-        List<Product> ranked = rankProducts(active, totalBalance, completedTransactions);
-        List<Recommendation> recommendations = ranked.stream().limit(3).map(product -> new Recommendation(product.productCode(), product.productName(),
-                recommendationReason(product, totalBalance, completedTransactions))).toList();
-        return new AssistantResponse("PERSONALISED_PRODUCT_RECOMMENDATION", "Recommendations use the customer's total available balance of " + totalBalance
-                + " and " + completedTransactions + " completed transaction(s). Confirm suitability, affordability, and consent before opening an account.",
+        List<Product> eligible = active.stream().filter(product -> meetsMinimumBalance(product, totalBalance)).toList();
+        List<Product> ranked = rankProducts(eligible, totalBalance, completedTransactions);
+        List<Recommendation> recommendations = ranked.stream().limit(3)
+                .map(product -> recommendation(product, totalBalance, completedTransactions)).toList();
+        String answer = recommendations.isEmpty()
+                ? "No active product currently meets the customer's total available balance of " + totalBalance + ". Review the minimum-balance requirements or discuss a lower-threshold product."
+                : "Recommendations use the customer's total available balance of " + totalBalance + ", " + completedTransactions
+                + " completed transaction(s), each product's minimum balance, and its configured interest rate. Confirm suitability, affordability, and consent before opening an account.";
+        return new AssistantResponse("PERSONALISED_PRODUCT_RECOMMENDATION", answer,
                 List.of(new Evidence("accounts-service", "customer-balance", customerId.toString(), "Total available balance " + totalBalance),
                         new Evidence("transactions-service", "transaction-history", customerId.toString(), completedTransactions + " completed transaction(s) reviewed.")),
                 List.of("Ask about the customer's savings goal, liquidity needs, and preferred term.", "Compare eligibility, fees, rate, and withdrawal terms.", "Obtain customer consent in the approved account-opening flow."), recommendations,
@@ -145,7 +223,7 @@ public class OdaAssistantController {
 
     private AssistantResponse generalRecommendations(List<Product> active) {
         List<Recommendation> recommendations = active.stream().sorted(Comparator.comparing(Product::productTypeCode).thenComparing(Product::productName)).limit(3)
-                .map(product -> new Recommendation(product.productCode(), product.productName(), "Active " + product.productTypeCode() + " product; minimum balance " + value(product.minimumBalance()) + ", rate " + (product.rate() == null ? "not configured" : value(product.rate().interestRate())) + ".")).toList();
+                .map(product -> recommendation(product, null, 0)).toList();
         return new AssistantResponse("PRODUCT_RECOMMENDATION", "Provide a Customer ID for balance- and transaction-informed recommendations. These active products are shown for general discussion.",
                 active.stream().map(product -> new Evidence("products-service", "product", product.productCode(), product.status())).toList(), List.of("Ask about the customer's savings goal, liquidity needs, and preferred term.", "Compare eligibility, fees, rate, and withdrawal terms.", "Obtain customer consent in the approved account-opening flow."), recommendations, policy("REVIEW_REQUIRED", "Recommendations are informational and are not personalised financial advice."));
     }
@@ -164,8 +242,17 @@ public class OdaAssistantController {
         if (balance.compareTo(new BigDecimal("100000")) >= 0 && type.contains("FD")) score += 100;
         if (transactions >= 3 && type.contains("RD")) score += 80;
         if (balance.compareTo(new BigDecimal("100000")) < 0 && (type.contains("SAV") || type.contains("CURRENT"))) score += 60;
-        if (product.minimumBalance() == null || balance.compareTo(product.minimumBalance()) >= 0) score += 20;
+        if (meetsMinimumBalance(product, balance)) score += 20;
+        if (product.rate() != null && product.rate().interestRate() != null) score += product.rate().interestRate().multiply(BigDecimal.TEN).intValue();
         return score;
+    }
+    private boolean meetsMinimumBalance(Product product, BigDecimal balance) { return product.minimumBalance() == null || balance.compareTo(product.minimumBalance()) >= 0; }
+    private Recommendation recommendation(Product product, BigDecimal balance, long transactions) {
+        BigDecimal rate = product.rate() == null ? null : product.rate().interestRate();
+        String reason = balance == null
+                ? "Active " + product.productTypeCode() + " product; review its minimum balance and interest rate before recommending it."
+                : recommendationReason(product, balance, transactions) + " Eligible at the reviewed balance; minimum balance " + value(product.minimumBalance()) + ", interest rate " + value(rate) + ".";
+        return new Recommendation(product.productCode(), product.productName(), reason, product.minimumBalance(), rate);
     }
     private String recommendationReason(Product product, BigDecimal balance, long transactions) {
         String type = product.productTypeCode().toUpperCase(Locale.ROOT);
@@ -187,6 +274,7 @@ public class OdaAssistantController {
     }
 
     private boolean mentionsCustomerBriefing(String message) { return message.contains("360") || message.contains("customer brief"); }
+    private boolean mentionsCustomer(String message) { return message.contains("customer") || message.contains("cif") || message.contains("contact") || message.contains("occupation"); }
     private boolean mentionsTransactionReview(String message) { return message.contains("transaction") || message.contains("payment review"); }
     private boolean mentionsAccountOverview(String message) { return message.contains("account overview") || message.contains("account balance") || message.contains("account status"); }
     private boolean mentionsPolicy(String message) { return message.contains("policy") || message.contains("kyc") || message.contains("fraud") || message.contains("approval") || message.contains("control"); }
@@ -206,11 +294,20 @@ public class OdaAssistantController {
     }
 
     public record AssistantRequest(@NotBlank String message, Long customerId, String transactionId, String accountId, String module) { }
-    public record AssistantResponse(String intent, String answer, List<Evidence> evidence, List<String> nextSteps, List<Recommendation> recommendations, Policy policy) { }
+    public record AssistantResponse(String intent, String answer, List<Evidence> evidence, List<String> nextSteps,
+                                    List<Recommendation> recommendations, Policy policy, CustomerProfile customerProfile) {
+        public AssistantResponse(String intent, String answer, List<Evidence> evidence, List<String> nextSteps,
+                                 List<Recommendation> recommendations, Policy policy) {
+            this(intent, answer, evidence, nextSteps, recommendations, policy, null);
+        }
+    }
     public record Evidence(String source, String type, String id, String summary) { }
-    public record Recommendation(String productCode, String productName, String reason) { }
+    public record Recommendation(String productCode, String productName, String reason, BigDecimal minimumBalance, BigDecimal interestRate) { }
     public record Policy(String decision, String rationale) { }
-    private record Customer(Long customerId, String firstName, String lastName, String status) { }
+    public record CustomerProfile(Long customerId, String fullName, String status, String cifNo, String phone,
+                                  String email, String occupation, String dateOfBirth) { }
+    private record Customer(Long customerId, String cifNo, String firstName, String lastName, String dob,
+                            String phone, String email, String occupation, String status) { }
     private record Account(String accountId, String accountNumber, String status, String currencyCode, BigDecimal availableBalance) { }
     private record Transaction(String transactionId, String transactionRef, String transactionStatus, BigDecimal amount, String currencyCode, BigDecimal feeAmount, String failureReason) { }
     private record Product(String productCode, String productName, String productTypeCode, BigDecimal minimumBalance, String status, Rate rate) { }

@@ -85,9 +85,6 @@
                 workspace</small
               ><strong>MoneyBags Banking</strong>
             </div>
-            <oj-button chroming="borderless" on-oj-action="[[openAssistant]]">
-              <span slot="startIcon" class="oj-ux-ico-chat"></span>Ask AI
-            </oj-button>
             <details class="mb-profile-menu">
                 <summary aria-label="Open profile menu">
     <span class="mb-avatar">
@@ -124,6 +121,9 @@
           config="[[moduleAdapter.koObservableConfig]]"
         ></oj-module>
       </div>
+      <button type="button" class="mb-ai-fab" data-bind="click:openAssistant" aria-label="Open banking assistant">
+        <span class="oj-ux-ico-chat" aria-hidden="true"></span><span>Ask AI</span>
+      </button>
       <div class="mb-toasts" aria-live="polite">
         <oj-bind-for-each data="[[toasts]]"
           ><template

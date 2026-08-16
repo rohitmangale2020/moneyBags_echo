@@ -144,6 +144,7 @@ define([
         detail: {
           label: "Banking assistant",
           iconClass: "oj-ux-ico-chat",
+          hidden: true,
           roles: ["ADMIN", "EMPLOYEE", "CUSTOMER"],
         },
       },
