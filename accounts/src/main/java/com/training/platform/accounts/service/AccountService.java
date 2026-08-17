@@ -14,6 +14,7 @@ import com.training.platform.accounts.entity.Account;
 import com.training.platform.accounts.entity.AccountBalanceOperation;
 import com.training.platform.accounts.entity.AccountHolder;
 import com.training.platform.accounts.entity.AccountStatus;
+import com.training.platform.accounts.entity.OwnershipType;
 import com.training.platform.accounts.entity.AccountStatusHistory;
 import com.training.platform.accounts.entity.AccountTransferOperation;
 import com.training.platform.accounts.repository.AccountHolderRepository;
@@ -33,6 +34,7 @@ import java.util.HashMap;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -84,6 +86,28 @@ public class AccountService {
 
     public Page<Account> getAccounts(Pageable pageable) {
         return accountRepository.findAllByOrderByCreatedAtDesc(pageable);
+    }
+
+    public Page<Account> getAccounts(Pageable pageable, String customerId, AccountStatus status,
+                                     OwnershipType ownershipType, String currencyCode) {
+        Specification<Account> specification = Specification.where(null);
+        if (!isBlank(customerId)) {
+            specification = specification.and((root, query, builder) ->
+                    builder.equal(root.get("customerId"), customerId));
+        }
+        if (status != null) {
+            specification = specification.and((root, query, builder) ->
+                    builder.equal(root.get("status"), status));
+        }
+        if (ownershipType != null) {
+            specification = specification.and((root, query, builder) ->
+                    builder.equal(root.get("ownershipType"), ownershipType));
+        }
+        if (!isBlank(currencyCode)) {
+            specification = specification.and((root, query, builder) ->
+                    builder.equal(root.get("currencyCode"), currencyCode.toUpperCase()));
+        }
+        return accountRepository.findAll(specification, pageable);
     }
 
     public List<Account> getByCustomerId(String customerId) { return accountRepository.findByCustomerId(customerId); }

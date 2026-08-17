@@ -1,11 +1,16 @@
 <section class="mb-stack">
   <div class="mb-heading">
-    <div>
-      <small>ACCOUNTS / STATEMENTS</small>
-      <h1>Account statements</h1>
-      <p>View account activity, descriptions, withdrawals, deposits, and closing balances.</p>
+    <div class="mb-account-intro">
+      <div>
+        <small>ACCOUNTS / STATEMENTS</small>
+        <h1>Account statements</h1>
+        <p>View account activity, descriptions, withdrawals, deposits, and closing balances.</p>
+      </div>
+      <oj-button on-oj-action="[[download]]" disabled="[[!filteredStatements().length]]">Download CSV</oj-button>
     </div>
-    <oj-button on-oj-action="[[download]]" disabled="[[!filteredStatements().length]]">Download CSV</oj-button>
+
+    <oj-button on-oj-action="[[download]]" disabled="[[!filteredStatements().length]]">Download protected PDF</oj-button>
+
   </div>
 
   <div class="mb-filter-panel mb-filter-panel-statements">
@@ -29,6 +34,9 @@
         <option value="ALL">All channels</option>
         <option value="WITHDRAWAL">Withdrawal</option>
         <option value="DEPOSIT">Deposit</option>
+        <option value="OPENING_DEPOSIT">Opening deposit</option>
+        <option value="FIXED_DEPOSIT_FUNDING">Fixed deposit funding</option>
+        <option value="FIXED_DEPOSIT_PREMATURE_CLOSURE">Fixed deposit premature closure</option>
         <option value="SELF_TRANSFER">Self transfer</option>
         <option value="INTERNAL_TRANSFER">Internal transfer</option>
       </select>

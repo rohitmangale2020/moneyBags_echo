@@ -118,10 +118,11 @@ public class BankTransactionService {
                         transferPurpose(persisted.getTransactionType())));
                 validateTransferResponse(persisted, transfer);
                 completeTransfer(persisted, transfer);
+            } else if (persisted.getTransactionType() == TransactionType.OPENING_DEPOSIT) {
+                completeOpeningDeposit(persisted);
             } else {
                 String accountId = postingAccountId(persisted);
-                AccountAdjustmentRequest.AdjustmentType adjustmentType =
-                        AccountAdjustmentRequest.AdjustmentType.valueOf(persisted.getTransactionType().name());
+                AccountAdjustmentRequest.AdjustmentType adjustmentType = adjustmentType(persisted);
                 AccountAdjustmentResponse adjustment = accountsClient.adjust(accountId,
                         new AccountAdjustmentRequest(persisted.getTransactionRef(), adjustmentType,
                                 persisted.getAmount(), persisted.getCurrencyCode(),
@@ -229,7 +230,7 @@ public class BankTransactionService {
                                             AccountAdjustmentResponse response) {
         if (!transaction.getTransactionRef().equals(response.transactionRef())
                 || !accountId.equals(response.accountId())
-                || transaction.getTransactionType() != TransactionType.valueOf(response.adjustmentType().name())) {
+                || adjustmentType(transaction) != response.adjustmentType()) {
             throw new AccountPostingException("ACCOUNT_RESPONSE_INVALID",
                     "Accounts service returned a response for a different posting");
         }
@@ -336,12 +337,43 @@ public class BankTransactionService {
                 completedAuditDescription(transaction));
     }
 
+    private void completeOpeningDeposit(BankTransaction transaction) {
+        Map<String, Object> previousValues = transactionValues(transaction);
+        transaction.setTransactionStatus(TransactionStatus.COMPLETED);
+        transaction.setCompletedAt(LocalDateTime.now());
+        transaction.setDescription("OPENING DEPOSIT | REF " + transaction.getTransactionRef());
+        AccountStatement statementEntry = statement(transaction, transaction.getCreditAccountId(),
+                StatementEntryType.CREDIT, transaction.getAmount(), transaction.getDescription());
+        statementRepository.save(statementEntry);
+        ledgerService.postCompletedTransaction(transaction);
+        auditRelatedCreated("STATEMENT_ENTRY_CREATED", transaction, "STATEMENT",
+                statementEntry.getStatementId(), "Opening-deposit statement entry created",
+                statementValues(statementEntry));
+        TransactionEventOutbox outboxEvent = TransactionEventOutbox.create(transaction.getTransactionId(),
+                TransactionEventType.TRANSACTION_COMPLETED, toJson(basePayload(transaction)));
+        outboxRepository.save(outboxEvent);
+        auditRelatedCreated("OUTBOX_EVENT_CREATED", transaction, "OUTBOX_EVENT",
+                outboxEvent.getEventId(), "Transaction-completed outbox event created", outboxValues(outboxEvent));
+        auditTransactionChange("TRANSACTION_COMPLETED", transaction, previousValues, "Opening deposit completed");
+    }
+
     private String postingAccountId(BankTransaction transaction) {
         return transaction.getTransactionType() == TransactionType.OPENING_DEPOSIT
                 || transaction.getTransactionType() == TransactionType.DEPOSIT
                 || transaction.getTransactionType() == TransactionType.INTEREST_CREDIT
                 || transaction.getTransactionType() == TransactionType.FIXED_DEPOSIT_INTEREST_CREDIT
                 ? transaction.getCreditAccountId() : transaction.getDebitAccountId();
+    }
+
+    private AccountAdjustmentRequest.AdjustmentType adjustmentType(BankTransaction transaction) {
+        return isDeposit(transaction) ? AccountAdjustmentRequest.AdjustmentType.DEPOSIT
+                : AccountAdjustmentRequest.AdjustmentType.WITHDRAWAL;
+    }
+
+    private boolean isDeposit(BankTransaction transaction) {
+        return transaction.getTransactionType() == TransactionType.DEPOSIT
+                || transaction.getTransactionType() == TransactionType.OPENING_DEPOSIT
+                || transaction.getTransactionType() == TransactionType.FIXED_DEPOSIT_FUNDING;
     }
 
     private void fail(BankTransaction transaction, AccountPostingException exception) {

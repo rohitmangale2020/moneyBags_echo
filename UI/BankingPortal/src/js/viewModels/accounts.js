@@ -66,6 +66,9 @@ define([
       if (s.pendingCreatedAccount()) return s.isFixedDeposit() ? 'Retry FD funding' : 'Retry opening deposit';
       return 'Save account';
     });
+    s.busy = ko.observable(false);
+    s.submissionState = ko.observable('idle');
+    s.submissionMessage = ko.observable('');
     s.closingAccount = ko.observable(false);
     s.closeDateMin = new Date().toISOString().slice(0, 10);
     s.error = ko.observable('');
@@ -166,7 +169,9 @@ define([
     s.money = u.money;
     s.date = u.date;
     s.currencies = ko.pureComputed(() =>
-      Array.from(new Set(s.state.data().map((account) => account.currencyCode).filter(Boolean))).sort(),
+      Array.from(new Set(['INR', 'USD', ...s.state.data()
+        .map((account) => account.currencyCode)
+        .filter(Boolean)])).sort(),
     );
     s.filteredAccounts = ko.pureComputed(() => {
       const accounts = s.state.data().filter((account) => {
@@ -228,8 +233,14 @@ define([
     };
     s.load = (requestedPage) => s.state.run(async () => {
       const page = Number.isInteger(requestedPage) ? requestedPage : s.currentPage();
-      const append = page > 0;
-      const response = await app.services.accounts.list(page, s.pageSize);
+      const customerId = s.searchCustomerId()
+        || (s.hasActiveCustomer() ? s.activeCustomer().customerId : null);
+      const response = await app.services.accounts.list(page, s.pageSize, {
+        customerId,
+        status: s.statusFilter(),
+        ownershipType: s.ownershipFilter(),
+        currencyCode: s.currencyFilter(),
+      });
       const accounts = u.list(response);
       s.currentPage(Number(response.number || 0));
       s.totalAccounts(Number(response.totalElements === undefined ? accounts.length : response.totalElements));
@@ -270,14 +281,23 @@ define([
         balanceDisplay: ko.observable(0),
       }));
       s.lastLoadedAccounts = loadedAccounts;
-      return append ? s.state.data().concat(loadedAccounts) : loadedAccounts;
+      return loadedAccounts;
     }).then((accounts) => {
       if (accounts) s.animateBalances(s.lastLoadedAccounts);
       return accounts;
     }).catch(() => null);
-    s.loadMore = () => {
-      if (!s.state.loading() && s.currentPage() < s.totalPages() - 1) s.load(s.currentPage() + 1);
+    s.previousPage = () => {
+      if (s.currentPage() > 0) s.load(s.currentPage() - 1);
     };
+    s.nextPage = () => {
+      if (s.currentPage() < s.totalPages() - 1) s.load(s.currentPage() + 1);
+    };
+    let resettingFilters = false;
+    [s.statusFilter, s.ownershipFilter, s.currencyFilter].forEach((filter) => {
+      filter.subscribe(() => {
+        if (!resettingFilters) s.load(0);
+      });
+    });
     s.search = () => {
       const searchValue = s.query().trim();
       if (!searchValue) {
@@ -292,27 +312,7 @@ define([
       return s.state.run(async () => {
         const customer = await app.services.customers.byCif(cifNo);
         s.searchCustomerId(String(customer.customerId));
-        const accounts = u.list(await app.services.accounts.customer(customer.customerId));
-        const productsResult = await Promise.allSettled([app.services.products.list()]);
-        const products = productsResult[0].status === 'fulfilled' ? u.list(productsResult[0].value) : [];
-        const productNames = new Map(products.map((product) => [String(product.productId), product.productName]));
-        const productDetails = new Map(products.map((product) => [String(product.productId), product]));
-        const customerName = [customer.firstName, customer.lastName].filter(Boolean).join(' ');
-        const loadedAccounts = accounts.map((account) => Object.assign({}, account, {
-          customerName: account.customerName || customerName,
-          productName: account.productName || productNames.get(String(account.productId)) || '',
-          productTypeCode: account.productTypeCode || productDetails.get(String(account.productId))?.productTypeCode || '',
-          productStatus: account.productStatus || productDetails.get(String(account.productId))?.status || '',
-          balanceDisplay: ko.observable(0),
-        }));
-        s.currentPage(0);
-        s.totalAccounts(loadedAccounts.length);
-        s.totalPages(1);
-        s.lastLoadedAccounts = loadedAccounts;
-        return loadedAccounts;
-      }).then((accounts) => {
-        if (accounts) s.animateBalances(s.lastLoadedAccounts);
-        return accounts;
+        return s.load(0);
       }).catch(() => null);
     };
     s.searchByAccountNumber = (accountNumber) => s.state.run(async () => {
@@ -544,12 +544,14 @@ define([
       }
     };
     s.clearFilters = () => {
+      resettingFilters = true;
       s.query('');
       s.searchCustomerId(null);
       s.statusFilter('ALL');
       s.ownershipFilter('ALL');
       s.currencyFilter('ALL');
       s.sortBy('opened-desc');
+      resettingFilters = false;
       s.load(0);
     };
     s.open = async () => {
@@ -571,6 +573,8 @@ define([
       s.form.payoutAccountId('');
       s.customerAccounts([]);
       s.closingAccount(false);
+      s.submissionState('idle');
+      s.submissionMessage('');
       try {
         const products = (await app.services.products.list()).filter((p) => p.status === 'ACTIVE');
         s.products(products);
@@ -586,6 +590,8 @@ define([
       s.pendingCreatedAccount(null);
       s.pendingFixedDepositContract(null);
       s.error('');
+      s.submissionState('idle');
+      s.submissionMessage('');
       s.form.accountNumber(x.accountNumber);
       s.form.customerId(x.customerId);
       s.form.customerCif('');
@@ -668,24 +674,49 @@ define([
     };
     s.create = async () => {
       const p = s.products().find((x) => String(x.productId) === String(s.form.productId()));
-      const fixedDeposit = !s.editingId() && s.isFixedDeposit();
-      const requestedBalance = Number(s.form.availableBalance());
-      if ((!p && !s.editingId()) || !s.form.customerId())
-        return s.error('Complete all required fields.');
-      if (!Number.isFinite(requestedBalance) || requestedBalance < 0) return s.error('Available balance cannot be negative.');
-      if (!s.editingId() && requestedBalance < Number(p.minimumBalance || 0)) {
-        return s.error(`${fixedDeposit ? 'Principal' : 'Opening balance'} must be at least ${u.money(p.minimumBalance, p.currency || 'INR')} for ${p.productName}.`);
-      }
-      if (fixedDeposit) {
-        const funding = s.eligibleFundingAccounts().find((account) => String(account.accountId) === String(s.form.fundingAccountId()));
-        if (!funding) return s.error('Select an eligible customer account with enough available balance to fund the FD.');
-      }
-      if (!/^[A-Za-z]{3}$/.test(s.editingId() ? s.form.currencyCode() : p.currency)) return s.error('Currency must be a three-letter code.');
-      let savedAccount = !s.editingId() ? s.pendingCreatedAccount() : null;
+const fixedDeposit = !s.editingId() && s.isFixedDeposit();
+const requestedBalance = Number(s.form.availableBalance());
+
+if ((!p && !s.editingId()) || (s.editingId() && !s.form.customerId())) {
+  return s.error('Complete all required fields.');
+}
+if (!s.editingId() && !s.form.customerCif().trim()) {
+  return s.error('Customer CIF is required.');
+}
+if (!Number.isFinite(requestedBalance) || requestedBalance < 0) {
+  return s.error('Available balance cannot be negative.');
+}
+if (!s.editingId() && requestedBalance < Number(p.minimumBalance || 0)) {
+  return s.error(
+    `${fixedDeposit ? 'Principal' : 'Opening balance'} must be at least ${
+      u.money(p.minimumBalance, p.currency || 'INR')
+    } for ${p.productName}.`,
+  );
+}
+if (fixedDeposit) {
+  const funding = s.eligibleFundingAccounts().find(
+    (account) => String(account.accountId) === String(s.form.fundingAccountId()),
+  );
+  if (!funding) {
+    return s.error('Select an eligible customer account with enough available balance to fund the FD.');
+  }
+}
+if (!/^[A-Za-z]{3}$/.test(s.editingId() ? s.form.currencyCode() : p.currency)) {
+  return s.error('Currency must be a three-letter code.');
+}
+
+let savedAccount = !s.editingId() ? s.pendingCreatedAccount() : null;
+s.busy(true);
+s.submissionState('submitting');
+s.submissionMessage(s.editingId() ? 'Saving account changes...' : 'Opening account...');
       try {
+        const customerId = s.editingId()
+          ? String(s.form.customerId())
+          : String((await app.services.customers.byCif(s.form.customerCif().trim())).customerId);
+        s.form.customerId(customerId);
         const payload = {
           accountNumber: s.editingId() ? s.form.accountNumber() : null,
-          customerId: String(s.form.customerId()),
+          customerId,
           productId: String(p ? p.productId : s.form.productId()),
           ownershipType: s.form.ownershipType(),
           status: s.editingId() ? s.form.status() : 'ACTIVE',
@@ -721,27 +752,41 @@ define([
         }
         s.pendingCreatedAccount(null);
         s.pendingFixedDepositContract(null);
-        document.getElementById('accountDialog').close();
-        app.notify(s.editingId() ? 'Account updated.' : fixedDeposit
-          ? 'Fixed deposit opened and funded successfully.'
-          : 'Account opened and its opening deposit was posted successfully.');
+
+        s.submissionState('success');
+        s.submissionMessage(
+          s.editingId()
+            ? 'Account updated successfully.'
+            : fixedDeposit
+              ? 'Fixed deposit opened and funded successfully.'
+              : 'Account opened and its opening deposit was posted successfully.',
+        );
+
+        app.notify(s.submissionMessage(), 'success'); 
         await s.load();
+        window.setTimeout(() => document.getElementById('accountDialog').close(), 1600);
       } catch (e) {
-        if (savedAccount && !s.editingId()) s.pendingCreatedAccount(savedAccount);
-        s.error(savedAccount && !s.editingId()
-          ? `Account ${savedAccount.accountNumber || savedAccount.accountId} was created at zero balance. ${e.message}`
-          : e.message);
+if (savedAccount && !s.editingId()) {
+  s.pendingCreatedAccount(savedAccount);
+}
+
+const message = savedAccount && !s.editingId()
+  ? `Account ${savedAccount.accountNumber || savedAccount.accountId} was created at zero balance. ${
+    e.message || 'Funding could not be completed.'
+  }`
+  : (e.message || 'The account could not be opened.');
+
+s.submissionState('failure');
+s.submissionMessage(message);
+s.error(message);
+
+window.setTimeout(() => document.getElementById('accountDialog').close(), 2600);
+} finally {
+  s.busy(false);
       }
     };
     s.close = () => document.getElementById('accountDialog').close();
     s.load();
-    setTimeout(() => {
-      const sentinel = document.getElementById('accountsLoadMore');
-      if (!sentinel || !window.IntersectionObserver) return;
-      new IntersectionObserver((entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) s.loadMore();
-      }, { rootMargin: '240px' }).observe(sentinel);
-    }, 0);
   }
   return VM;
 });

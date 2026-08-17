@@ -1,11 +1,13 @@
 <section class="mb-stack mb-ledger-page">
   <div class="mb-heading">
-    <div>
-      <small>FINANCE / ADMINISTRATION</small>
-      <h1>General ledger</h1>
-      <p>Review immutable debit and credit postings, reconcile clearing activity, and post a balanced manual adjustment.</p>
+    <div class="mb-account-intro">
+      <div>
+        <small>FINANCE / ADMINISTRATION</small>
+        <h1>General ledger</h1>
+        <p>Review immutable debit and credit postings, reconcile clearing activity, and post a balanced manual adjustment.</p>
+      </div>
+      <oj-button class="mb-open-account" chroming="callToAction" on-oj-action="[[openPost]]">Post ledger entry</oj-button>
     </div>
-    <oj-button chroming="callToAction" on-oj-action="[[openPost]]">Post ledger entry</oj-button>
   </div>
 
   <div class="mb-error" data-bind="visible:accountState.error,text:accountState.error"></div>

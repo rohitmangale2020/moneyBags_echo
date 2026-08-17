@@ -1,9 +1,4 @@
 <section class="mb-stack">
-  <div class="mb-account-page-loader mb-account-page-loader-legacy" data-bind="visible:state.loading() && !state.data().length" role="status" aria-live="polite">
-    <span class="mb-account-page-spinner" aria-hidden="true"></span>
-    <strong>Loading accounts</strong>
-    <small>Preparing account balances…</small>
-  </div>
   <div class="mb-heading">
     <div class="mb-account-intro">
 
@@ -52,12 +47,12 @@
   </div>
   <div class="mb-list-meta"><strong data-bind="text:resultSummary"></strong><span>Filters update instantly</span></div>
   <div class="mb-error" data-bind="visible:state.error"><span data-bind="text:state.error"></span><button data-bind="click:load">Retry</button></div>
-  <div class="mb-account-page-loader mb-table-loader" data-bind="visible:state.loading() && !state.data().length" role="status" aria-live="polite">
+  <div class="mb-account-page-loader mb-table-loader" data-bind="visible:state.loading()" role="status" aria-live="polite">
     <span class="mb-account-page-spinner" aria-hidden="true"></span>
     <strong>Loading accounts</strong>
     <small>Preparing account balances...</small>
   </div>
-  <div class="mb-card-grid" data-bind="foreach:filteredAccounts,visible:filteredAccounts().length">
+  <div class="mb-card-grid" data-bind="foreach:filteredAccounts,visible:filteredAccounts().length && !state.loading()">
     <article class="mb-card account" data-bind="event:{dblclick:$parent.edit}">
       <div class="mb-card-top">
         <div>
@@ -89,9 +84,10 @@
       </dl>
     </article>
   </div>
-  <div id="accountsLoadMore" class="mb-load-more" data-bind="visible:currentPage() < totalPages() - 1">
-    <span class="mb-load-more-spinner" data-bind="visible:state.loading"></span>
-    <span data-bind="text:state.loading() ? 'Loading more accounts…' : 'Scroll to load more accounts'"></span>
+  <div class="mb-pagination" data-bind="visible:totalPages() > 1">
+    <oj-button on-oj-action="[[previousPage]]" disabled="[[state.loading() || currentPage() === 0]]">Previous</oj-button>
+    <span data-bind="text:`Page ${currentPage() + 1} of ${totalPages()}`"></span>
+    <oj-button on-oj-action="[[nextPage]]" disabled="[[state.loading() || currentPage() >= totalPages() - 1]]">Next</oj-button>
   </div>
   <div class="mb-empty" data-bind="visible:!state.loading()&&!filteredAccounts().length">
     No accounts match the selected filters.
@@ -103,6 +99,14 @@
 <!--        numbers remain unchanged.-->
 <!--      </div>-->
       <div class="mb-error" data-bind="visible:error,text:error"></div>
+      <div class="mb-transaction-submit-state" data-bind="visible:submissionState() !== 'idle',css:submissionState">
+        <span class="mb-transaction-submit-spinner" data-bind="visible:submissionState() === 'submitting'" aria-hidden="true"></span>
+        <span class="mb-transaction-submit-icon" data-bind="visible:submissionState() === 'success'" aria-hidden="true">✓</span>
+        <span class="mb-transaction-submit-icon" data-bind="visible:submissionState() === 'failure'" aria-hidden="true">!</span>
+        <strong data-bind="text:submissionState() === 'submitting' ? 'Processing account' : submissionState() === 'success' ? 'Account complete' : 'Account failed'"></strong>
+        <p data-bind="text:submissionMessage"></p>
+      </div>
+      <div data-bind="visible:submissionState() === 'idle'">
       <div class="mb-form">
         <label class="wide" data-bind="visible:!editingId()"><span>Active product</span>
           <select data-bind="value:form.productId,disable:pendingCreatedAccount">
@@ -111,7 +115,8 @@
             <option data-bind="attr:{value:String(productId)},text:`${productName} · ${productCode}`"></option>
             <!-- /ko -->
           </select></label><label class="wide" data-bind="visible:editingId"><span>Active product</span><input type="text" disabled="disabled" data-bind="value:productLabel" /></label
-        ><label><span>Customer ID</span><input type="text" data-bind="value:form.customerId,disable:editingId() || pendingCreatedAccount()" /></label
+        ><label data-bind="visible:!editingId()"><span>Customer CIF</span><input type="text" data-bind="value:form.customerCif" /></label
+        ><label data-bind="visible:editingId"><span>Customer ID</span><input type="text" disabled="disabled" data-bind="value:form.customerId" /></label
         ><label data-bind="visible:editingId"><span>Customer CIF</span><input type="text" disabled="disabled" data-bind="value:form.customerCif" /></label
         ><label data-bind="visible:editingId"><span>Account number</span><input type="text" disabled="disabled" data-bind="value:form.accountNumber" /></label
         ><label><span>Account type</span><input type="text" data-bind="value:form.ownershipType,disable:editingId() || pendingCreatedAccount()" /></label
@@ -129,9 +134,12 @@
         ><div class="wide mb-dialog-actions" data-bind="visible:canRetryEditingFixedDeposit"><oj-button chroming="callToAction" on-oj-action="[[retryEditingFixedDeposit]]" disabled="[[retryingFdAccountId]]">Retry FD funding</oj-button></div
         ><label data-bind="visible:closingAccount"><span>Closing date</span><input type="date" data-bind="value:form.closedAt,attr:{min:closeDateMin}" /></label>
       </div>
+      </div>
     </div>
-    <div slot="footer" class="mb-dialog-actions">
-      <oj-button on-oj-action="[[close]]">Cancel</oj-button><oj-button chroming="callToAction" on-oj-action="[[create]]"><span data-bind="text:saveAccountLabel"></span></oj-button>
+
+    <div slot="footer" class="mb-dialog-actions" data-bind="visible:submissionState() === 'idle'">
+      <oj-button on-oj-action="[[close]]" disabled="[[busy]]">Cancel</oj-button><oj-button chroming="callToAction" on-oj-action="[[create]]" disabled="[[busy]]">Save account</oj-button>
+
     </div></oj-dialog
   >
 </section>

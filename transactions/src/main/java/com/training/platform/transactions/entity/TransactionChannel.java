@@ -5,6 +5,9 @@ public enum TransactionChannel {
     INTERNAL_TRANSFER,
     SELF_TRANSFER,
     DEPOSIT,
+    OPENING_DEPOSIT,
+    FIXED_DEPOSIT_FUNDING,
+    FIXED_DEPOSIT_PREMATURE_CLOSURE,
     WITHDRAWAL;
 
     public static TransactionChannel from(BankTransaction transaction) {
@@ -13,7 +16,10 @@ public enum TransactionChannel {
             case TRANSFER -> transaction.getInitiatedByCustomerId() == null
                     || transaction.getInitiatedByCustomerId().isBlank()
                     ? INTERNAL_TRANSFER : SELF_TRANSFER;
-            case OPENING_DEPOSIT, DEPOSIT -> DEPOSIT;
+            case DEPOSIT -> DEPOSIT;
+            case OPENING_DEPOSIT -> OPENING_DEPOSIT;
+            case FIXED_DEPOSIT_FUNDING -> FIXED_DEPOSIT_FUNDING;
+            case FIXED_DEPOSIT_PREMATURE_CLOSURE -> FIXED_DEPOSIT_PREMATURE_CLOSURE;
             case WITHDRAWAL -> WITHDRAWAL;
             default -> null;
         };
