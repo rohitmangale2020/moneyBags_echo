@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 public record TransactionRequest(
         @NotBlank @Size(max = 40) String transactionRef,
         @NotNull TransactionType transactionType,
-        TransactionStatus transactionStatus,
+        @NotNull TransactionStatus transactionStatus,
         String debitAccountId, String creditAccountId, String externalBeneficiary,
         @NotNull @DecimalMin(value = "0.01") BigDecimal amount,
         @NotBlank @Pattern(regexp = "[A-Za-z]{3}") String currencyCode,

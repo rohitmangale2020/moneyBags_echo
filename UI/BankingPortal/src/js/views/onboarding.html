@@ -886,12 +886,11 @@
       <div>
 
         <oj-input-text
-                label-hint="Opening balance"
+                label-hint="[[isFixedDeposit() ? 'Fixed deposit principal' : 'Opening deposit']]"
                 value="{{accountForm.availableBalance}}"
         ></oj-input-text>
 
-        <small class="mb-field-hint">
-          Zero or a positive amount.
+        <small class="mb-field-hint" data-bind="text:isFixedDeposit() ? 'The FD account opens at zero and is funded from the selected customer account.' : 'Zero or a positive amount.'">
         </small>
 
         <small
@@ -899,6 +898,27 @@
                 data-bind="visible:fieldErrors().availableBalance,text:fieldErrors().availableBalance"
         ></small>
 
+      </div>
+
+      <div class="wide mb-info" data-bind="visible:isFixedDeposit">
+        Select the account that funds the FD. The same account receives principal plus interest at maturity or early withdrawal.
+      </div>
+
+      <div class="wide" data-bind="visible:isFixedDeposit">
+        <label>
+          Fund from customer account
+          <select data-bind="value:accountForm.fundingAccountId,options:eligibleFundingAccounts,optionsText:fixedDepositAccountLabel,optionsValue:'accountId',optionsCaption:'Select funding account'"></select>
+        </label>
+        <small class="mb-field-hint">Only active same-currency accounts that can retain their minimum balance are shown.</small>
+        <small class="mb-field-error" data-bind="visible:fieldErrors().fundingAccountId,text:fieldErrors().fundingAccountId"></small>
+      </div>
+
+      <div class="wide mb-info" data-bind="visible:isFixedDeposit() && accountForm.fundingAccountId()">
+        Principal and applicable interest return to this same account at maturity or early withdrawal.
+      </div>
+
+      <div class="wide mb-info" data-bind="visible:isFixedDeposit() && !transactionalAccounts().length">
+        No eligible account is available. Open or activate a savings/current account for this customer first.
       </div>
 
     </div>

@@ -14,7 +14,6 @@ define([
       productTypeCode: '',
       description: '',
       minimumBalance: 0,
-      maximumBalance: null,
       currency: 'INR',
       status: 'ACTIVE',
       rate: { interestRate: 0 },
@@ -26,7 +25,7 @@ define([
         maturityInstruction: null,
         prematureWithdrawalAllowed: false,
       },
-      fee: { monthlyMaintenanceFee: 0 },
+      fee: { annualMaintenanceFee: 0 },
     };
   }
   function filterProducts(products, search, typeCode) {
@@ -130,8 +129,9 @@ define([
       if (typeCode !== 'RD') {
         product.term.installmentAmount = null; product.term.installmentFrequency = null;
       }
+      if (!['SAVINGS', 'CURRENT'].includes(typeCode)) product.fee.annualMaintenanceFee = 0;
       if (typeCode === 'CREDIT_CARD') {
-        product.minimumBalance = null; product.maximumBalance = null;
+        product.minimumBalance = null;
       }
       s.form.valueHasMutated();
     });
@@ -187,7 +187,7 @@ define([
         term: Object.assign(blank().term, d.term || {}, {
           prematureWithdrawalAllowed: !!(d.term && d.term.prematureWithdrawalAllowed),
         }),
-        fee: Object.assign({ monthlyMaintenanceFee: 0 }, d.fee || {}),
+        fee: Object.assign({ annualMaintenanceFee: 0 }, d.fee || {}),
       }));
       s.formType(d.productTypeCode);
       document.getElementById('productDialog').open();
@@ -216,23 +216,21 @@ define([
       const raw = ko.toJS(s.form());
       const d = {
         productCode: raw.productCode, productName: raw.productName, productTypeCode: s.formType(),
-        description: raw.description, minimumBalance: raw.minimumBalance, maximumBalance: raw.maximumBalance,
+        description: raw.description, minimumBalance: raw.minimumBalance, maximumBalance: null,
         currency: 'INR', status: raw.status,
         rate: Object.assign({ interestRate: 0 }, raw.rate), term: Object.assign({}, raw.term),
-        fee: Object.assign({ monthlyMaintenanceFee: 0 }, raw.fee),
+        fee: Object.assign({ annualMaintenanceFee: 0 }, raw.fee),
       };
       d.minimumBalance = Number(d.minimumBalance || 0);
-      d.maximumBalance = d.maximumBalance ? Number(d.maximumBalance) : null;
       d.rate.interestRate = Number(d.rate.interestRate || 0);
-      d.fee.monthlyMaintenanceFee = Number(d.fee.monthlyMaintenanceFee || 0);
+      d.fee.annualMaintenanceFee = Number(d.fee.annualMaintenanceFee || 0);
       d.term.tenureMonths = d.term.tenureMonths ? Number(d.term.tenureMonths) : null;
       d.term.installmentAmount = d.term.installmentAmount ? Number(d.term.installmentAmount) : null;
       d.term.lockInPeriod = d.term.lockInPeriod ? Number(d.term.lockInPeriod) : null;
       if (!d.productCode || !d.productName || !d.productTypeCode)
         return s.error('Complete all required fields.');
       if (!/^[A-Z]{3}$/.test(d.currency || '')) return s.error('Currency must be a three-letter uppercase code.');
-      if ([d.minimumBalance, d.maximumBalance, d.rate.interestRate, d.fee.monthlyMaintenanceFee, d.term.installmentAmount].some((v) => v !== null && v < 0)) return s.error('Balances, rates, fees, and installments cannot be negative.');
-      if (d.maximumBalance !== null && d.maximumBalance < d.minimumBalance) return s.error('Maximum balance cannot be lower than minimum balance.');
+      if ([d.minimumBalance, d.rate.interestRate, d.fee.annualMaintenanceFee, d.term.installmentAmount].some((v) => v !== null && v < 0)) return s.error('Balances, rates, fees, and installments cannot be negative.');
       try {
         const value = s.editingCode()
           ? await app.services.products.update(s.editingCode(), d)

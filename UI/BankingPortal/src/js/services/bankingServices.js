@@ -99,6 +99,13 @@ define(['services/apiClient'], function (api) {
       transfer: (d) => api.post('/api/transactions', d),
       update: (id, d) => api.put(`/api/transactions/${e(id)}`, d),
     },
+    fixedDeposits: {
+      open: (d) => api.post('/api/fixed-deposits', d),
+      get: (id) => api.get(`/api/fixed-deposits/${e(id)}`),
+      list: () => api.get('/api/fixed-deposits'),
+      retryFunding: (id) => api.post(`/api/fixed-deposits/${e(id)}/retry-funding`),
+      close: (id, asOf) => api.post(`/api/fixed-deposits/${e(id)}/close${asOf ? `?asOf=${e(asOf)}` : ''}`),
+    },
     statements: {
       search: (id, filters = {}) => {
         const params = new URLSearchParams({ accountId: id });

@@ -76,7 +76,7 @@ class ProductServiceAuditTest {
         fee = new ProductFee();
         fee.setProductFeeId(103L);
         fee.setProduct(product);
-        fee.setMonthlyMaintenanceFee(new BigDecimal("100.0000"));
+        fee.setAnnualMaintenanceFee(new BigDecimal("100.0000"));
 
         when(products.findByProductCode("SAVINGS-01")).thenReturn(Optional.of(product));
         when(productTypes.findById("SAVINGS")).thenReturn(Optional.of(type));

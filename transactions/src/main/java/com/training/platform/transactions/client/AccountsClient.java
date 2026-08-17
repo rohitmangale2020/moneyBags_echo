@@ -10,6 +10,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
 
 /** HTTP client for the accounts service's atomic balance-posting endpoint. */
 @Component
@@ -18,12 +21,14 @@ public class AccountsClient {
 
     public AccountsClient(RestClient.Builder builder,
                           @Value("${services.accounts.base-url}") String baseUrl,
+                          @Value("${services.accounts.internal-key}") String internalKey,
                           AuditClient auditClient) {
         this.restClient = builder.clone()
                 .baseUrl(baseUrl)
                 .requestInterceptor((request, body, execution) -> {
                     request.getHeaders().set(AuditClient.CORRELATION_HEADER,
                             auditClient.currentCorrelationId());
+                    request.getHeaders().set("X-Banking-Internal-Key", internalKey);
                     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
                     if (authentication instanceof JwtAuthenticationToken jwtAuthentication) {
                         request.getHeaders().setBearerAuth(jwtAuthentication.getToken().getTokenValue());
@@ -31,6 +36,65 @@ public class AccountsClient {
                     return execution.execute(request, body);
                 })
                 .build();
+    }
+
+    public AccountDetailsResponse getAccount(String accountId) {
+        try {
+            AccountDetailsResponse response = restClient.get()
+                    .uri("/api/accounts/{accountId}", accountId)
+                    .retrieve()
+                    .body(AccountDetailsResponse.class);
+            if (response == null) throw new AccountPostingException("ACCOUNT_RESPONSE_INVALID",
+                    "Accounts service returned an empty account response");
+            return response;
+        } catch (RestClientResponseException exception) {
+            throw postingException(exception, "ACCOUNT_NOT_FOUND", "ACCOUNT_LOOKUP_REJECTED");
+        } catch (ResourceAccessException exception) {
+            throw new AccountPostingException("ACCOUNT_SERVICE_UNAVAILABLE", exception.getMessage());
+        }
+    }
+
+    public List<InterestBearingAccountResponse> interestDue(LocalDate asOf) {
+        try {
+            InterestBearingAccountResponse[] response = restClient.get()
+                    .uri(uri -> uri.path("/api/internal/accounts/interest-due")
+                            .queryParam("asOf", asOf).build())
+                    .retrieve()
+                    .body(InterestBearingAccountResponse[].class);
+            return response == null ? List.of() : Arrays.asList(response);
+        } catch (RestClientResponseException exception) {
+            throw postingException(exception, "ACCOUNT_NOT_FOUND", "INTEREST_ACCOUNT_LOOKUP_REJECTED");
+        } catch (ResourceAccessException exception) {
+            throw new AccountPostingException("ACCOUNT_SERVICE_UNAVAILABLE", exception.getMessage());
+        }
+    }
+
+    public List<AnnualFeeAccountResponse> annualFeeAccounts() {
+        try {
+            AnnualFeeAccountResponse[] response = restClient.get()
+                    .uri("/api/internal/accounts/annual-fees")
+                    .retrieve()
+                    .body(AnnualFeeAccountResponse[].class);
+            return response == null ? List.of() : Arrays.asList(response);
+        } catch (RestClientResponseException exception) {
+            throw postingException(exception, "ACCOUNT_NOT_FOUND", "MAINTENANCE_FEE_LOOKUP_REJECTED");
+        } catch (ResourceAccessException exception) {
+            throw new AccountPostingException("ACCOUNT_SERVICE_UNAVAILABLE", exception.getMessage());
+        }
+    }
+
+    public void markInterestProcessed(String accountId, LocalDate periodEnd, String transactionRef) {
+        try {
+            restClient.post()
+                    .uri("/api/internal/accounts/{accountId}/interest-processed", accountId)
+                    .body(new InterestProcessingRequest(periodEnd, transactionRef))
+                    .retrieve()
+                    .toBodilessEntity();
+        } catch (RestClientResponseException exception) {
+            throw postingException(exception, "ACCOUNT_NOT_FOUND", "INTEREST_PROCESSING_REJECTED");
+        } catch (ResourceAccessException exception) {
+            throw new AccountPostingException("ACCOUNT_SERVICE_UNAVAILABLE", exception.getMessage());
+        }
     }
 
     public AccountTransferResponse transfer(AccountTransferRequest request) {
@@ -77,5 +141,14 @@ public class AccountsClient {
         } catch (ResourceAccessException exception) {
             throw new AccountPostingException("ACCOUNT_SERVICE_UNAVAILABLE", exception.getMessage());
         }
+    }
+
+    private AccountPostingException postingException(RestClientResponseException exception,
+                                                     String notFoundCode, String rejectedCode) {
+        String code = exception.getStatusCode().value() == HttpStatus.NOT_FOUND.value()
+                ? notFoundCode : rejectedCode;
+        String responseBody = exception.getResponseBodyAsString();
+        String message = responseBody.isBlank() ? exception.getMessage() : responseBody;
+        return new AccountPostingException(code, message);
     }
 }

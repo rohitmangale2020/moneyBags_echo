@@ -27,6 +27,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.mockito.ArgumentCaptor;
 
 class TransactionControllerTest {
     private BankTransactionService transactionService;
@@ -108,6 +109,21 @@ class TransactionControllerTest {
                 .andExpect(status().isNotFound()).andExpect(jsonPath("$.status").value(404));
     }
 
+    @Test
+    void initiatesTransactionWithTokenSubjectWhenLegacyTokenHasNoUserIdClaim() throws Exception {
+        authenticateLegacyUser("riya_patil");
+        BankTransaction response = transaction("TXN-1");
+        when(transactionService.initiate(any(BankTransaction.class))).thenReturn(response);
+
+        mockMvc.perform(post("/api/transactions").contentType(MediaType.APPLICATION_JSON).content(requestBody()))
+                .andExpect(status().isCreated());
+
+        ArgumentCaptor<BankTransaction> captor = ArgumentCaptor.forClass(BankTransaction.class);
+        verify(transactionService).initiate(captor.capture());
+        org.junit.jupiter.api.Assertions.assertEquals("riya_patil",
+                captor.getValue().getInitiatedByUserId());
+    }
+
     private BankTransaction transaction(String reference) {
         BankTransaction transaction = mock(BankTransaction.class);
         when(transaction.getTransactionId()).thenReturn("transaction-1");
@@ -129,6 +145,14 @@ class TransactionControllerTest {
     private void authenticateUser() {
         Jwt jwt = mock(Jwt.class);
         when(jwt.getClaim("userId")).thenReturn(1L);
+        JwtAuthenticationToken authentication = mock(JwtAuthenticationToken.class);
+        when(authentication.getToken()).thenReturn(jwt);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
+
+    private void authenticateLegacyUser(String subject) {
+        Jwt jwt = mock(Jwt.class);
+        when(jwt.getSubject()).thenReturn(subject);
         JwtAuthenticationToken authentication = mock(JwtAuthenticationToken.class);
         when(authentication.getToken()).thenReturn(jwt);
         SecurityContextHolder.getContext().setAuthentication(authentication);
