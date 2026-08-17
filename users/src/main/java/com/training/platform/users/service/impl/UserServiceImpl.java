@@ -103,6 +103,9 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserResponse updateStatus(Long id, UserStatus status) {
         User user = findUser(id);
+        if (!"EMPLOYEE".equalsIgnoreCase(user.getRole())) {
+            throw new UserConflictException("Only employee account statuses can be changed from the admin control.");
+        }
         String previousStatus = user.getStatus().name();
         user.setStatus(status);
         log.info("User status updated id={} status={}", id, status);

@@ -15,7 +15,7 @@ spring:
           routes:
             - id: security-service
               uri: lb://security-service
-              predicates: ["Path=/auth,/auth/**,/.well-known,/.well-known/**,/oda,/oda/**"]
+              predicates: ["Path=/auth,/auth/**,/.well-known,/.well-known/**,/assistant,/assistant/**"]
             - id: users-service
               uri: lb://users-service
               predicates: ["Path=/api/v1/users,/api/v1/users/**"]

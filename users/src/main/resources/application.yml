@@ -3,13 +3,15 @@ server:
 spring:
   application:
     name: users-service
+  config:
+    import: optional:file:.env[.properties],optional:file:../.env[.properties]
   cloud:
     config:
       enabled: false
   datasource:
-    url: ${DBURL}
-    username: ${DBUSER}
-    password: ${DBPASSWORD}
+    url: ${USERS_DB_URL:${DB_URL:${DBURL:}}}
+    username: ${USERS_DB_USER:${DB_USER:${DBUSER:}}}
+    password: ${USERS_DB_PASSWORD:${DB_PASSWORD:${DBPASSWORD:}}}
     driver-class-name: oracle.jdbc.OracleDriver
   jpa:
     hibernate:

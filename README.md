@@ -54,27 +54,21 @@ default audit URL is `http://localhost:8086`; override it with
 share the same `AUDIT_INTERNAL_KEY`. The audit service creates/updates its seven
 audit tables through Hibernate when it starts against Oracle.
 
-## Oracle Digital Assistant banking assistant
+## GPT-OSS banking assistant
 
-The security service exposes a protected, read-only optimisation API for an
-Oracle Digital Assistant (ODA) custom component or web channel:
+The security service exposes a read-only GPT-OSS guidance API. It uses an
+OpenAI-compatible local runtime such as Ollama:
 
 ```text
-POST /oda/assistant/chat
-Authorization: Bearer <banking access token>
+POST /auth/gpt-oss/chat
 
 { "message": "Prepare a customer 360 briefing", "customerId": 42 }
 ```
 
-It returns an intent, plain-language answer, supporting evidence, policy
-decision, next steps, and (when requested) product recommendations. Customer
-360 and transaction-review requests require an `EMPLOYEE` or `ADMIN` role. The
-assistant cannot execute transfers, change customer data, reveal passwords, or
-give personalised financial advice. Configure the ODA custom component to call
-this endpoint with the signed-in user's bearer token. The API gateway routes
-`/oda/**` to the security service. Override service discovery URLs with
-`ODA_CUSTOMERS_URL`, `ODA_ACCOUNTS_URL`, `ODA_TRANSACTIONS_URL`, and
-`ODA_PRODUCTS_URL` when required.
+It returns a plain-language answer and cannot execute transfers, change customer
+data, reveal passwords, or approve KYC. Configure `GPT_OSS_BASE_URL` and
+`GPT_OSS_MODEL` in `.env`. For Ollama, use `http://localhost:11434/v1` and run
+`ollama pull gpt-oss:20b` before starting security-service.
 
 ## Accounts and statements
 
