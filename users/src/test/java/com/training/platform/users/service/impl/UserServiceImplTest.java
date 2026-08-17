@@ -6,6 +6,7 @@ import com.training.platform.users.dto.UpdateUserRequest;
 import com.training.platform.users.dto.UserProfileRequest;
 import com.training.platform.users.dto.UserResponse;
 import com.training.platform.users.exception.UserConflictException;
+import com.training.platform.users.exception.CurrentPasswordMismatchException;
 import com.training.platform.users.exception.UserNotFoundException;
 import com.training.platform.users.model.User;
 import com.training.platform.users.model.UserProfile;
@@ -75,6 +76,7 @@ class UserServiceImplTest {
         assertEquals("encoded-password", capturedUser.getPasswordHash());
         assertEquals("CUSTOMER", capturedUser.getRole());
         assertEquals(UserStatus.PENDING_VERIFICATION, capturedUser.getStatus());
+        assertEquals(true, capturedUser.isPasswordChangeRequired());
         assertEquals("priyansh", response.username());
     }
 
@@ -151,6 +153,44 @@ class UserServiceImplTest {
         userService.updatePassword(1L, "new-password");
 
         assertEquals("new-encoded-password", existingUser.getPasswordHash());
+        assertEquals(true, existingUser.isPasswordChangeRequired());
+    }
+
+    @Test
+    void create_employee_requiresPasswordChange() {
+        CreateUserRequest employee = new CreateUserRequest(
+                "employee", "employee@example.com", "password123", "EMPLOYEE", profileRequest());
+        when(passwordEncoder.encode("password123")).thenReturn("encoded-password");
+        when(userRepository.save(any(User.class))).thenReturn(user(1L, "employee", "employee@example.com"));
+
+        userService.create(employee);
+
+        verify(userRepository).save(userCaptor.capture());
+        assertEquals(true, userCaptor.getValue().isPasswordChangeRequired());
+    }
+
+    @Test
+    void changeOwnPassword_replacesPasswordAndClearsRequirement() {
+        User existingUser = user(1L, "priyansh", "priyansh@example.com");
+        existingUser.setPasswordChangeRequired(true);
+        when(userRepository.findWithProfileById(1L)).thenReturn(Optional.of(existingUser));
+        when(passwordEncoder.matches("temporary-password", "encoded-password")).thenReturn(true);
+        when(passwordEncoder.encode("new-password")).thenReturn("new-encoded-password");
+
+        userService.changeOwnPassword(1L, "temporary-password", "new-password");
+
+        assertEquals("new-encoded-password", existingUser.getPasswordHash());
+        assertEquals(false, existingUser.isPasswordChangeRequired());
+    }
+
+    @Test
+    void changeOwnPassword_withIncorrectCurrentPassword_isRejected() {
+        User existingUser = user(1L, "priyansh", "priyansh@example.com");
+        when(userRepository.findWithProfileById(1L)).thenReturn(Optional.of(existingUser));
+        when(passwordEncoder.matches("wrong-password", "encoded-password")).thenReturn(false);
+
+        assertThrows(CurrentPasswordMismatchException.class,
+                () -> userService.changeOwnPassword(1L, "wrong-password", "new-password"));
     }
 
     @Test

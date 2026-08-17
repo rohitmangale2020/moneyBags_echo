@@ -33,6 +33,13 @@ public class GlobalExceptionHandler {
         return problem(HttpStatus.CONFLICT, "User conflict", detail, "user-conflict");
     }
 
+    @ExceptionHandler(CurrentPasswordMismatchException.class)
+    ResponseEntity<ProblemDetail> handleCurrentPasswordMismatch(CurrentPasswordMismatchException exception) {
+        log.warn("Password change rejected because the current password did not match");
+        return problem(HttpStatus.BAD_REQUEST, "Password change rejected", exception.getMessage(),
+                "current-password-incorrect");
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     ResponseEntity<ProblemDetail> handleValidation(MethodArgumentNotValidException exception) {
         log.warn("Request validation failed");

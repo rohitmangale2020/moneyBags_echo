@@ -32,6 +32,9 @@ public class User {
     @Column(name = "PASSWORD_HASH", nullable = false, length = 60)
     private String passwordHash;
 
+    @Column(name = "PASSWORD_CHANGE_REQUIRED", nullable = false)
+    private boolean passwordChangeRequired;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "STATUS", nullable = false, length = 30)
     private UserStatus status = UserStatus.PENDING_VERIFICATION;

@@ -29,6 +29,7 @@ define(['knockout'], function (ko) {
     role: ko.pureComputed(() => (claims() && claims().roles ? claims().roles[0] : null)),
     username: ko.pureComputed(() => (claims() ? claims().sub : '')),
     userId: ko.pureComputed(() => (claims() ? claims().userId : null)),
+    passwordChangeRequired: ko.pureComputed(() => !!(claims() && claims().passwordChangeRequired)),
     establish(v) {
       const p = decode(v);
       if (!p || !p.roles || !p.userId)

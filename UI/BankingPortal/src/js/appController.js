@@ -163,6 +163,7 @@ define([
         !!r &&
         (r.detail.public ||
           (session.isAuthenticated() &&
+            (!session.passwordChangeRequired() || path === "profile") &&
             r.detail.roles.includes(session.role())))
       );
     };
@@ -172,7 +173,11 @@ define([
         setTimeout(
           () =>
             router.go({
-              path: session.isAuthenticated() ? "access-denied" : "login",
+              path: !session.isAuthenticated()
+                ? "login"
+                : session.passwordChangeRequired()
+                  ? "profile"
+                  : "access-denied",
             }),
           0,
         );
@@ -187,6 +192,7 @@ define([
           !r.detail.hidden &&
           !r.detail.public &&
           session.isAuthenticated() &&
+          !session.passwordChangeRequired() &&
           r.detail.roles.includes(session.role()),
       ),
     );
@@ -273,7 +279,7 @@ define([
       } catch (_) {
         session.profile(null);
       }
-      await router.go({ path: "dashboard" });
+      await router.go({ path: session.passwordChangeRequired() ? "profile" : "dashboard" });
       self.isAppShellReady(true);
     };
     self.signOut = () => {

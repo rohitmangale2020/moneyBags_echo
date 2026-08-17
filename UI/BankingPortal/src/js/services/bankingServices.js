@@ -9,6 +9,7 @@ define(['services/apiClient'], function (api) {
       create: (d) => api.post('/api/v1/users', d),
       update: (id, d) => api.put(`/api/v1/users/${e(id)}`, d),
       password: (id, password) => api.patch(`/api/v1/users/${e(id)}/password`, { password }),
+      changeOwnPassword: (currentPassword, newPassword) => api.patch('/api/v1/users/me/password', { currentPassword, newPassword }),
       status: (id, s) => api.patch(`/api/v1/users/${e(id)}/status`, { status: s }),
       deactivate: (id) => api.delete(`/api/v1/users/${e(id)}`),
     },
