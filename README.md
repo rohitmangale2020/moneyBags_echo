@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Banking Platform
 
 A Maven multi-module Spring Boot starter containing six independent services:
@@ -110,3 +111,7 @@ POST /api/ledger/entries
 `transactions/src/main/resources/db/ledger-schema-oracle.sql` is the reference
 Oracle DDL for managed environments. Local development creates these tables using
 the existing Hibernate `ddl-auto=update` setting.
+=======
+echo.git
+
+>>>>>>> alm/main
