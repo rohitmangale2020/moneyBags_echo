@@ -113,6 +113,8 @@ public class BankTransactionService {
                         persisted.getAmount(), persisted.getCurrencyCode(), persisted.getInitiatedByCustomerId()));
                 validateTransferResponse(persisted, transfer);
                 completeTransfer(persisted, transfer);
+            } else if (persisted.getTransactionType() == TransactionType.OPENING_DEPOSIT) {
+                completeOpeningDeposit(persisted);
             } else {
                 String accountId = postingAccountId(persisted);
                 AccountAdjustmentRequest.AdjustmentType adjustmentType = adjustmentType(persisted);
@@ -162,8 +164,9 @@ public class BankTransactionService {
         }
         if (transaction.getTransactionType() != TransactionType.TRANSFER
                 && !isDeposit(transaction)
-                && transaction.getTransactionType() != TransactionType.WITHDRAWAL) {
-            throw new IllegalArgumentException("Only TRANSFER, DEPOSIT, OPENING_DEPOSIT, FIXED_DEPOSIT_FUNDING, and WITHDRAWAL posting is supported");
+                && transaction.getTransactionType() != TransactionType.WITHDRAWAL
+                && transaction.getTransactionType() != TransactionType.FIXED_DEPOSIT_PREMATURE_CLOSURE) {
+            throw new IllegalArgumentException("Only supported transfer, deposit, and withdrawal transaction types can be posted");
         }
         if (isBlank(transaction.getTransactionRef())) {
             throw new IllegalArgumentException("Transaction reference is required");
@@ -178,7 +181,8 @@ public class BankTransactionService {
         } else if (isDeposit(transaction)
                 && isBlank(transaction.getCreditAccountId())) {
             throw new IllegalArgumentException("Credit account ID is required for a deposit");
-        } else if (transaction.getTransactionType() == TransactionType.WITHDRAWAL
+        } else if ((transaction.getTransactionType() == TransactionType.WITHDRAWAL
+                || transaction.getTransactionType() == TransactionType.FIXED_DEPOSIT_PREMATURE_CLOSURE)
                 && isBlank(transaction.getDebitAccountId())) {
             throw new IllegalArgumentException("Debit account ID is required for a withdrawal");
         }
@@ -294,6 +298,26 @@ public class BankTransactionService {
         auditRelatedCreated("OUTBOX_EVENT_CREATED", transaction, "OUTBOX_EVENT",
                 outboxEvent.getEventId(), "Transaction-completed outbox event created", outboxValues(outboxEvent));
         auditTransactionChange("TRANSACTION_COMPLETED", transaction, previousValues, "Transaction completed");
+    }
+
+    private void completeOpeningDeposit(BankTransaction transaction) {
+        Map<String, Object> previousValues = transactionValues(transaction);
+        transaction.setTransactionStatus(TransactionStatus.COMPLETED);
+        transaction.setCompletedAt(LocalDateTime.now());
+        transaction.setDescription("OPENING DEPOSIT | REF " + transaction.getTransactionRef());
+        AccountStatement statementEntry = statement(transaction, transaction.getCreditAccountId(),
+                StatementEntryType.CREDIT, transaction.getAmount(), transaction.getDescription());
+        statementRepository.save(statementEntry);
+        ledgerService.postCompletedTransaction(transaction);
+        auditRelatedCreated("STATEMENT_ENTRY_CREATED", transaction, "STATEMENT",
+                statementEntry.getStatementId(), "Opening-deposit statement entry created",
+                statementValues(statementEntry));
+        TransactionEventOutbox outboxEvent = TransactionEventOutbox.create(transaction.getTransactionId(),
+                TransactionEventType.TRANSACTION_COMPLETED, toJson(basePayload(transaction)));
+        outboxRepository.save(outboxEvent);
+        auditRelatedCreated("OUTBOX_EVENT_CREATED", transaction, "OUTBOX_EVENT",
+                outboxEvent.getEventId(), "Transaction-completed outbox event created", outboxValues(outboxEvent));
+        auditTransactionChange("TRANSACTION_COMPLETED", transaction, previousValues, "Opening deposit completed");
     }
 
     private String postingAccountId(BankTransaction transaction) {

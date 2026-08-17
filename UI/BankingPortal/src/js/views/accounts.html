@@ -99,6 +99,14 @@
 <!--        numbers remain unchanged.-->
 <!--      </div>-->
       <div class="mb-error" data-bind="visible:error,text:error"></div>
+      <div class="mb-transaction-submit-state" data-bind="visible:submissionState() !== 'idle',css:submissionState">
+        <span class="mb-transaction-submit-spinner" data-bind="visible:submissionState() === 'submitting'" aria-hidden="true"></span>
+        <span class="mb-transaction-submit-icon" data-bind="visible:submissionState() === 'success'" aria-hidden="true">✓</span>
+        <span class="mb-transaction-submit-icon" data-bind="visible:submissionState() === 'failure'" aria-hidden="true">!</span>
+        <strong data-bind="text:submissionState() === 'submitting' ? 'Processing account' : submissionState() === 'success' ? 'Account complete' : 'Account failed'"></strong>
+        <p data-bind="text:submissionMessage"></p>
+      </div>
+      <div data-bind="visible:submissionState() === 'idle'">
       <div class="mb-form">
         <label class="wide" data-bind="visible:!editingId()"><span>Active product</span>
           <select data-bind="value:form.productId">
@@ -115,9 +123,10 @@
         ><label><span>Opening balance</span><input type="number" min="0" data-bind="value:form.availableBalance,disable:editingId,attr:{min:selectedProductMinimum()}" /><small class="mb-field-rule" data-bind="visible:!editingId() && selectedProduct(),text:selectedProductRule"></small></label
         ><label data-bind="visible:editingId() && !closingAccount()"><span>Status</span><select data-bind="value:form.status"><option>ACTIVE</option><option>INACTIVE</option><option>DORMANT</option><option>FROZEN</option></select></label><label data-bind="visible:editingId"><span>Currency</span><input type="text" maxlength="3" data-bind="value:form.currencyCode" /></label><div class="mb-dialog-actions" data-bind="visible:editingId() && !closingAccount()"><oj-button chroming="danger" on-oj-action="[[closeAccount]]">Close account</oj-button></div><label data-bind="visible:closingAccount"><span>Closing date</span><input type="date" data-bind="value:form.closedAt,attr:{min:closeDateMin}" /></label>
       </div>
+      </div>
     </div>
-    <div slot="footer" class="mb-dialog-actions">
-      <oj-button on-oj-action="[[close]]">Cancel</oj-button><oj-button chroming="callToAction" on-oj-action="[[create]]">Save account</oj-button>
+    <div slot="footer" class="mb-dialog-actions" data-bind="visible:submissionState() === 'idle'">
+      <oj-button on-oj-action="[[close]]" disabled="[[busy]]">Cancel</oj-button><oj-button chroming="callToAction" on-oj-action="[[create]]" disabled="[[busy]]">Save account</oj-button>
     </div></oj-dialog
   >
 </section>

@@ -84,7 +84,7 @@ public class LedgerService {
             case DEPOSIT, OPENING_DEPOSIT, FIXED_DEPOSIT_FUNDING -> List.of(
                     new Posting(CASH_ON_HAND, null, LedgerEntryType.DEBIT, amount, description),
                     new Posting(CUSTOMER_DEPOSITS, transaction.getCreditAccountId(), LedgerEntryType.CREDIT, amount, description));
-            case WITHDRAWAL -> List.of(
+            case WITHDRAWAL, FIXED_DEPOSIT_PREMATURE_CLOSURE -> List.of(
                     new Posting(CUSTOMER_DEPOSITS, transaction.getDebitAccountId(), LedgerEntryType.DEBIT, amount, description),
                     new Posting(CASH_ON_HAND, null, LedgerEntryType.CREDIT, amount, description));
             case TRANSFER -> List.of(

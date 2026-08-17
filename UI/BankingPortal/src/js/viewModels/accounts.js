@@ -46,6 +46,9 @@ define([
         : 'No minimum opening balance for this product.';
     });
     s.editingId = ko.observable(null);
+    s.busy = ko.observable(false);
+    s.submissionState = ko.observable('idle');
+    s.submissionMessage = ko.observable('');
     s.closingAccount = ko.observable(false);
     s.closeDateMin = new Date().toISOString().slice(0, 10);
     s.error = ko.observable('');
@@ -362,6 +365,8 @@ define([
       s.form.currencyCode('INR');
       s.form.closedAt(null);
       s.closingAccount(false);
+      s.submissionState('idle');
+      s.submissionMessage('');
       try {
         const products = (await app.services.products.list()).filter((p) => p.status === 'ACTIVE');
         s.products(products);
@@ -374,6 +379,8 @@ define([
     s.edit = async (x) => {
       s.editingId(x.accountId);
       s.error('');
+      s.submissionState('idle');
+      s.submissionMessage('');
       s.form.accountNumber(x.accountNumber);
       s.form.customerId(x.customerId);
       s.form.customerCif('');
@@ -417,6 +424,9 @@ define([
         return s.error(`Opening balance must be at least ${u.money(p.minimumBalance, p.currency || 'INR')} for ${p.productName}.`);
       }
       if (!/^[A-Za-z]{3}$/.test(s.editingId() ? s.form.currencyCode() : p.currency)) return s.error('Currency must be a three-letter code.');
+      s.busy(true);
+      s.submissionState('submitting');
+      s.submissionMessage(s.editingId() ? 'Saving account changes...' : 'Opening account...');
       try {
         const customerId = s.editingId()
           ? String(s.form.customerId())
@@ -436,15 +446,40 @@ define([
         const savedAccount = s.editingId()
           ? await app.services.accounts.update(s.editingId(), payload)
           : await app.services.accounts.create(payload);
+        if (!s.editingId() && Number(payload.availableBalance) > 0) {
+          await app.services.transactions.transfer({
+            transactionRef: u.ref(),
+            transactionType: 'OPENING_DEPOSIT',
+            transactionStatus: null,
+            debitAccountId: null,
+            creditAccountId: savedAccount.accountId,
+            externalBeneficiary: null,
+            amount: payload.availableBalance,
+            currencyCode: payload.currencyCode,
+            feeAmount: 0,
+            initiatedByCustomerId: null,
+            initiatedByUserId: null,
+            completedAt: null,
+            failureCode: null,
+            failureReason: null,
+          });
+        }
         if (app.setTransactionCustomerId) app.setTransactionCustomerId(payload.customerId);
         if (savedAccount && savedAccount.accountId && app.setActiveAccount) {
           app.setActiveAccount(savedAccount.accountId);
         }
-        document.getElementById('accountDialog').close();
-        app.notify(s.editingId() ? 'Account updated.' : 'Account opened successfully.');
+        s.submissionState('success');
+        s.submissionMessage(s.editingId() ? 'Account updated successfully.' : 'Account opened and opening deposit recorded.');
+        app.notify(s.submissionMessage(), 'success');
         await s.load();
+        window.setTimeout(() => document.getElementById('accountDialog').close(), 1600);
       } catch (e) {
+        s.submissionState('failure');
+        s.submissionMessage(e.message || 'The account could not be opened.');
         s.error(e.message);
+        window.setTimeout(() => document.getElementById('accountDialog').close(), 2600);
+      } finally {
+        s.busy(false);
       }
     };
     s.close = () => document.getElementById('accountDialog').close();
