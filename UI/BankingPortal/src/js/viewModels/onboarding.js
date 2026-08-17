@@ -510,6 +510,14 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
           if (savedNominee[key] !== undefined && savedNominee[key] !== null) s.nominee[key](savedNominee[key]);
         });
       }
+      if (addresses.length) {
+        const savedAddress = addresses[0] || {};
+        ['addressType', 'line1', 'line2', 'state', 'country', 'pincode'].forEach((key) => {
+          if (savedAddress[key] !== undefined && savedAddress[key] !== null && s.address[key]) s.address[key](savedAddress[key]);
+        });
+        // Set city last because selecting a state clears the district list.
+        s.address.city(savedAddress.city || '');
+      }
       s.addressSaved(addresses.length > 0);
       s.uploadedDocuments(documents);
       if (!addresses.length) s.step(2);
@@ -520,6 +528,15 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
         s.step(5);
       }
       app.notify(`Resumed onboarding for ${existing.cifNo}.`);
+    };
+
+    s.connected = () => {
+      const customerId = sessionStorage.getItem('moneybags.resumeOnboardingCustomerId');
+      if (!customerId) return;
+      sessionStorage.removeItem('moneybags.resumeOnboardingCustomerId');
+      s.resumeKind('id');
+      s.resumeValue(customerId);
+      s.resume();
     };
 
     s.openAccount = async () => {

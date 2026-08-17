@@ -2,35 +2,63 @@
   <div class="mb-heading">
     <div class="mb-account-intro">
       <div>
-        <small>ODA / BANKING ASSISTANT</small>
+        <small>GPT-OSS / BANKING ASSISTANT</small>
         <h1>Guided banking assistance</h1>
-        <p>Get explainable, read-only customer context, transaction reviews, process guidance, and product options.</p>
+        <p>Get explainable banking support, customer context, product options, and guided employee onboarding.</p>
       </div>
     </div>
   </div>
 
   <div class="mb-panel">
-    <div class="mb-info">The assistant answers banking questions and employee-authorized customer questions. It cannot move money, edit records, reveal passwords, or bypass approval controls.</div>
+    <div class="mb-info">The assistant answers banking questions and employee-authorized customer questions. Employees can create a new customer record through the guided onboarding conversation. It cannot move money, reveal passwords, or bypass approval controls.</div>
     <div class="mb-form three">
       <label class="wide">Ask the assistant<textarea rows="3" maxlength="1000" data-bind="value:message"></textarea></label>
-      <label data-bind="visible:isStaff">Customer ID <input type="number" min="1" placeholder="Optional when using a full name" data-bind="value:customerId" /></label>
+      <label data-bind="visible:isStaff">Customer CIF <input type="text" maxlength="20" placeholder="Enter CIF for Customer 360" data-bind="value:customerCif" /></label>
       <label data-bind="visible:isStaff">Transaction ID <input type="text" placeholder="Required for review" data-bind="value:transactionId" /></label>
       <label data-bind="visible:isStaff">Account ID or number <input type="text" placeholder="ID or 12-digit account number" data-bind="value:accountId" /></label>
     </div>
     <div class="mb-dialog-actions">
       <button type="button" class="mb-link" data-bind="click:useCustomerBriefing,visible:isStaff">Customer 360</button>
-      <button type="button" class="mb-link" data-bind="click:useCustomerLookup,visible:isStaff">Find customer by name</button>
       <button type="button" class="mb-link" data-bind="click:useTransactionReview,visible:isStaff">Review transaction</button>
       <button type="button" class="mb-link" data-bind="click:useProductRecommendation">Recommend products</button>
       <button type="button" class="mb-link" data-bind="click:useAccountOverview,visible:isStaff">Account overview</button>
       <button type="button" class="mb-link" data-bind="click:reviewAccountRisk,visible:isStaff">Account risk review</button>
       <button type="button" class="mb-link" data-bind="click:inspectFraud,visible:isStaff">Inspect fraud</button>
-      <button type="button" class="mb-link" data-bind="click:usePolicyHelp">Policy help</button>
+      <button type="button" class="mb-link" data-bind="click:startOnboarding,visible:isStaff">Onboard new customer</button>
       <oj-button chroming="callToAction" on-oj-action="[[send]]" disabled="[[loading]]">Ask assistant</oj-button>
     </div>
   </div>
 
-  <div class="mb-loading" data-bind="visible:loading">Reviewing approved banking data…</div>
+  <article class="mb-panel mb-chat-onboarding" data-bind="visible:onboardingActive">
+    <header>
+      <div><small>CUSTOMER ONBOARDING</small><h2>Create a customer record</h2></div>
+      <button type="button" class="mb-link" data-bind="click:cancelOnboarding">Cancel</button>
+    </header>
+    <p data-bind="text:onboardingPrompt"></p>
+    <div class="mb-chat-transcript" data-bind="foreach:onboardingMessages">
+      <div class="mb-chat-bubble" data-bind="css:role">
+        <strong data-bind="text:role === 'assistant' ? 'Onboarding chatbot' : 'You'"></strong>
+        <span data-bind="text:text"></span>
+      </div>
+    </div>
+    <div class="mb-onboarding-reply" data-bind="visible:!onboardingReady()">
+      <label>Reply to the onboarding chatbot
+        <input type="text" maxlength="250" autocomplete="off" placeholder="Type your reply" data-bind="value:onboardingReply, event:{keydown:onboardingReplyKeypress}" />
+      </label>
+      <button type="button" class="mb-primary" data-bind="click:sendOnboardingReply, disable:onboardingBusy">Send reply</button>
+    </div>
+    <div class="mb-info" data-bind="visible:onboardingReady">
+      <strong>Details collected.</strong><span data-bind="text:' Review: ' + onboardingSummary()"></span>
+    </div>
+    <div class="mb-error" data-bind="visible:onboardingError"><span data-bind="text:onboardingError"></span></div>
+    <div class="mb-dialog-actions">
+      <button type="button" class="mb-link" data-bind="click:cancelOnboarding">Save later</button>
+      <oj-button chroming="callToAction" on-oj-action="[[submitOnboarding]]" disabled="[[onboardingBusy || !onboardingReady()]]">Create customer and start KYC</oj-button>
+    </div>
+    <div class="mb-success" data-bind="visible:onboardedCustomer"><strong>Customer onboarding started</strong><span data-bind="text:onboardedCustomer() && onboardedCustomer().cifNo"></span><button type="button" class="mb-link" data-bind="click:continueOnboarding">Continue with documents and KYC</button></div>
+  </article>
+
+  <div class="mb-loading" data-bind="visible:loading">GPT-OSS is generating a reply. On a CPU-only machine this can take up to three minutes…</div>
   <div class="mb-error" data-bind="visible:error"><span data-bind="text:error"></span></div>
   <section class="mb-alert-stack" data-bind="visible:alerts().length, foreach:alerts">
     <article class="mb-risk-alert" data-bind="css:level"><strong data-bind="text:title"></strong><span data-bind="text:message"></span></article>
@@ -39,20 +67,63 @@
   <section class="mb-assistant-operations" data-bind="visible:isStaff">
     <article class="mb-operation-card" data-bind="visible:riskFinding, with:riskFinding"><small>ACCOUNT RISK REVIEW</small><div class="mb-operation-title"><h3>Account <span data-bind="text:accountNumber"></span></h3><span class="mb-badge" data-bind="text:level, css:level.toLowerCase()"></span></div><dl><div><dt>Available balance</dt><dd data-bind="text:balance"></dd></div><div><dt>Transactions reviewed</dt><dd data-bind="text:transactionCount"></dd></div></dl><ul data-bind="foreach:issues"><li data-bind="text:$data"></li></ul></article>
     <article class="mb-operation-card" data-bind="visible:fraudFinding, with:fraudFinding"><small>FRAUD INSPECTION</small><div class="mb-operation-title"><h3 data-bind="text:reference"></h3><span class="mb-badge" data-bind="text:level, css:level.toLowerCase()"></span></div><dl><div><dt>Transaction amount</dt><dd data-bind="text:amount"></dd></div></dl><ul data-bind="foreach:indicators"><li data-bind="text:$data"></li></ul></article>
-    <article class="mb-operation-card mb-employee-control" data-bind="visible:isAdmin"><small>ADMIN CONTROL</small><h3>Change employee status</h3><div><input type="number" min="1" placeholder="Employee User ID" data-bind="value:employeeId" /><select data-bind="value:employeeStatus"><option>ACTIVE</option><option>LOCKED</option><option>DEACTIVATED</option><option>PENDING_VERIFICATION</option></select><button type="button" class="mb-link" data-bind="click:changeEmployeeStatus">Update status</button></div><p data-bind="visible:employeeAction,text:employeeAction"></p></article>
+    <article class="mb-operation-card mb-employee-control" data-bind="visible:isAdmin"><small>ADMIN CONTROL</small><h3>Change employee status</h3><p>Only employee accounts can be updated.</p><div><input type="number" min="1" placeholder="Employee User ID" data-bind="value:employeeId" /><select data-bind="value:employeeStatus"><option>ACTIVE</option><option>LOCKED</option><option>DEACTIVATED</option><option>PENDING_VERIFICATION</option></select><button type="button" class="mb-link" data-bind="click:requestEmployeeStatusChange">Update status</button></div><p data-bind="visible:employeeAction,text:employeeAction"></p></article>
   </section>
+
+  <div class="mb-confirm-backdrop" data-bind="visible:statusChangeConfirmationOpen">
+    <section class="mb-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="status-change-title">
+      <small>CONFIRM STATUS CHANGE</small>
+      <h2 id="status-change-title">Update this employee?</h2>
+      <p>Employee User ID <strong data-bind="text:employeeId"></strong> will be changed to <strong data-bind="text:employeeStatus"></strong>.</p>
+      <div class="mb-dialog-actions"><button type="button" class="mb-link" data-bind="click:cancelEmployeeStatusChange">Cancel</button><button type="button" class="mb-primary" data-bind="click:changeEmployeeStatus">Confirm change</button></div>
+    </section>
+  </div>
 
   <article class="mb-panel" data-bind="visible:hasResponse,with:response">
     <small data-bind="text:intent"></small>
     <h2>Assistant response</h2>
-    <p data-bind="visible:!$data.customerProfile, text:answer"></p>
+    <div class="mb-assistant-answer" data-bind="visible:!$data.customerProfile && !$data.customer360 && !$data.productOptions && !$data.accountOverview && !$data.transactionReview, text:answer"></div>
+    <section class="mb-transaction-review-result" data-bind="visible:$data.transactionReview, with:$data.transactionReview">
+      <header><div><small>TRANSACTION REVIEW</small><h3 data-bind="text:type"></h3><span data-bind="text:reference"></span></div><span class="mb-badge" data-bind="text:status, css:status.toLowerCase()"></span></header>
+      <div class="mb-transaction-amount"><small>TRANSACTION AMOUNT</small><strong data-bind="text:amount"></strong></div>
+      <dl class="mb-transaction-facts"><div><dt>Transaction type</dt><dd data-bind="text:type"></dd></div><div><dt>Initiated</dt><dd data-bind="text:initiatedAt"></dd></div><div><dt>Status</dt><dd data-bind="text:status"></dd></div></dl>
+      <section class="mb-transaction-notes"><article><small>DESCRIPTION</small><p data-bind="text:description"></p></article><article><small>FAILURE REASON</small><p data-bind="text:failureReason"></p></article></section>
+    </section>
+    <section class="mb-account-overview-result" data-bind="visible:$data.accountOverview, with:$data.accountOverview">
+      <header><div><small>ACCOUNT OVERVIEW</small><h3 data-bind="text:accountType"></h3><span data-bind="text:accountNumber"></span></div><span class="mb-badge" data-bind="text:status, css:status.toLowerCase()"></span></header>
+      <div class="mb-account-balance"><small>AVAILABLE BALANCE</small><strong data-bind="text:balance"></strong><span data-bind="text:currencyCode"></span></div>
+      <dl class="mb-account-overview-details"><div><dt>Account number</dt><dd data-bind="text:accountNumber"></dd></div><div><dt>Ownership</dt><dd data-bind="text:ownershipType"></dd></div><div><dt>Account status</dt><dd data-bind="text:status"></dd></div><div><dt>Opened on</dt><dd data-bind="text:openedAt"></dd></div></dl>
+    </section>
+    <section class="mb-product-options-result" data-bind="visible:$data.productOptions, with:$data.productOptions">
+      <header><div><small>PRODUCT OPTIONS</small><h3 data-bind="text:'Recommended for ' + fullName"></h3><span data-bind="text:'CIF ' + cifNo"></span></div><span class="mb-product-options-icon">✦</span></header>
+      <div class="mb-product-relationship"><div><small>ACTIVE ACCOUNTS</small><strong data-bind="text:activeAccountCount"></strong></div><div><small>AVAILABLE BALANCE</small><strong data-bind="text:totalBalance"></strong></div><p>Options shown are active products. Confirm eligibility and obtain customer consent before starting an application.</p></div>
+      <div class="mb-product-option-grid" data-bind="visible:products.length, foreach:products"><article><small data-bind="text:code"></small><h4 data-bind="text:name"></h4><span data-bind="text:type"></span><dl><div><dt>Minimum balance</dt><dd data-bind="text:minimumBalance"></dd></div><div><dt>Interest rate</dt><dd data-bind="text:interestRate"></dd></div></dl><button type="button" data-bind="click:$parent.reviewEligibility">Review eligibility</button></article></div>
+      <p class="mb-product-empty" data-bind="visible:!products.length">No active products are currently available.</p>
+      <section class="mb-eligibility-result" data-bind="visible:eligibility, with:eligibility"><header><div><small>PRELIMINARY ELIGIBILITY</small><h4 data-bind="text:productName"></h4></div><span data-bind="text:level, css:level === 'PRELIMINARY MATCH' ? 'match' : 'review'"></span></header><p data-bind="text:message"></p><ul data-bind="foreach:checks"><li data-bind="text:$data"></li></ul></section>
+    </section>
+    <section class="mb-customer360" data-bind="visible:$data.customer360, with:$data.customer360">
+      <header class="mb-customer360-header">
+        <div class="mb-customer-avatar" data-bind="text:fullName.split(' ').map(function (part) { return part.charAt(0); }).join('').slice(0, 2)"></div>
+        <div><small>CUSTOMER 360</small><h3 data-bind="text:fullName"></h3><span data-bind="text:'CIF ' + cifNo"></span></div>
+        <span class="mb-badge" data-bind="text:status, css:status.toLowerCase()"></span>
+      </header>
+      <div class="mb-customer360-metrics">
+        <article><small>ACCOUNTS</small><strong data-bind="text:accountCount"></strong><span>active relationship records</span></article>
+        <article><small>AVAILABLE BALANCE</small><strong data-bind="text:totalBalance"></strong><span>across listed accounts</span></article>
+        <article><small>KYC STATUS</small><strong data-bind="text:kycStatus"></strong><span>current assessment</span></article>
+        <article><small>RISK LEVEL</small><strong data-bind="text:riskLevel"></strong><span>current assessment</span></article>
+      </div>
+      <div class="mb-customer360-grid">
+        <article><small>PROFILE</small><dl><div><dt>Mobile</dt><dd data-bind="text:phone"></dd></div><div><dt>Email</dt><dd data-bind="text:email"></dd></div><div><dt>Occupation</dt><dd data-bind="text:occupation"></dd></div></dl></article>
+        <article><small>ACCOUNT SNAPSHOT</small><div class="mb-customer360-accounts" data-bind="visible:accounts.length, foreach:accounts"><div><strong data-bind="text:displayType"></strong><span data-bind="text:'Ending ' + displayNumber.slice(-4)"></span><b data-bind="text:displayBalance"></b></div></div><p data-bind="visible:!accounts.length">No accounts are available for this customer.</p></article>
+      </div>
+    </section>
     <section class="mb-customer-profile" data-bind="visible:$data.customerProfile, with:$data.customerProfile">
       <header class="mb-customer-profile-header">
         <span class="mb-customer-avatar" data-bind="text:fullName.split(' ').map(function (name) { return name.charAt(0); }).join('').slice(0, 2)"></span>
         <div><small>Customer profile</small><h3 data-bind="text:fullName"></h3><span class="mb-badge" data-bind="text:status, css:status.toLowerCase()"></span></div>
       </header>
       <dl class="mb-customer-details">
-        <div><dt>Customer ID</dt><dd data-bind="text:customerId"></dd></div>
         <div><dt>CIF</dt><dd data-bind="text:cifNo"></dd></div>
         <div><dt>Phone</dt><dd data-bind="text:phone"></dd></div>
         <div><dt>Email</dt><dd data-bind="text:email"></dd></div>

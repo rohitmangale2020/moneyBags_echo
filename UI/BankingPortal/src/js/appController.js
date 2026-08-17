@@ -86,7 +86,7 @@ define([
         detail: {
           label: "Onboard customer",
           iconClass: "oj-ux-ico-add-user",
-          roles: ["EMPLOYEE"],
+          roles: ["ADMIN", "EMPLOYEE"],
         },
       },
       {
