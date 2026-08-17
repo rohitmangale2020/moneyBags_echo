@@ -34,5 +34,16 @@ public class AccountStatusHistory {
         return history;
     }
 
+    public static AccountStatusHistory transition(Account account, AccountStatus previousStatus,
+                                                  String changedByUserId, String reason) {
+        AccountStatusHistory history = new AccountStatusHistory();
+        history.account = account;
+        history.previousStatus = previousStatus;
+        history.newStatus = account.getStatus();
+        history.changedByUserId = changedByUserId;
+        history.reason = reason;
+        return history;
+    }
+
     @jakarta.persistence.PrePersist void beforeInsert() { if (statusHistoryId == null) statusHistoryId = UUID.randomUUID().toString(); if (changedAt == null) changedAt = LocalDateTime.now(); }
 }

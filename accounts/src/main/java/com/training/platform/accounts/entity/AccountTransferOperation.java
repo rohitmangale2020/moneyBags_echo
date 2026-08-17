@@ -1,9 +1,12 @@
 package com.training.platform.accounts.entity;
 
+import com.training.platform.accounts.dto.TransferPurpose;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.math.BigDecimal;
@@ -38,6 +41,10 @@ public class AccountTransferOperation {
     @Column(name = "customer_id", length = 36)
     private String customerId;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "transfer_purpose", length = 40)
+    private TransferPurpose transferPurpose;
+
     @Column(nullable = false, precision = 19, scale = 4)
     private BigDecimal amount;
 
@@ -60,6 +67,7 @@ public class AccountTransferOperation {
             String debitAccountId,
             String creditAccountId,
             String customerId,
+            TransferPurpose transferPurpose,
             BigDecimal amount,
             String currencyCode,
             BigDecimal debitBalanceAfter,
@@ -70,6 +78,7 @@ public class AccountTransferOperation {
         operation.debitAccountId = debitAccountId;
         operation.creditAccountId = creditAccountId;
         operation.customerId = customerId;
+        operation.transferPurpose = transferPurpose == null ? TransferPurpose.STANDARD : transferPurpose;
         operation.amount = amount;
         operation.currencyCode = currencyCode;
         operation.debitBalanceAfter = debitBalanceAfter;
@@ -79,10 +88,12 @@ public class AccountTransferOperation {
     }
 
     public boolean matches(String debitId, String creditId, String requestedCustomerId,
+                           TransferPurpose requestedPurpose,
                            BigDecimal requestedAmount, String requestedCurrency) {
         return debitAccountId.equals(debitId)
                 && creditAccountId.equals(creditId)
                 && java.util.Objects.equals(customerId, requestedCustomerId)
+                && effectivePurpose() == (requestedPurpose == null ? TransferPurpose.STANDARD : requestedPurpose)
                 && amount.compareTo(requestedAmount) == 0
                 && currencyCode.equalsIgnoreCase(requestedCurrency);
     }
@@ -96,4 +107,9 @@ public class AccountTransferOperation {
     public BigDecimal getAmount() { return amount; }
     public String getCurrencyCode() { return currencyCode; }
     public LocalDateTime getProcessedAt() { return processedAt; }
+    public TransferPurpose getTransferPurpose() { return effectivePurpose(); }
+
+    private TransferPurpose effectivePurpose() {
+        return transferPurpose == null ? TransferPurpose.STANDARD : transferPurpose;
+    }
 }

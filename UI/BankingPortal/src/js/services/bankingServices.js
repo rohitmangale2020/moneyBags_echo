@@ -3,12 +3,22 @@ define(['services/apiClient'], function (api) {
   const e = encodeURIComponent;
   return {
     auth: { login: (u, p) => api.post('/auth/login', { username: u, password: p }) },
+    assistant: {
+      chat: (message, customerId, transactionId, accountId, module) => api.post('/oda/assistant/chat', {
+        message,
+        customerId: customerId ? Number(customerId) : null,
+        transactionId: transactionId || null,
+        accountId: accountId || null,
+        module: module || null,
+      }),
+    },
     users: {
       list: (page = 0, size = 20, query = '') => api.get(`/api/v1/users?page=${e(page)}&size=${e(size)}${query ? `&q=${e(query)}` : ''}`),
       get: (id) => api.get(`/api/v1/users/${e(id)}`),
       create: (d) => api.post('/api/v1/users', d),
       update: (id, d) => api.put(`/api/v1/users/${e(id)}`, d),
       password: (id, password) => api.patch(`/api/v1/users/${e(id)}/password`, { password }),
+      changeOwnPassword: (currentPassword, newPassword) => api.patch('/api/v1/users/me/password', { currentPassword, newPassword }),
       status: (id, s) => api.patch(`/api/v1/users/${e(id)}/status`, { status: s }),
       deactivate: (id) => api.delete(`/api/v1/users/${e(id)}`),
     },
@@ -67,7 +77,16 @@ define(['services/apiClient'], function (api) {
       retire: (c, d) => api.post(`/api/v1/products/${e(c)}/retire`, d),
     },
     accounts: {
-      list: (page, size) => api.get(page === undefined ? '/api/accounts' : `/api/accounts?page=${e(page)}&size=${e(size || 10)}`),
+      list: (page, size, filters = {}) => {
+        if (page === undefined) return api.get('/api/accounts');
+        const params = new URLSearchParams({ page, size: size || 10 });
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value !== null && value !== undefined && value !== '' && value !== 'ALL') {
+            params.set(key, value);
+          }
+        });
+        return api.get(`/api/accounts?${params.toString()}`);
+      },
       customer: (id) => api.get(`/api/accounts?customerId=${e(id)}`),
       number: (v) => api.get(`/api/accounts?accountNumber=${e(v)}`),
       get: (id) => api.get(`/api/accounts/${e(id)}`),
@@ -80,6 +99,13 @@ define(['services/apiClient'], function (api) {
       get: (id) => api.get(`/api/transactions/${e(id)}`),
       transfer: (d) => api.post('/api/transactions', d),
       update: (id, d) => api.put(`/api/transactions/${e(id)}`, d),
+    },
+    fixedDeposits: {
+      open: (d) => api.post('/api/fixed-deposits', d),
+      get: (id) => api.get(`/api/fixed-deposits/${e(id)}`),
+      list: () => api.get('/api/fixed-deposits'),
+      retryFunding: (id) => api.post(`/api/fixed-deposits/${e(id)}/retry-funding`),
+      close: (id, asOf) => api.post(`/api/fixed-deposits/${e(id)}/close${asOf ? `?asOf=${e(asOf)}` : ''}`),
     },
     statements: {
       search: (id, filters = {}) => {

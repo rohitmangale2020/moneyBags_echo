@@ -14,6 +14,7 @@ define([
     s.password = ko.observable('');
     s.confirmPassword = ko.observable('');
     s.error = ko.observable('');
+    s.passwordChangeRequired = app.session.passwordChangeRequired;
     s.display = (value) => value === null || value === undefined || value === '' ? 'Not provided' : value;
     s.load = () => s.state.run(async () => {
       const user = await app.services.users.get(app.session.userId());
@@ -46,15 +47,17 @@ define([
       if (s.password().length < 8) return s.error('Password must contain at least 8 characters.');
       if (s.password() !== s.confirmPassword()) return s.error('New passwords do not match.');
       try {
-        await app.services.auth.login(app.session.username(), s.currentPassword());
-        await app.services.users.password(app.session.userId(), s.password());
+        await app.services.users.changeOwnPassword(s.currentPassword(), s.password());
+        const login = await app.services.auth.login(app.session.username(), s.password());
+        app.session.establish(login.accessToken);
         document.getElementById('myPasswordDialog').close();
         app.notify('Password updated.');
+        if (!s.passwordChangeRequired()) await app.completeLogin();
       } catch (e) { s.error(e.message); }
     };
     s.closePassword = () => document.getElementById('myPasswordDialog').close();
     s.load();
-    if (app.profilePasswordRequest()) {
+    if (app.profilePasswordRequest() || s.passwordChangeRequired()) {
       app.profilePasswordRequest(false);
       setTimeout(s.openPassword, 0);
     }

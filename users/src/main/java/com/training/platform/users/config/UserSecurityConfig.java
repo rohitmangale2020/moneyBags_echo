@@ -18,6 +18,7 @@ public class UserSecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/internal/**").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.PATCH, "/api/v1/users/me/password").authenticated()
                         .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/users/**").hasRole("ADMIN")
                         .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/v1/users/**").hasRole("ADMIN")
                         .requestMatchers(org.springframework.http.HttpMethod.PATCH, "/api/v1/users/**").hasRole("ADMIN")

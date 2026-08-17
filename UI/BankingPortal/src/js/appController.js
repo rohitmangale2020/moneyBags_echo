@@ -146,6 +146,15 @@ define([
         },
       },
       {
+        path: "assistant",
+        detail: {
+          label: "Banking assistant",
+          iconClass: "oj-ux-ico-chat",
+          hidden: true,
+          roles: ["ADMIN", "EMPLOYEE", "CUSTOMER"],
+        },
+      },
+      {
         path: "profile",
         detail: { hidden: true, roles: ["ADMIN", "EMPLOYEE", "CUSTOMER"] },
       },
@@ -163,6 +172,7 @@ define([
         !!r &&
         (r.detail.public ||
           (session.isAuthenticated() &&
+            (!session.passwordChangeRequired() || path === "profile") &&
             r.detail.roles.includes(session.role())))
       );
     };
@@ -172,7 +182,11 @@ define([
         setTimeout(
           () =>
             router.go({
-              path: session.isAuthenticated() ? "access-denied" : "login",
+              path: !session.isAuthenticated()
+                ? "login"
+                : session.passwordChangeRequired()
+                  ? "profile"
+                  : "access-denied",
             }),
           0,
         );
@@ -187,6 +201,7 @@ define([
           !r.detail.hidden &&
           !r.detail.public &&
           session.isAuthenticated() &&
+          !session.passwordChangeRequired() &&
           r.detail.roles.includes(session.role()),
       ),
     );
@@ -194,6 +209,11 @@ define([
       () => new ArrayDataProvider(self.navItems(), { keyAttributes: "path" }),
     );
     self.go = (p) => router.go({ path: p });
+    self.assistantContext = ko.observable('');
+    self.openAssistant = () => {
+      self.assistantContext(self.selection.path() || 'platform');
+      return router.go({ path: 'assistant' });
+    };
     const savedCustomerContext = (() => {
       try { return JSON.parse(sessionStorage.getItem('moneybags.activeCustomer') || 'null'); } catch (_) { return null; }
     })();
@@ -273,7 +293,7 @@ define([
       } catch (_) {
         session.profile(null);
       }
-      await router.go({ path: "dashboard" });
+      await router.go({ path: session.passwordChangeRequired() ? "profile" : "dashboard" });
       self.isAppShellReady(true);
     };
     self.signOut = () => {

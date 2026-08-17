@@ -1,6 +1,7 @@
 package com.training.platform.users.controller;
 
 import com.training.platform.users.dto.CreateUserRequest;
+import com.training.platform.users.dto.ChangeOwnPasswordRequest;
 import com.training.platform.users.dto.UpdatePasswordRequest;
 import com.training.platform.users.dto.UpdateUserRequest;
 import com.training.platform.users.dto.UpdateUserStatusRequest;
@@ -14,6 +15,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -74,6 +77,19 @@ public class UserController {
     ) {
         log.info("Update password id={}", id);
         userService.updatePassword(id, request.password());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/me/password")
+    public ResponseEntity<Void> changeOwnPassword(
+            @AuthenticationPrincipal Jwt jwt,
+            @Valid @RequestBody ChangeOwnPasswordRequest request
+    ) {
+        Object claim = jwt.getClaim("userId");
+        if (!(claim instanceof Number userId)) {
+            return ResponseEntity.badRequest().build();
+        }
+        userService.changeOwnPassword(userId.longValue(), request.currentPassword(), request.newPassword());
         return ResponseEntity.noContent().build();
     }
 

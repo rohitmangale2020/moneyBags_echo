@@ -43,6 +43,18 @@
       }
     },
 
+    "jspdf": {
+      "cwd": "node_modules/jspdf/dist",
+      "debug": {
+        "src": "jspdf.umd.js",
+        "path": "libs/jspdf/jspdf.umd.js"
+      },
+      "release": {
+        "src": "jspdf.umd.min.js",
+        "path": "libs/jspdf/jspdf.umd.min.js"
+      }
+    },
+
     "jqueryui-amd": {
       "cdn": "3rdparty",
       "cwd": "node_modules/jquery-ui/ui",

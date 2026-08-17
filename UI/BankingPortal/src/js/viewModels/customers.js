@@ -95,7 +95,68 @@ define([
       productId: ko.observable(''),
       ownershipType: ko.observable('INDIVIDUAL'),
       availableBalance: ko.observable(0),
+      fundingAccountId: ko.observable(''),
+      payoutAccountId: ko.observable(''),
     };
+    s.selectedAccountProduct = ko.pureComputed(() =>
+      s.accountProducts().find((product) => String(product.productId) === String(s.accountForm.productId())) || null,
+    );
+    s.isFixedDeposit = ko.pureComputed(() =>
+      String(s.selectedAccountProduct()?.productTypeCode || '').toUpperCase() === 'FD',
+    );
+    s.accountProductMinimum = ko.pureComputed(() => Number(s.selectedAccountProduct()?.minimumBalance || 0));
+    s.accountProductRule = ko.pureComputed(() => {
+      const product = s.selectedAccountProduct();
+      if (!product) return '';
+      const minimum = s.accountProductMinimum();
+      if (s.isFixedDeposit()) {
+        return `Minimum principal: ${u.money(minimum, product.currency)}. There is no maximum principal limit.`;
+      }
+      return minimum > 0 ? `Minimum opening balance: ${u.money(minimum, product.currency)}.` : 'Zero or a positive amount.';
+    });
+    s.transactionalAccounts = ko.pureComputed(() => {
+      const product = s.selectedAccountProduct();
+      if (!product) return [];
+      return (s.detailState.data().accounts || []).filter((account) =>
+        String(account.status || '').toUpperCase() === 'ACTIVE'
+        && String(account.productTypeCode || '').toUpperCase() !== 'FD'
+        && String(account.currencyCode || '').toUpperCase() === String(product.currency || '').toUpperCase(),
+      );
+    });
+    s.eligibleFundingAccounts = ko.pureComputed(() => {
+      const principal = Number(s.accountForm.availableBalance());
+      return s.transactionalAccounts().filter((account) => {
+        if (!Number.isFinite(principal) || principal <= 0) return true;
+        return Number(account.availableBalance || 0) - principal >= Number(account.minimumBalance || 0);
+      });
+    });
+    s.fixedDepositAccountLabel = (account) => {
+      const type = String(account.productTypeCode || 'ACCOUNT').replace(/_/g, ' ');
+      return `${account.accountNumber} · ${type} · ${u.money(account.availableBalance, account.currencyCode)}`;
+    };
+    s.postOpeningDeposit = (account, amount) => app.services.transactions.transfer({
+      transactionRef: `OPEN-${String(account.accountId).replace(/-/g, '').slice(0, 32)}`,
+      transactionType: 'OPENING_DEPOSIT', transactionStatus: 'INITIATED',
+      debitAccountId: null, creditAccountId: String(account.accountId), externalBeneficiary: null,
+      amount, currencyCode: account.currencyCode, feeAmount: 0,
+      initiatedByCustomerId: String(account.customerId), initiatedByUserId: null,
+      completedAt: null, failureCode: null, failureReason: null,
+    });
+    s.accountForm.productId.subscribe(() => {
+      s.accountForm.fundingAccountId('');
+      s.accountForm.payoutAccountId('');
+      if (s.isFixedDeposit() && Number(s.accountForm.availableBalance()) <= 0) {
+        s.accountForm.availableBalance(s.accountProductMinimum());
+      }
+      const eligible = s.transactionalAccounts();
+      if (s.isFixedDeposit() && eligible.length) {
+        s.accountForm.fundingAccountId(String(eligible[0].accountId));
+        s.accountForm.payoutAccountId(String(eligible[0].accountId));
+      }
+    });
+    s.accountForm.fundingAccountId.subscribe((accountId) => {
+      if (s.isFixedDeposit()) s.accountForm.payoutAccountId(accountId || '');
+    });
     s.error = ko.observable('');
     s.date = u.date;
     s.filtered = ko.pureComputed(() => {
@@ -168,7 +229,7 @@ define([
           app.services.products.list(),
         ]);
         const products = results[5].status === 'fulfilled' ? results[5].value : [];
-        const productNames = new Map(products.map((product) => [String(product.productId), product.productName]));
+        const productDetails = new Map(products.map((product) => [String(product.productId), product]));
         return {
           addresses: results[0].status === 'fulfilled' ? results[0].value : [],
           documents: results[1].status === 'fulfilled' ? results[1].value : [],
@@ -176,7 +237,8 @@ define([
           kyc: results[3].status === 'fulfilled' ? results[3].value : null,
           accounts: results[4].status === 'fulfilled'
             ? results[4].value.map((account) => Object.assign({}, account, {
-              productName: account.productName || productNames.get(String(account.productId)) || 'Product unavailable',
+              productName: account.productName || productDetails.get(String(account.productId))?.productName || 'Product unavailable',
+              productTypeCode: account.productTypeCode || productDetails.get(String(account.productId))?.productTypeCode || '',
             }))
             : [],
         };
@@ -235,6 +297,8 @@ define([
       s.accountForm.productId('');
       s.accountForm.ownershipType('INDIVIDUAL');
       s.accountForm.availableBalance(0);
+      s.accountForm.fundingAccountId('');
+      s.accountForm.payoutAccountId('');
       try {
         s.accountProducts((await app.services.products.list()).filter((product) => product.status === 'ACTIVE'));
         if (!s.accountProducts().length) return s.error('No active banking products are available for account opening.');
@@ -243,24 +307,51 @@ define([
     };
     s.createAccount = async () => {
       const product = s.accountProducts().find((item) => String(item.productId) === String(s.accountForm.productId()));
-      const openingBalance = Number(s.accountForm.availableBalance());
+      const requestedBalance = Number(s.accountForm.availableBalance());
+      const fixedDeposit = s.isFixedDeposit();
       if (!s.kycVerified()) return s.error('Verify KYC first. An account cannot be opened before KYC is verified.');
       if (!product) return s.error('Select an active banking product.');
-      if (!Number.isFinite(openingBalance) || openingBalance < 0) return s.error('Opening balance must be zero or a positive number.');
+      if (!Number.isFinite(requestedBalance) || requestedBalance < 0) return s.error('Opening balance must be zero or a positive number.');
+      if (requestedBalance < Number(product.minimumBalance || 0)) {
+        return s.error(`${fixedDeposit ? 'Principal' : 'Opening balance'} must be at least ${u.money(product.minimumBalance, product.currency || 'INR')}.`);
+      }
+      if (fixedDeposit) {
+        const funding = s.eligibleFundingAccounts().find((account) => String(account.accountId) === String(s.accountForm.fundingAccountId()));
+        if (!funding) return s.error('Select an eligible customer account with enough available balance to fund the FD.');
+      }
+      let savedAccount = null;
       try {
-        await app.services.accounts.create({
+        savedAccount = await app.services.accounts.create({
           customerId: String(s.selected().customerId),
           productId: String(product.productId),
           ownershipType: s.accountForm.ownershipType(),
           status: 'ACTIVE',
           currencyCode: product.currency,
-          availableBalance: openingBalance,
+          availableBalance: 0,
           closedAt: null,
         });
+        if (fixedDeposit) {
+          const contract = await app.services.fixedDeposits.open({
+            fdAccountId: String(savedAccount.accountId),
+            fundingAccountId: String(s.accountForm.fundingAccountId()),
+            payoutAccountId: String(s.accountForm.fundingAccountId()),
+            principal: requestedBalance,
+          });
+          if (String(contract.status || '').toUpperCase() !== 'ACTIVE') {
+            throw new Error('The funding transaction failed. Review the fixed-deposit contract before retrying.');
+          }
+        } else if (requestedBalance > 0) {
+          await s.postOpeningDeposit(savedAccount, requestedBalance);
+        }
         document.getElementById('customerAccountDialog').close();
-        app.notify('Account opened successfully.');
+        app.notify(fixedDeposit ? 'Fixed deposit opened and funded successfully.'
+          : 'Account opened and its opening deposit was posted successfully.');
         await s.loadDetail(s.selected());
-      } catch (e) { s.error(e.message); }
+      } catch (e) {
+        s.error(savedAccount
+          ? `Account ${savedAccount.accountNumber || savedAccount.accountId} was created at zero balance. ${e.message}`
+          : e.message);
+      }
     };
     s.remove = async (x) => {
       if (!window.confirm(`Delete customer ${x.cifNo}? This calls the backend DELETE operation.`)) return;

@@ -73,6 +73,12 @@ public class AccountStatementService {
             var transaction = root.join("transaction");
             return switch (channel) {
                 case DEPOSIT -> builder.equal(transaction.get("transactionType"), TransactionType.DEPOSIT);
+                case OPENING_DEPOSIT -> builder.equal(transaction.get("transactionType"),
+                        TransactionType.OPENING_DEPOSIT);
+                case FIXED_DEPOSIT_FUNDING -> builder.equal(transaction.get("transactionType"),
+                        TransactionType.FIXED_DEPOSIT_FUNDING);
+                case FIXED_DEPOSIT_PREMATURE_CLOSURE -> builder.equal(transaction.get("transactionType"),
+                        TransactionType.FIXED_DEPOSIT_PREMATURE_CLOSURE);
                 case WITHDRAWAL -> builder.equal(transaction.get("transactionType"), TransactionType.WITHDRAWAL);
                 case INTERNAL_TRANSFER -> builder.and(
                         builder.equal(transaction.get("transactionType"), TransactionType.TRANSFER),

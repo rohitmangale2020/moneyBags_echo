@@ -31,6 +31,8 @@ define([
       },
     };
   }
+  const rfc5322Email = /^(?=.{1,254}$)(?=.{1,64}@)(?:[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[^"\\\r\n]|\\.)+")@(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$/;
+  const e164Phone = /^\+?[1-9]\d{7,14}$/;
   function VM() {
     const s = this;
     s.state = u.state([]);
@@ -52,6 +54,20 @@ define([
     s.editingId = ko.observable(null);
     s.password = ko.observable('');
     s.error = ko.observable('');
+    s.emailValidators = [{
+      validate: (value) => {
+        if (value && !rfc5322Email.test(value.trim())) {
+          throw new Error('Enter a valid RFC 5322 email address.');
+        }
+      },
+    }];
+    s.phoneValidators = [{
+      validate: (value) => {
+        if (value && !e164Phone.test(value.trim())) {
+          throw new Error('Enter a valid international phone number, for example +919876543210.');
+        }
+      },
+    }];
     s.detailState = u.state(null);
     s.detailColumns = [
       { headerText: 'Field', field: 'field' },
@@ -88,9 +104,9 @@ define([
     s.validate = (data, needsPassword) => {
       if (!data.username || data.username.length < 3 || !data.email || !data.profile.firstName || !data.profile.lastName)
         return 'Username (at least 3 characters), email, first name, and last name are required.';
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) return 'Enter a valid email address.';
+      if (!rfc5322Email.test(data.email.trim())) return 'Enter a valid RFC 5322 email address.';
       if (needsPassword && (!data.password || data.password.length < 8 || data.password.length > 72)) return 'Password must contain 8 to 72 characters.';
-      if (data.profile.phoneNumber && !/^\+?[1-9]\d{7,14}$/.test(data.profile.phoneNumber)) return 'Enter a valid international phone number.';
+      if (data.profile.phoneNumber && !e164Phone.test(data.profile.phoneNumber.trim())) return 'Enter a valid international phone number, for example +919876543210.';
       if (data.profile.countryCode && !/^[A-Za-z]{2}$/.test(data.profile.countryCode)) return 'Country code must contain two letters.';
       if (data.profile.dateOfBirth && new Date(data.profile.dateOfBirth) >= new Date()) return 'Date of birth must be in the past.';
       return null;

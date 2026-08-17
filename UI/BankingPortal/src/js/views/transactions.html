@@ -117,39 +117,23 @@
       <div class="mb-error" data-bind="visible:error,text:error"></div>
 
       <div class="mb-search-panel">
-        <oj-input-text label-hint="Customer ID" value="{{form.customerId}}"></oj-input-text>
+        <oj-input-text label-hint="Customer CIF" value="{{form.customerCif}}"></oj-input-text>
         <span></span>
         <oj-button on-oj-action="[[loadCustomerAccounts]]" disabled="[[loadingAccounts]]">Load accounts</oj-button>
       </div>
 
       <div class="mb-form" data-bind="visible:isInternalTransfer">
-        <label data-bind="visible:isUsingCustomerAccounts">Debit account
+        <label class="wide" data-bind="visible:hasCustomerAccounts">Debit account
           <select data-bind="value:form.debitAccountId,options:accounts,optionsText:accountLabel,optionsValue:'accountId'"></select>
         </label>
-        <oj-input-text data-bind="visible:!isUsingCustomerAccounts()" label-hint="Debit account ID" value="{{form.debitAccountId}}"></oj-input-text>
-        <oj-input-text label-hint="Credit account ID" value="{{form.creditAccountId}}"></oj-input-text>
+        <oj-input-text class="wide" label-hint="Recipient account number" value="{{form.creditAccountNumber}}"></oj-input-text>
       </div>
-
-      <button type="button" class="mb-link" data-bind="visible:isUsingCustomerAccounts,click:useDifferentAccount">
-        Use a different debit account ID
-      </button>
-      <button type="button" class="mb-link" data-bind="visible:!isUsingCustomerAccounts(),click:loadCustomerAccounts">
-        Load this customer's account
-      </button>
 
       <div class="mb-form" data-bind="visible:isSingleAccount">
-        <label class="wide" data-bind="visible:isUsingCustomerAccounts">Customer account
+        <label class="wide" data-bind="visible:hasCustomerAccounts">Customer account
           <select data-bind="value:form.accountId,options:accounts,optionsText:accountLabel,optionsValue:'accountId'"></select>
         </label>
-        <oj-input-text class="wide" data-bind="visible:!isUsingCustomerAccounts()" label-hint="Account ID" value="{{form.accountId}}"></oj-input-text>
       </div>
-
-      <button type="button" class="mb-link" data-bind="visible:isSingleAccount() && isUsingCustomerAccounts(),click:useDifferentAccount">
-        Use a different account ID
-      </button>
-      <button type="button" class="mb-link" data-bind="visible:isSingleAccount() && !isUsingCustomerAccounts(),click:loadCustomerAccounts">
-        Load this customer's account
-      </button>
 
       <div class="mb-stack" data-bind="visible:isSelfTransfer">
         <div class="mb-form" data-bind="visible:accounts().length">
@@ -163,7 +147,7 @@
       </div>
 
       <div class="mb-info" data-bind="visible:hasActiveCustomer">
-        The active customer's eligible accounts have been loaded for this transaction.
+        Load the customer CIF to choose from that customer's active accounts.
       </div>
 
       <div class="mb-form">

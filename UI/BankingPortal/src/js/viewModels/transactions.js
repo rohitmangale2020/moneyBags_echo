@@ -34,14 +34,14 @@ define([
     s.accounts = ko.observableArray([]);
     s.activeCustomer = app.activeCustomer;
     s.hasActiveCustomer = app.hasActiveCustomer;
-    s.useCustomerAccounts = ko.observable(false);
+    s.customerId = ko.observable('');
 
     s.form = {
       transactionRef: ko.observable(u.ref()),
       debitAccountId: ko.observable(''),
-      creditAccountId: ko.observable(''),
+      creditAccountNumber: ko.observable(''),
       accountId: ko.observable(''),
-      customerId: ko.observable(''),
+      customerCif: ko.observable(''),
       fromAccountId: ko.observable(''),
       toAccountId: ko.observable(''),
       amount: ko.observable(''),
@@ -56,9 +56,6 @@ define([
       () => s.operation() === 'DEPOSIT' || s.operation() === 'WITHDRAWAL',
     );
     s.hasCustomerAccounts = ko.pureComputed(() => s.accounts().length > 0);
-    s.isUsingCustomerAccounts = ko.pureComputed(
-      () => s.useCustomerAccounts() && s.accounts().length > 0,
-    );
     s.operationTitle = ko.pureComputed(() => ({
       TRANSFER: 'Internal transfer',
       DEPOSIT: 'Deposit',
@@ -153,16 +150,6 @@ define([
       if (s.hasActiveCustomer()) s.loadCustomerAccounts();
     };
 
-    s.useDifferentAccount = () => {
-      s.useCustomerAccounts(false);
-      s.error('');
-    };
-
-    s.useActiveCustomerAccounts = () => {
-      s.useCustomerAccounts(true);
-      if (s.hasActiveCustomer()) s.loadCustomerAccounts();
-    };
-
     let closeTimer = null;
     const clearCloseTimer = () => {
       if (closeTimer) window.clearTimeout(closeTimer);
@@ -177,17 +164,15 @@ define([
       clearCloseTimer();
       s.form.transactionRef(u.ref());
       s.form.debitAccountId('');
-      s.form.creditAccountId('');
+      s.form.creditAccountNumber('');
       s.form.accountId('');
-      s.form.customerId(s.hasActiveCustomer()
-        ? s.activeCustomer().customerId
-        : (app.activeTransactionCustomerId ? app.activeTransactionCustomerId() : ''));
+      s.form.customerCif(s.hasActiveCustomer() ? s.activeCustomer().cifNo : '');
+      s.customerId('');
       s.form.fromAccountId('');
       s.form.toAccountId('');
       s.form.amount('');
       s.form.currencyCode('INR');
       s.accounts([]);
-      s.useCustomerAccounts(s.hasActiveCustomer());
       s.operation('TRANSFER');
       s.error('');
       s.submissionState('idle');
@@ -204,16 +189,18 @@ define([
     };
 
     s.loadCustomerAccounts = async () => {
-      const customerId = s.form.customerId().trim();
-      if (!customerId) return s.error('Enter a customer ID first.');
-      if (app.setTransactionCustomerId) app.setTransactionCustomerId(customerId);
+      const customerCif = s.form.customerCif().trim();
+      if (!customerCif) return s.error('Enter a customer CIF first.');
       s.loadingAccounts(true);
       s.error('');
       try {
+        const customer = await app.services.customers.byCif(customerCif);
+        const customerId = String(customer.customerId);
+        if (app.setTransactionCustomerId) app.setTransactionCustomerId(customerId);
         const accounts = (await app.services.accounts.customer(customerId))
           .filter((account) => account.status === 'ACTIVE');
+        s.customerId(customerId);
         s.accounts(accounts);
-        s.useCustomerAccounts(accounts.length > 0);
         const firstAccountId = accounts[0] ? String(accounts[0].accountId) : '';
         const secondAccountId = accounts[1] ? String(accounts[1].accountId) : '';
         s.form.fromAccountId(firstAccountId);
@@ -225,8 +212,8 @@ define([
           s.error('This customer needs at least two active accounts for a self transfer.');
         }
       } catch (error) {
+        s.customerId('');
         s.accounts([]);
-        s.useCustomerAccounts(false);
         s.error(error.message);
       } finally {
         s.loadingAccounts(false);
@@ -247,11 +234,10 @@ define([
 
       if (operation === 'TRANSFER') {
         debitAccountId = String(s.form.debitAccountId() || '').trim();
-        creditAccountId = String(s.form.creditAccountId() || '').trim();
       } else if (operation === 'SELF_TRANSFER') {
         debitAccountId = String(s.form.fromAccountId() || '').trim();
         creditAccountId = String(s.form.toAccountId() || '').trim();
-        customerId = s.form.customerId().trim();
+        customerId = s.customerId();
       } else if (operation === 'DEPOSIT') {
         creditAccountId = String(s.form.accountId() || '').trim();
       } else {
@@ -276,11 +262,24 @@ define([
       };
     }
 
+    async function resolveCreditAccount(payload) {
+      if (s.operation() !== 'TRANSFER') return payload;
+      const accountNumber = s.form.creditAccountNumber().trim();
+      if (!accountNumber) throw new Error('Enter the recipient account number.');
+      const accounts = u.list(await app.services.accounts.number(accountNumber));
+      const account = accounts.find((item) => String(item.accountNumber) === accountNumber) || accounts[0];
+      if (!account) throw new Error('No account was found for that recipient account number.');
+      if (String(account.accountId) === payload.debitAccountId) {
+        throw new Error('Recipient account must be different from the debit account.');
+      }
+      return Object.assign(payload, { creditAccountId: String(account.accountId) });
+    }
+
     function validate(payload) {
       if (!Number.isFinite(payload.amount) || payload.amount <= 0) return 'Enter a positive amount.';
       if (!/^[A-Z]{3}$/.test(payload.currencyCode)) return 'Currency must contain three letters.';
-      if (s.operation() === 'TRANSFER' && (!payload.debitAccountId || !payload.creditAccountId)) {
-        return 'Enter both debit and credit account IDs.';
+      if (s.operation() === 'TRANSFER' && !payload.debitAccountId) {
+        return 'Load a customer CIF and select a debit account.';
       }
       if (s.isSingleAccount() && !(payload.debitAccountId || payload.creditAccountId)) {
         return 'Enter the account ID.';
@@ -300,7 +299,7 @@ define([
     }
 
     s.submit = async () => {
-      const payload = requestPayload();
+      let payload = requestPayload();
       const validationError = validate(payload);
       if (validationError) return s.error(validationError);
 
@@ -309,6 +308,7 @@ define([
       s.submissionState('submitting');
       s.submissionMessage(`Posting ${s.operationTitle().toLowerCase()}...`);
       try {
+        payload = await resolveCreditAccount(payload);
         const transaction = await app.services.transactions.transfer(payload);
 
         app.setActiveAccount(payload.debitAccountId || payload.creditAccountId);

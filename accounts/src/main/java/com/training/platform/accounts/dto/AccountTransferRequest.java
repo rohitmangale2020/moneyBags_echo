@@ -14,4 +14,17 @@ public record AccountTransferRequest(
         @NotBlank @Size(max = 36) String creditAccountId,
         @NotNull @DecimalMin(value = "0.0001") BigDecimal amount,
         @NotBlank @Pattern(regexp = "[A-Za-z]{3}") String currencyCode,
-        @Size(max = 36) String customerId) { }
+        @Size(max = 36) String customerId,
+        TransferPurpose purpose) {
+
+    public AccountTransferRequest(String transactionRef, String debitAccountId,
+                                  String creditAccountId, BigDecimal amount,
+                                  String currencyCode, String customerId) {
+        this(transactionRef, debitAccountId, creditAccountId, amount, currencyCode,
+                customerId, TransferPurpose.STANDARD);
+    }
+
+    public TransferPurpose effectivePurpose() {
+        return purpose == null ? TransferPurpose.STANDARD : purpose;
+    }
+}
