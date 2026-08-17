@@ -105,22 +105,33 @@
       <div class="mb-error" data-bind="visible:error,text:error"></div>
       <div class="mb-form">
         <label class="wide" data-bind="visible:!editingId()"><span>Active product</span>
-          <select data-bind="value:form.productId">
+          <select data-bind="value:form.productId,disable:pendingCreatedAccount">
             <option value="">Select product</option>
             <!-- ko foreach:products -->
             <option data-bind="attr:{value:String(productId)},text:`${productName} · ${productCode}`"></option>
             <!-- /ko -->
           </select></label><label class="wide" data-bind="visible:editingId"><span>Active product</span><input type="text" disabled="disabled" data-bind="value:productLabel" /></label
-        ><label><span>Customer ID</span><input type="text" data-bind="value:form.customerId,disable:editingId" /></label
+        ><label><span>Customer ID</span><input type="text" data-bind="value:form.customerId,disable:editingId() || pendingCreatedAccount()" /></label
         ><label data-bind="visible:editingId"><span>Customer CIF</span><input type="text" disabled="disabled" data-bind="value:form.customerCif" /></label
         ><label data-bind="visible:editingId"><span>Account number</span><input type="text" disabled="disabled" data-bind="value:form.accountNumber" /></label
-        ><label><span>Account type</span><input type="text" data-bind="value:form.ownershipType,disable:editingId" /></label
-        ><label><span>Opening balance</span><input type="number" min="0" data-bind="value:form.availableBalance,disable:editingId,attr:{min:selectedProductMinimum()}" /><small class="mb-field-rule" data-bind="visible:!editingId() && selectedProduct(),text:selectedProductRule"></small></label
-        ><label data-bind="visible:editingId() && !closingAccount()"><span>Status</span><select data-bind="value:form.status"><option>ACTIVE</option><option>INACTIVE</option><option>DORMANT</option><option>FROZEN</option></select></label><label data-bind="visible:editingId"><span>Currency</span><input type="text" maxlength="3" data-bind="value:form.currencyCode" /></label><div class="mb-dialog-actions" data-bind="visible:editingId() && !closingAccount()"><oj-button chroming="danger" on-oj-action="[[closeAccount]]">Close account</oj-button></div><label data-bind="visible:closingAccount"><span>Closing date</span><input type="date" data-bind="value:form.closedAt,attr:{min:closeDateMin}" /></label>
+        ><label><span>Account type</span><input type="text" data-bind="value:form.ownershipType,disable:editingId() || pendingCreatedAccount()" /></label
+        ><label><span data-bind="text:!editingId() && isFixedDeposit() ? 'Fixed deposit principal' : 'Opening deposit'"></span><input type="number" min="0" data-bind="value:form.availableBalance,disable:editingId,attr:{min:selectedProductMinimum()}" /><small class="mb-field-rule" data-bind="visible:!editingId() && selectedProduct(),text:selectedProductRule"></small></label
+        ><div class="wide mb-info" data-bind="visible:!editingId() && isFixedDeposit()">The FD account opens at zero. The selected customer account is then debited for the principal through the fixed-deposit transaction workflow.</div
+        ><div class="wide mb-dialog-actions" data-bind="visible:!editingId() && isFixedDeposit()"><oj-button on-oj-action="[[loadFixedDepositAccounts]]" disabled="[[loadingCustomerAccounts]]"><span data-bind="text:loadingCustomerAccounts() ? 'Loading accounts…' : 'Reload eligible accounts'"></span></oj-button></div
+        ><label class="wide" data-bind="visible:!editingId() && isFixedDeposit()"><span>Fund from customer account</span><select data-bind="value:form.fundingAccountId,options:eligibleFundingAccounts,optionsText:fixedDepositAccountLabel,optionsValue:'accountId',optionsCaption:'Select funding account'"></select><small class="mb-field-rule">Only active, same-currency non-FD accounts that can retain their minimum balance are shown.</small></label
+        ><div class="wide mb-info" data-bind="visible:!editingId() && isFixedDeposit() && form.fundingAccountId()">At maturity or early withdrawal, principal and applicable interest return to the same funding account.</div
+        ><div class="wide mb-info" data-bind="visible:!editingId() && isFixedDeposit() && !loadingCustomerAccounts() && !transactionalCustomerAccounts().length">No eligible active account exists for this customer and currency. Open or activate a savings/current account first.</div
+        ><label data-bind="visible:editingId() && !closingAccount()"><span>Status</span><select data-bind="value:form.status"><option>ACTIVE</option><option>INACTIVE</option><option>DORMANT</option><option>FROZEN</option></select></label
+        ><label data-bind="visible:editingId"><span>Currency</span><input type="text" maxlength="3" data-bind="value:form.currencyCode" /></label
+        ><div class="wide mb-info" data-bind="visible:isEditingFixedDeposit() && editingFixedDepositContract()"><span>Fixed-deposit contract: </span><strong data-bind="text:editingFixedDepositStatusLabel"></strong></div
+        ><div class="mb-dialog-actions" data-bind="visible:editingId() && !closingAccount() && !isEditingFixedDeposit()"><oj-button chroming="danger" on-oj-action="[[closeAccount]]">Close account</oj-button></div
+        ><div class="wide mb-dialog-actions" data-bind="visible:canWithdrawEditingFixedDeposit"><oj-button chroming="danger" on-oj-action="[[withdrawEditingFixedDeposit]]" disabled="[[withdrawingFdAccountId]]">Withdraw fixed deposit</oj-button></div
+        ><div class="wide mb-dialog-actions" data-bind="visible:canRetryEditingFixedDeposit"><oj-button chroming="callToAction" on-oj-action="[[retryEditingFixedDeposit]]" disabled="[[retryingFdAccountId]]">Retry FD funding</oj-button></div
+        ><label data-bind="visible:closingAccount"><span>Closing date</span><input type="date" data-bind="value:form.closedAt,attr:{min:closeDateMin}" /></label>
       </div>
     </div>
     <div slot="footer" class="mb-dialog-actions">
-      <oj-button on-oj-action="[[close]]">Cancel</oj-button><oj-button chroming="callToAction" on-oj-action="[[create]]">Save account</oj-button>
+      <oj-button on-oj-action="[[close]]">Cancel</oj-button><oj-button chroming="callToAction" on-oj-action="[[create]]"><span data-bind="text:saveAccountLabel"></span></oj-button>
     </div></oj-dialog
   >
 </section>

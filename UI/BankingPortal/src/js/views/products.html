@@ -37,8 +37,8 @@
           ><strong data-bind="text:$parent.money(minimumBalance,currency)"></strong>
         </div>
         <div>
-          <small>Monthly fee</small
-          ><strong data-bind="text:$parent.money(fee&&fee.monthlyMaintenanceFee,currency)"></strong>
+          <small>Annual fee</small
+          ><strong data-bind="text:$parent.money(fee&&fee.annualMaintenanceFee,currency)"></strong>
         </div>
       </div>
       <button
@@ -56,7 +56,7 @@
       <dl class="mb-product-row-stats">
         <div><dt>Interest</dt><dd data-bind="text:`${rate&&rate.interestRate||0}%`"></dd></div>
         <div><dt>Min balance</dt><dd data-bind="text:$parent.money(minimumBalance,currency)"></dd></div>
-        <div><dt>Monthly fee</dt><dd data-bind="text:$parent.money(fee&&fee.monthlyMaintenanceFee,currency)"></dd></div>
+        <div><dt>Annual fee</dt><dd data-bind="text:$parent.money(fee&&fee.annualMaintenanceFee,currency)"></dd></div>
       </dl>
       <button class="mb-link" data-bind="click:()=>$parent.manage($data)">View and manage</button>
     </article>
@@ -71,7 +71,7 @@
       <oj-button on-oj-action="[[clearRetiredFilters]]" disabled="[[!retiredFiltersApplied()]]">Clear filters</oj-button>
     </div>
     <div class="mb-card-grid" data-bind="visible:!retiredCompact(),foreach:filteredRetiredProducts">
-      <article class="mb-card mb-card-retired"><div class="mb-card-top"><span class="mb-card-icon mb-product-icon" data-bind="css:$parent.productIcon($data)" aria-hidden="true"></span><span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span></div><small data-bind="text:productTypeName||productTypeCode"></small><h2 data-bind="text:$parent.productHeading($data)"></h2><code data-bind="text:$parent.productSubheading($data)"></code><div class="mb-card-stats"><div><small>Interest</small><strong data-bind="text:`${rate&&rate.interestRate||0}%`"></strong></div><div><small>Min balance</small><strong data-bind="text:$parent.money(minimumBalance,currency)"></strong></div><div><small>Monthly fee</small><strong data-bind="text:$parent.money(fee&&fee.monthlyMaintenanceFee,currency)"></strong></div></div><button class="mb-link" data-bind="click:()=>$parent.manage($data)">View details</button></article>
+      <article class="mb-card mb-card-retired"><div class="mb-card-top"><span class="mb-card-icon mb-product-icon" data-bind="css:$parent.productIcon($data)" aria-hidden="true"></span><span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span></div><small data-bind="text:productTypeName||productTypeCode"></small><h2 data-bind="text:$parent.productHeading($data)"></h2><code data-bind="text:$parent.productSubheading($data)"></code><div class="mb-card-stats"><div><small>Interest</small><strong data-bind="text:`${rate&&rate.interestRate||0}%`"></strong></div><div><small>Min balance</small><strong data-bind="text:$parent.money(minimumBalance,currency)"></strong></div><div><small>Annual fee</small><strong data-bind="text:$parent.money(fee&&fee.annualMaintenanceFee,currency)"></strong></div></div><button class="mb-link" data-bind="click:()=>$parent.manage($data)">View details</button></article>
     </div>
     <div class="mb-product-list" data-bind="visible:retiredCompact,foreach:filteredRetiredProducts">
       <article class="mb-product-row mb-card-retired">
@@ -82,7 +82,7 @@
         <dl class="mb-product-row-stats">
           <div><dt>Interest</dt><dd data-bind="text:`${rate&&rate.interestRate||0}%`"></dd></div>
           <div><dt>Min balance</dt><dd data-bind="text:$parent.money(minimumBalance,currency)"></dd></div>
-          <div><dt>Monthly fee</dt><dd data-bind="text:$parent.money(fee&&fee.monthlyMaintenanceFee,currency)"></dd></div>
+          <div><dt>Annual fee</dt><dd data-bind="text:$parent.money(fee&&fee.annualMaintenanceFee,currency)"></dd></div>
         </dl>
         <button class="mb-link" data-bind="click:()=>$parent.manage($data)">View details</button>
       </article>
@@ -109,10 +109,9 @@
             <!-- /ko -->
           </select></div>
         <oj-input-text label-hint="Currency" help.instruction="Product currency. Currently INR." value="{{form().currency}}" readonly="true"></oj-input-text>
-        <oj-input-text data-bind="visible:hasProductType() && !isCreditCard()" label-hint="Minimum balance" help.instruction="Minimum INR balance. Cannot exceed maximum balance." value="{{form().minimumBalance}}"></oj-input-text>
-        <oj-input-text data-bind="visible:hasProductType() && !isCreditCard()" label-hint="Maximum balance" help.instruction="Maximum INR balance. Must be at least the minimum." value="{{form().maximumBalance}}"></oj-input-text>
+        <oj-input-text data-bind="visible:hasProductType() && !isCreditCard()" label-hint="Minimum balance" help.instruction="Minimum INR balance that withdrawals and transfers must preserve." value="{{form().minimumBalance}}"></oj-input-text>
         <oj-input-text data-bind="visible:isInterestBearing" label-hint="Interest rate %" help.instruction="Annual interest rate for savings and deposit products." value="{{form().rate.interestRate}}"></oj-input-text>
-        <oj-input-text data-bind="visible:hasProductType" label-hint="Monthly fee" help.instruction="Monthly fee in INR. Enter 0 if none." value="{{form().fee.monthlyMaintenanceFee}}"></oj-input-text>
+        <oj-input-text data-bind="visible:selectedProductType()==='SAVINGS'||selectedProductType()==='CURRENT'" label-hint="Annual maintenance fee" help.instruction="Charged once on the account-opening anniversary. Enter 0 if none." value="{{form().fee.annualMaintenanceFee}}"></oj-input-text>
         <oj-input-text data-bind="visible:isTermDeposit" label-hint="Tenure months" help.instruction="Deposit term in whole months. Required for FD and RD." value="{{form().term.tenureMonths}}"></oj-input-text>
         <oj-input-text data-bind="visible:isTermDeposit" label-hint="Lock-in period (months)" help.instruction="Months before early withdrawal is allowed." value="{{form().term.lockInPeriod}}"></oj-input-text>
         <oj-input-text data-bind="visible:isRecurringDeposit" label-hint="Installment amount" help.instruction="Amount per installment in INR. Required for RD." value="{{form().term.installmentAmount}}"></oj-input-text>
@@ -149,7 +148,7 @@
       <oj-button chroming="callToAction" on-oj-action="[[saveType]]">Create type</oj-button>
     </div>
   </oj-dialog>
-  <oj-dialog id="productDetailDialog" class="mb-dialog mb-dialog-wide" dialog-title="Product details" cancel-behavior="icon"><div slot="body"><div class="mb-error" data-bind="visible:error,text:error"></div><div data-bind="with:selected"><div class="mb-detail-hero"><div><small data-bind="text:$parent.productSubheading($data)"></small><h2 data-bind="text:$parent.productHeading($data)"></h2><p data-bind="visible:description,text:description"></p></div><span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span></div><dl class="mb-kv three"><div><dt>Type</dt><dd data-bind="text:productTypeName"></dd></div><div><dt>Interest</dt><dd data-bind="text:`${rate&&rate.interestRate||0}%`"></dd></div><div><dt>Monthly fee</dt><dd data-bind="text:fee&&fee.monthlyMaintenanceFee"></dd></div><div><dt>Minimum</dt><dd data-bind="text:minimumBalance"></dd></div><div><dt>Maximum</dt><dd data-bind="text:maximumBalance"></dd></div><div><dt>Currency</dt><dd data-bind="text:currency"></dd></div></dl></div><div class="mb-detail-actions"><button class="mb-link" data-bind="visible:isAdmin() && selected() && selected().status==='ACTIVE',click:edit">Edit product</button><button class="mb-link danger" data-bind="visible:isAdmin() && selected() && selected().status==='ACTIVE',click:()=>retire(selected())">Retire</button></div><div class="mb-section-title"><small>ACTIVITY HISTORY</small><h3>Lifecycle changes</h3></div><div class="mb-table compact"><table><thead><tr><th>Change</th><th>Reason</th><th>By</th><th>Date</th></tr></thead><tbody data-bind="foreach:history"><tr><td data-bind="text:previousStatus===newStatus ? 'Product updated' : `${previousStatus} → ${newStatus}`"></td><td data-bind="text:changeReason"></td><td data-bind="text:changedBy"></td><td data-bind="text:changedDate"></td></tr></tbody></table></div></div></oj-dialog>
+  <oj-dialog id="productDetailDialog" class="mb-dialog mb-dialog-wide" dialog-title="Product details" cancel-behavior="icon"><div slot="body"><div class="mb-error" data-bind="visible:error,text:error"></div><div data-bind="with:selected"><div class="mb-detail-hero"><div><small data-bind="text:$parent.productSubheading($data)"></small><h2 data-bind="text:$parent.productHeading($data)"></h2><p data-bind="visible:description,text:description"></p></div><span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span></div><dl class="mb-kv three"><div><dt>Type</dt><dd data-bind="text:productTypeName"></dd></div><div><dt>Interest</dt><dd data-bind="text:`${rate&&rate.interestRate||0}%`"></dd></div><div><dt>Annual fee</dt><dd data-bind="text:fee&&fee.annualMaintenanceFee"></dd></div><div><dt>Minimum</dt><dd data-bind="text:minimumBalance"></dd></div><div><dt>Currency</dt><dd data-bind="text:currency"></dd></div></dl></div><div class="mb-detail-actions"><button class="mb-link" data-bind="visible:isAdmin() && selected() && selected().status==='ACTIVE',click:edit">Edit product</button><button class="mb-link danger" data-bind="visible:isAdmin() && selected() && selected().status==='ACTIVE',click:()=>retire(selected())">Retire</button></div><div class="mb-section-title"><small>ACTIVITY HISTORY</small><h3>Lifecycle changes</h3></div><div class="mb-table compact"><table><thead><tr><th>Change</th><th>Reason</th><th>By</th><th>Date</th></tr></thead><tbody data-bind="foreach:history"><tr><td data-bind="text:previousStatus===newStatus ? 'Product updated' : `${previousStatus} → ${newStatus}`"></td><td data-bind="text:changeReason"></td><td data-bind="text:changedBy"></td><td data-bind="text:changedDate"></td></tr></tbody></table></div></div></oj-dialog>
   <oj-dialog id="retirementImpactDialog" class="mb-dialog" dialog-title="Retirement impact review" cancel-behavior="icon">
     <div slot="body" data-bind="with:retirementImpact">
       <div class="mb-retirement-impact">

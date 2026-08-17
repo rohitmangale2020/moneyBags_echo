@@ -24,6 +24,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/accounts")
@@ -65,11 +67,19 @@ public class AccountController {
     }
 
     @PostMapping("/transfers")
+    @PreAuthorize("#request.effectivePurpose().name() == 'STANDARD' or hasAnyRole('SYSTEM','ADMIN')")
     public AccountTransferResponse transfer(@Valid @RequestBody AccountTransferRequest request) {
         return accountService.transfer(request);
     }
 
+    @PostMapping("/product-rules/refresh")
+    @PreAuthorize("hasRole('ADMIN')")
+    public Map<String, Integer> refreshProductRules() {
+        return Map.of("updatedAccounts", accountService.backfillMissingProductRules());
+    }
+
     @PostMapping("/{accountId}/adjustments")
+    @PreAuthorize("#request.adjustmentType().name() == 'OPENING_DEPOSIT' or #request.adjustmentType().name() == 'DEPOSIT' or #request.adjustmentType().name() == 'WITHDRAWAL' or hasAnyRole('SYSTEM','ADMIN')")
     public AccountAdjustmentResponse adjust(@PathVariable String accountId,
                                             @Valid @RequestBody AccountAdjustmentRequest request) {
         return accountService.adjust(accountId, request);
@@ -96,10 +106,14 @@ public class AccountController {
         if (!(authentication instanceof JwtAuthenticationToken jwtAuthentication)) {
             throw new IllegalStateException("An authenticated JWT user is required");
         }
-        Number userId = jwtAuthentication.getToken().getClaim("userId");
-        if (userId == null) {
-            throw new IllegalStateException("JWT does not contain a userId claim");
+        Object userId = jwtAuthentication.getToken().getClaim("userId");
+        String value = userId == null ? jwtAuthentication.getToken().getSubject()
+                : String.valueOf(userId);
+        if (value == null || value.isBlank()) {
+            throw new IllegalStateException("JWT does not identify the authenticated user");
         }
-        return userId.longValue() + "";
+        // Tokens issued before userId was introduced still identify the user by
+        // subject. The database column is intentionally retained at 36 chars.
+        return value.length() <= 36 ? value : value.substring(0, 36);
     }
 }

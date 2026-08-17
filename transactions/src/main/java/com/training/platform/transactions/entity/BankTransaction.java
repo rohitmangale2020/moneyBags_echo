@@ -12,6 +12,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -26,7 +27,7 @@ import java.util.UUID;
 public class BankTransaction {
     @Id @Column(name = "transaction_id", length = 36) private String transactionId;
     @Column(name = "transaction_ref", nullable = false, length = 40) private String transactionRef;
-    @Enumerated(EnumType.STRING) @Column(name = "transaction_type", nullable = false, length = 30) private TransactionType transactionType;
+    @Enumerated(EnumType.STRING) @Column(name = "transaction_type", nullable = false, length = 40) private TransactionType transactionType;
     @Enumerated(EnumType.STRING) @Column(name = "transaction_status", nullable = false, length = 30) private TransactionStatus transactionStatus;
     @Column(name = "debit_account_id", length = 36) private String debitAccountId;
     @Column(name = "credit_account_id", length = 36) private String creditAccountId;
@@ -39,6 +40,7 @@ public class BankTransaction {
     @Column(name = "initiated_by_user_id", length = 36) private String initiatedByUserId;
     @Column(name = "initiated_at", nullable = false) private LocalDateTime initiatedAt;
     @Column(name = "completed_at") private LocalDateTime completedAt;
+    @Column(name = "interest_period_end") private LocalDate interestPeriodEnd;
     @Column(name = "failure_code", length = 50) private String failureCode;
     @Column(name = "failure_reason", length = 500) private String failureReason;
     @OneToMany(mappedBy = "transaction", cascade = CascadeType.ALL, orphanRemoval = true) private List<TransactionApproval> approvals = new ArrayList<>();
@@ -62,6 +64,7 @@ public class BankTransaction {
     public String getInitiatedByUserId() { return initiatedByUserId; }
     public LocalDateTime getInitiatedAt() { return initiatedAt; }
     public LocalDateTime getCompletedAt() { return completedAt; }
+    public LocalDate getInterestPeriodEnd() { return interestPeriodEnd; }
     public String getFailureCode() { return failureCode; }
     public String getFailureReason() { return failureReason; }
 
@@ -78,6 +81,7 @@ public class BankTransaction {
     public void setInitiatedByCustomerId(String initiatedByCustomerId) { this.initiatedByCustomerId = initiatedByCustomerId; }
     public void setInitiatedByUserId(String initiatedByUserId) { this.initiatedByUserId = initiatedByUserId; }
     public void setCompletedAt(LocalDateTime completedAt) { this.completedAt = completedAt; }
+    public void setInterestPeriodEnd(LocalDate interestPeriodEnd) { this.interestPeriodEnd = interestPeriodEnd; }
     public void setFailureCode(String failureCode) { this.failureCode = failureCode; }
     public void setFailureReason(String failureReason) { this.failureReason = failureReason; }
 }

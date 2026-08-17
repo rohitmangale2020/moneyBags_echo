@@ -30,7 +30,7 @@ public class AccountBalanceOperation {
     private String accountId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "adjustment_type", nullable = false, length = 20)
+    @Column(name = "adjustment_type", nullable = false, length = 40)
     private AdjustmentType adjustmentType;
 
     @Column(nullable = false, precision = 19, scale = 4)

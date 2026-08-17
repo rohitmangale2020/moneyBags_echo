@@ -18,6 +18,12 @@ spring:
       hibernate:
         format_sql: true
     database-platform: org.hibernate.dialect.OracleDialect
+  flyway:
+    enabled: true
+    table: flyway_transactions_schema_history
+    locations: classpath:db/migration/{vendor}
+    baseline-on-migrate: true
+    baseline-version: 0
   security:
     oauth2:
       resourceserver:
@@ -28,11 +34,24 @@ services:
     base-url: ${SERVICES_AUDIT_BASE_URL:http://localhost:8086}
   accounts:
     base-url: ${ACCOUNTS_SERVICE_URL:http://accounts-service}
+    internal-key: ${BANKING_INTERNAL_KEY:local-banking-key}
   customers:
     base-url: ${CUSTOMERS_SERVICE_URL:http://customers-service}
 
 audit:
   internal-key: ${AUDIT_INTERNAL_KEY:local-audit-key}
+
+banking:
+  interest:
+    scheduler-enabled: ${INTEREST_SCHEDULER_ENABLED:true}
+    cron: ${INTEREST_SCHEDULER_CRON:0 15 1 1 * *}
+  fixed-deposit:
+    scheduler-enabled: ${FD_MATURITY_SCHEDULER_ENABLED:true}
+    cron: ${FD_MATURITY_SCHEDULER_CRON:0 30 1 * * *}
+    premature-penalty-rate: ${FD_PREMATURE_PENALTY_RATE:1.00}
+  annual-fee:
+    scheduler-enabled: ${ANNUAL_FEE_SCHEDULER_ENABLED:true}
+    cron: ${ANNUAL_FEE_SCHEDULER_CRON:0 0 2 * * *}
 
 eureka:
   client:

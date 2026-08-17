@@ -49,7 +49,8 @@ class BankTransactionServiceBehaviorTest {
     @BeforeEach
     void setUp() {
         transactionService = new BankTransactionService(transactionRepository, statementRepository,
-                outboxRepository, accountsClient, customersClient, new ObjectMapper(), auditClient, ledgerService);
+                outboxRepository, accountsClient, customersClient, new ObjectMapper().findAndRegisterModules(),
+                auditClient, ledgerService);
     }
 
     @Test

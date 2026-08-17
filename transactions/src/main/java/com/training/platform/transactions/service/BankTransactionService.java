@@ -8,6 +8,7 @@ import com.training.platform.transactions.client.AccountAdjustmentRequest;
 import com.training.platform.transactions.client.AccountAdjustmentResponse;
 import com.training.platform.transactions.client.AccountTransferRequest;
 import com.training.platform.transactions.client.AccountTransferResponse;
+import com.training.platform.transactions.client.AccountTransferRequest.TransferPurpose;
 import com.training.platform.transactions.client.AccountsClient;
 import com.training.platform.transactions.client.CustomersClient;
 import com.training.platform.transactions.entity.AccountStatement;
@@ -22,7 +23,9 @@ import com.training.platform.transactions.repository.BankTransactionRepository;
 import com.training.platform.transactions.repository.TransactionEventOutboxRepository;
 import jakarta.persistence.EntityNotFoundException;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,23 +97,25 @@ public class BankTransactionService {
                 throw new IllegalArgumentException(
                         "Transaction reference was already used for a different transfer");
             }
-            return existing;
+            if (existing.getTransactionStatus() != TransactionStatus.FAILED) return existing;
+            transaction = existing;
         }
 
         transaction.setTransactionStatus(TransactionStatus.PROCESSING);
         transaction.setCompletedAt(null);
-        transaction.setDescription(null);
+        transaction.setDescription(limit(initialDescription(transaction), 500));
         transaction.setFailureCode(null);
         transaction.setFailureReason(null);
         BankTransaction persisted = transactionRepository.saveAndFlush(transaction);
         auditTransactionChange("TRANSACTION_INITIATED", persisted, Map.of(),
-                "Transaction initiated");
+                initiatedAuditDescription(persisted));
 
         try {
-            if (persisted.getTransactionType() == TransactionType.TRANSFER) {
+            if (isTransferPosting(persisted.getTransactionType())) {
                 AccountTransferResponse transfer = accountsClient.transfer(new AccountTransferRequest(
                         persisted.getTransactionRef(), persisted.getDebitAccountId(), persisted.getCreditAccountId(),
-                        persisted.getAmount(), persisted.getCurrencyCode(), persisted.getInitiatedByCustomerId()));
+                        persisted.getAmount(), persisted.getCurrencyCode(), persisted.getInitiatedByCustomerId(),
+                        transferPurpose(persisted.getTransactionType())));
                 validateTransferResponse(persisted, transfer);
                 completeTransfer(persisted, transfer);
             } else {
@@ -119,7 +124,8 @@ public class BankTransactionService {
                         AccountAdjustmentRequest.AdjustmentType.valueOf(persisted.getTransactionType().name());
                 AccountAdjustmentResponse adjustment = accountsClient.adjust(accountId,
                         new AccountAdjustmentRequest(persisted.getTransactionRef(), adjustmentType,
-                                persisted.getAmount(), persisted.getCurrencyCode()));
+                                persisted.getAmount(), persisted.getCurrencyCode(),
+                                persisted.getInterestPeriodEnd()));
                 validateAdjustmentResponse(persisted, accountId, adjustment);
                 completeAdjustment(persisted, accountId, adjustment);
             }
@@ -161,27 +167,37 @@ public class BankTransactionService {
         if (transaction.getTransactionType() == null) {
             throw new IllegalArgumentException("Transaction type is required");
         }
-        if (transaction.getTransactionType() != TransactionType.TRANSFER
+        if (!isTransferPosting(transaction.getTransactionType())
+                && transaction.getTransactionType() != TransactionType.OPENING_DEPOSIT
                 && transaction.getTransactionType() != TransactionType.DEPOSIT
-                && transaction.getTransactionType() != TransactionType.WITHDRAWAL) {
-            throw new IllegalArgumentException("Only TRANSFER, DEPOSIT, and WITHDRAWAL posting is supported");
+                && transaction.getTransactionType() != TransactionType.WITHDRAWAL
+                && transaction.getTransactionType() != TransactionType.MONTHLY_MAINTENANCE_FEE
+                && transaction.getTransactionType() != TransactionType.ANNUAL_MAINTENANCE_FEE
+                && transaction.getTransactionType() != TransactionType.INTEREST_CREDIT
+                && transaction.getTransactionType() != TransactionType.FIXED_DEPOSIT_INTEREST_CREDIT) {
+            throw new IllegalArgumentException("Transaction type does not have a supported account posting");
         }
         if (isBlank(transaction.getTransactionRef())) {
             throw new IllegalArgumentException("Transaction reference is required");
         }
-        if (transaction.getTransactionType() == TransactionType.TRANSFER) {
+        if (isTransferPosting(transaction.getTransactionType())) {
             if (isBlank(transaction.getDebitAccountId()) || isBlank(transaction.getCreditAccountId())) {
                 throw new IllegalArgumentException("Debit and credit account IDs are required");
             }
             if (transaction.getDebitAccountId().equals(transaction.getCreditAccountId())) {
                 throw new IllegalArgumentException("Debit and credit accounts must be different");
             }
-        } else if (transaction.getTransactionType() == TransactionType.DEPOSIT
+        } else if ((transaction.getTransactionType() == TransactionType.OPENING_DEPOSIT
+                || transaction.getTransactionType() == TransactionType.DEPOSIT
+                || transaction.getTransactionType() == TransactionType.INTEREST_CREDIT
+                || transaction.getTransactionType() == TransactionType.FIXED_DEPOSIT_INTEREST_CREDIT)
                 && isBlank(transaction.getCreditAccountId())) {
-            throw new IllegalArgumentException("Credit account ID is required for a deposit");
-        } else if (transaction.getTransactionType() == TransactionType.WITHDRAWAL
+            throw new IllegalArgumentException("Credit account ID is required for a credit posting");
+        } else if ((transaction.getTransactionType() == TransactionType.WITHDRAWAL
+                || transaction.getTransactionType() == TransactionType.MONTHLY_MAINTENANCE_FEE
+                || transaction.getTransactionType() == TransactionType.ANNUAL_MAINTENANCE_FEE)
                 && isBlank(transaction.getDebitAccountId())) {
-            throw new IllegalArgumentException("Debit account ID is required for a withdrawal");
+            throw new IllegalArgumentException("Debit account ID is required for a debit posting");
         }
         if (transaction.getAmount() == null || transaction.getAmount().signum() <= 0) {
             throw new IllegalArgumentException("Amount must be greater than zero");
@@ -190,7 +206,12 @@ public class BankTransactionService {
             throw new IllegalArgumentException("Currency code is required");
         }
         BigDecimal feeAmount = transaction.getFeeAmount() == null ? BigDecimal.ZERO : transaction.getFeeAmount();
-        if (feeAmount.signum() != 0) {
+        if (transaction.getTransactionType() == TransactionType.MONTHLY_MAINTENANCE_FEE
+                || transaction.getTransactionType() == TransactionType.ANNUAL_MAINTENANCE_FEE) {
+            if (feeAmount.compareTo(transaction.getAmount()) != 0) {
+                throw new IllegalArgumentException("Maintenance fee amount must match the transaction amount");
+            }
+        } else if (feeAmount.signum() != 0) {
             throw new IllegalArgumentException("Fees require a configured bank fee account and are not posted yet");
         }
     }
@@ -222,6 +243,22 @@ public class BankTransactionService {
                 && existing.getCurrencyCode().equalsIgnoreCase(requested.getCurrencyCode());
     }
 
+    private boolean isTransferPosting(TransactionType type) {
+        return type == TransactionType.TRANSFER
+                || type == TransactionType.FIXED_DEPOSIT_FUNDING
+                || type == TransactionType.FIXED_DEPOSIT_MATURITY
+                || type == TransactionType.FIXED_DEPOSIT_PREMATURE_CLOSURE;
+    }
+
+    private TransferPurpose transferPurpose(TransactionType type) {
+        return switch (type) {
+            case FIXED_DEPOSIT_FUNDING -> TransferPurpose.FIXED_DEPOSIT_FUNDING;
+            case FIXED_DEPOSIT_MATURITY -> TransferPurpose.FIXED_DEPOSIT_MATURITY;
+            case FIXED_DEPOSIT_PREMATURE_CLOSURE -> TransferPurpose.FIXED_DEPOSIT_PREMATURE_CLOSURE;
+            default -> TransferPurpose.STANDARD;
+        };
+    }
+
     private void completeTransfer(BankTransaction transaction, AccountTransferResponse transfer) {
         Map<String, Object> previousValues = transactionValues(transaction);
         transaction.setTransactionStatus(TransactionStatus.COMPLETED);
@@ -229,8 +266,8 @@ public class BankTransactionService {
 
         String debitHolder = customerName(transfer.debitCustomerId());
         String creditHolder = customerName(transfer.creditCustomerId());
-        String channel = isSelfTransfer(transaction) ? "SELF TRANSFER" : "INTERNAL TRANSFER";
-        transaction.setDescription(limit(channel + " FROM " + debitHolder + " TO " + creditHolder, 500));
+        String channel = transferLabel(transaction);
+        transaction.setDescription(limit(transferDescription(transaction, debitHolder, creditHolder), 500));
 
         String debitDescription = channel + " TO " + creditHolder + " A/C "
                 + maskedAccount(transfer.creditAccountNumber(), transfer.creditAccountId())
@@ -246,9 +283,11 @@ public class BankTransactionService {
         statementRepository.saveAll(List.of(debitEntry, creditEntry));
         ledgerService.postCompletedTransaction(transaction);
         auditRelatedCreated("STATEMENT_ENTRY_CREATED", transaction, "STATEMENT",
-                debitEntry.getStatementId(), "Debit statement entry created", statementValues(debitEntry));
+                debitEntry.getStatementId(), statementAuditDescription(transaction, StatementEntryType.DEBIT),
+                statementValues(debitEntry));
         auditRelatedCreated("STATEMENT_ENTRY_CREATED", transaction, "STATEMENT",
-                creditEntry.getStatementId(), "Credit statement entry created", statementValues(creditEntry));
+                creditEntry.getStatementId(), statementAuditDescription(transaction, StatementEntryType.CREDIT),
+                statementValues(creditEntry));
 
         Map<String, Object> payload = basePayload(transaction);
         payload.put("debitBalanceAfter", transfer.debitBalanceAfter());
@@ -257,8 +296,9 @@ public class BankTransactionService {
                 TransactionEventType.TRANSACTION_COMPLETED, toJson(payload));
         outboxRepository.save(outboxEvent);
         auditRelatedCreated("OUTBOX_EVENT_CREATED", transaction, "OUTBOX_EVENT",
-                outboxEvent.getEventId(), "Transaction-completed outbox event created", outboxValues(outboxEvent));
-        auditTransactionChange("TRANSACTION_COMPLETED", transaction, previousValues, "Transaction completed");
+                outboxEvent.getEventId(), outboxAuditDescription(transaction, true), outboxValues(outboxEvent));
+        auditTransactionChange("TRANSACTION_COMPLETED", transaction, previousValues,
+                completedAuditDescription(transaction));
     }
 
     private void completeAdjustment(BankTransaction transaction, String accountId,
@@ -267,19 +307,21 @@ public class BankTransactionService {
         transaction.setTransactionStatus(TransactionStatus.COMPLETED);
         transaction.setCompletedAt(LocalDateTime.now());
 
-        StatementEntryType entryType = transaction.getTransactionType() == TransactionType.DEPOSIT
+        StatementEntryType entryType = transaction.getTransactionType() == TransactionType.OPENING_DEPOSIT
+                || transaction.getTransactionType() == TransactionType.DEPOSIT
+                || transaction.getTransactionType() == TransactionType.INTEREST_CREDIT
+                || transaction.getTransactionType() == TransactionType.FIXED_DEPOSIT_INTEREST_CREDIT
                 ? StatementEntryType.CREDIT : StatementEntryType.DEBIT;
         String holder = customerName(adjustment.customerId());
-        String operation = transaction.getTransactionType() == TransactionType.DEPOSIT
-                ? "DEPOSIT BY " : "WITHDRAWAL BY ";
-        String description = operation + holder + " | REF " + transaction.getTransactionRef();
-        transaction.setDescription(limit(operation + holder, 500));
+        String transactionDescription = adjustmentDescription(transaction, holder);
+        String description = transactionDescription + " | REF " + transaction.getTransactionRef();
+        transaction.setDescription(limit(transactionDescription, 500));
         AccountStatement statementEntry = statement(transaction, accountId, entryType,
                 adjustment.balanceAfter(), description);
         statementRepository.save(statementEntry);
         ledgerService.postCompletedTransaction(transaction);
         auditRelatedCreated("STATEMENT_ENTRY_CREATED", transaction, "STATEMENT",
-                statementEntry.getStatementId(), entryType + " statement entry created",
+                statementEntry.getStatementId(), statementAuditDescription(transaction, entryType),
                 statementValues(statementEntry));
 
         Map<String, Object> payload = basePayload(transaction);
@@ -289,12 +331,16 @@ public class BankTransactionService {
                 TransactionEventType.TRANSACTION_COMPLETED, toJson(payload));
         outboxRepository.save(outboxEvent);
         auditRelatedCreated("OUTBOX_EVENT_CREATED", transaction, "OUTBOX_EVENT",
-                outboxEvent.getEventId(), "Transaction-completed outbox event created", outboxValues(outboxEvent));
-        auditTransactionChange("TRANSACTION_COMPLETED", transaction, previousValues, "Transaction completed");
+                outboxEvent.getEventId(), outboxAuditDescription(transaction, true), outboxValues(outboxEvent));
+        auditTransactionChange("TRANSACTION_COMPLETED", transaction, previousValues,
+                completedAuditDescription(transaction));
     }
 
     private String postingAccountId(BankTransaction transaction) {
-        return transaction.getTransactionType() == TransactionType.DEPOSIT
+        return transaction.getTransactionType() == TransactionType.OPENING_DEPOSIT
+                || transaction.getTransactionType() == TransactionType.DEPOSIT
+                || transaction.getTransactionType() == TransactionType.INTEREST_CREDIT
+                || transaction.getTransactionType() == TransactionType.FIXED_DEPOSIT_INTEREST_CREDIT
                 ? transaction.getCreditAccountId() : transaction.getDebitAccountId();
     }
 
@@ -310,13 +356,13 @@ public class BankTransactionService {
                 TransactionEventType.TRANSACTION_FAILED, toJson(payload));
         outboxRepository.save(outboxEvent);
         auditRelatedCreated("OUTBOX_EVENT_CREATED", transaction, "OUTBOX_EVENT",
-                outboxEvent.getEventId(), "Transaction-failed outbox event created", outboxValues(outboxEvent));
+                outboxEvent.getEventId(), outboxAuditDescription(transaction, false), outboxValues(outboxEvent));
         Map<String, Object> details = transactionAuditDetails(transaction);
         details.put("previousStatus", TransactionStatus.PROCESSING.name());
         details.put("newStatus", TransactionStatus.FAILED.name());
         details.put("failureReason", transaction.getFailureReason());
         putChanges(details, previousValues, transactionValues(transaction));
-        auditClient.failed("transactions", "TRANSACTION_FAILED", "Transaction failed",
+        auditClient.failed("transactions", "TRANSACTION_FAILED", failedAuditDescription(transaction),
                 transaction.getFailureCode(), transaction.getFailureReason(), details);
     }
 
@@ -363,6 +409,10 @@ public class BankTransactionService {
         payload.put("amount", transaction.getAmount());
         payload.put("currencyCode", transaction.getCurrencyCode());
         payload.put("description", transaction.getDescription());
+        payload.put("maker", transaction.getInitiatedByUserId());
+        payload.put("businessDate", businessDate(transaction));
+        payload.put("completedAt", transaction.getCompletedAt());
+        payload.put("interestPeriodEnd", transaction.getInterestPeriodEnd());
         return payload;
     }
 
@@ -392,6 +442,7 @@ public class BankTransactionService {
         target.setInitiatedByCustomerId(source.getInitiatedByCustomerId());
         target.setInitiatedByUserId(source.getInitiatedByUserId());
         target.setCompletedAt(source.getCompletedAt());
+        target.setInterestPeriodEnd(source.getInterestPeriodEnd());
         target.setFailureCode(source.getFailureCode());
         target.setFailureReason(source.getFailureReason());
     }
@@ -405,7 +456,6 @@ public class BankTransactionService {
         details.put("newStatus", transaction.getTransactionStatus().name());
         if (changes != null) {
             details.putAll(changes);
-            if (!previousValues.isEmpty()) description += ": " + changes.get("changedFields");
         }
         auditClient.success("transactions", action, description, details);
     }
@@ -427,7 +477,177 @@ public class BankTransactionService {
         details.put("creditAccountId", transaction.getCreditAccountId());
         details.put("amount", transaction.getAmount());
         details.put("currencyCode", transaction.getCurrencyCode());
+        details.put("transactionType", transaction.getTransactionType().name());
+        details.put("description", transaction.getDescription());
+        details.put("businessDate", businessDate(transaction));
+        details.put("initiatedByUserId", transaction.getInitiatedByUserId());
+        details.put("interestPeriodEnd", transaction.getInterestPeriodEnd());
+        if (isSystemGenerated(transaction)) {
+            details.put("actorId", "SYSTEM");
+            details.put("actorType", "SYSTEM");
+        }
         return details;
+    }
+
+    private String initialDescription(BankTransaction transaction) {
+        LocalDate date = businessDate(transaction);
+        return switch (transaction.getTransactionType()) {
+            case INTEREST_CREDIT -> "Savings interest credit for period ending " + date;
+            case FIXED_DEPOSIT_INTEREST_CREDIT ->
+                    "Fixed-deposit interest credit for period ending " + date;
+            case MONTHLY_MAINTENANCE_FEE ->
+                    "Monthly maintenance fee for " + YearMonth.from(date);
+            case ANNUAL_MAINTENANCE_FEE ->
+                    "Annual maintenance fee for the " + annualFeeYear(transaction) + " account anniversary";
+            case FIXED_DEPOSIT_FUNDING -> "Fixed-deposit principal funding";
+            case FIXED_DEPOSIT_MATURITY -> "Fixed-deposit principal payout on maturity";
+            case FIXED_DEPOSIT_PREMATURE_CLOSURE -> "Fixed-deposit principal return after premature closure";
+            case OPENING_DEPOSIT -> "Opening deposit";
+            case DEPOSIT -> "Account deposit";
+            case WITHDRAWAL -> "Account withdrawal";
+            default -> isSelfTransfer(transaction) ? "Self transfer" : "Internal transfer";
+        };
+    }
+
+    private String adjustmentDescription(BankTransaction transaction, String holder) {
+        LocalDate date = businessDate(transaction);
+        return switch (transaction.getTransactionType()) {
+            case OPENING_DEPOSIT -> "Opening deposit by " + holder;
+            case DEPOSIT -> "Deposit by " + holder;
+            case INTEREST_CREDIT ->
+                    "Savings interest credited to " + holder + " for period ending " + date;
+            case FIXED_DEPOSIT_INTEREST_CREDIT ->
+                    "Fixed-deposit interest credited to " + holder + " for period ending " + date;
+            case MONTHLY_MAINTENANCE_FEE ->
+                    "Monthly maintenance fee charged to " + holder + " for " + YearMonth.from(date);
+            case ANNUAL_MAINTENANCE_FEE ->
+                    "Annual maintenance fee charged to " + holder + " for the "
+                            + annualFeeYear(transaction) + " account anniversary";
+            default -> "Withdrawal by " + holder;
+        };
+    }
+
+    private String transferLabel(BankTransaction transaction) {
+        return switch (transaction.getTransactionType()) {
+            case FIXED_DEPOSIT_FUNDING -> "FIXED DEPOSIT FUNDING";
+            case FIXED_DEPOSIT_MATURITY -> "FIXED DEPOSIT MATURITY";
+            case FIXED_DEPOSIT_PREMATURE_CLOSURE -> "FIXED DEPOSIT PREMATURE CLOSURE";
+            default -> isSelfTransfer(transaction) ? "SELF TRANSFER" : "INTERNAL TRANSFER";
+        };
+    }
+
+    private String transferDescription(BankTransaction transaction, String debitHolder, String creditHolder) {
+        return switch (transaction.getTransactionType()) {
+            case FIXED_DEPOSIT_FUNDING ->
+                    "Fixed-deposit principal funded from " + debitHolder + " to " + creditHolder;
+            case FIXED_DEPOSIT_MATURITY ->
+                    "Fixed-deposit principal paid on maturity from " + debitHolder + " to " + creditHolder;
+            case FIXED_DEPOSIT_PREMATURE_CLOSURE ->
+                    "Fixed-deposit principal returned after premature closure from "
+                            + debitHolder + " to " + creditHolder;
+            default -> transferLabel(transaction) + " FROM " + debitHolder + " TO " + creditHolder;
+        };
+    }
+
+    private String initiatedAuditDescription(BankTransaction transaction) {
+        return switch (transaction.getTransactionType()) {
+            case INTEREST_CREDIT -> "Savings interest posting initiated for period ending "
+                    + businessDate(transaction);
+            case FIXED_DEPOSIT_INTEREST_CREDIT ->
+                    "Fixed-deposit interest posting initiated for period ending " + businessDate(transaction);
+            case MONTHLY_MAINTENANCE_FEE -> "Monthly maintenance fee posting initiated for "
+                    + YearMonth.from(businessDate(transaction));
+            case ANNUAL_MAINTENANCE_FEE -> "Annual maintenance fee posting initiated for the "
+                    + annualFeeYear(transaction) + " account anniversary";
+            case FIXED_DEPOSIT_MATURITY -> "Fixed-deposit maturity payout initiated";
+            default -> "Transaction initiated";
+        };
+    }
+
+    private String completedAuditDescription(BankTransaction transaction) {
+        return switch (transaction.getTransactionType()) {
+            case INTEREST_CREDIT -> "Savings interest credited for period ending " + businessDate(transaction);
+            case FIXED_DEPOSIT_INTEREST_CREDIT ->
+                    "Fixed-deposit interest credited for period ending " + businessDate(transaction);
+            case MONTHLY_MAINTENANCE_FEE -> "Monthly maintenance fee charged for "
+                    + YearMonth.from(businessDate(transaction));
+            case ANNUAL_MAINTENANCE_FEE -> "Annual maintenance fee charged for the "
+                    + annualFeeYear(transaction) + " account anniversary";
+            case FIXED_DEPOSIT_MATURITY -> "Fixed-deposit principal paid on maturity";
+            case FIXED_DEPOSIT_PREMATURE_CLOSURE ->
+                    "Fixed-deposit principal returned after premature closure";
+            case FIXED_DEPOSIT_FUNDING -> "Fixed-deposit principal funded";
+            default -> "Transaction completed: " + transaction.getDescription();
+        };
+    }
+
+    private String failedAuditDescription(BankTransaction transaction) {
+        return switch (transaction.getTransactionType()) {
+            case INTEREST_CREDIT -> "Savings interest posting failed for period ending "
+                    + businessDate(transaction);
+            case FIXED_DEPOSIT_INTEREST_CREDIT ->
+                    "Fixed-deposit interest posting failed for period ending " + businessDate(transaction);
+            case MONTHLY_MAINTENANCE_FEE -> "Monthly maintenance fee posting failed for "
+                    + YearMonth.from(businessDate(transaction));
+            case ANNUAL_MAINTENANCE_FEE -> "Annual maintenance fee posting failed for the "
+                    + annualFeeYear(transaction) + " account anniversary";
+            default -> "Transaction failed: " + initialDescription(transaction);
+        };
+    }
+
+    private String statementAuditDescription(BankTransaction transaction, StatementEntryType entryType) {
+        return switch (transaction.getTransactionType()) {
+            case INTEREST_CREDIT -> "Savings interest credit statement entry created for period ending "
+                    + businessDate(transaction);
+            case FIXED_DEPOSIT_INTEREST_CREDIT ->
+                    "Fixed-deposit interest credit statement entry created for period ending "
+                            + businessDate(transaction);
+            case MONTHLY_MAINTENANCE_FEE -> "Monthly maintenance fee debit statement entry created for "
+                    + YearMonth.from(businessDate(transaction));
+            case ANNUAL_MAINTENANCE_FEE ->
+                    "Annual maintenance fee debit statement entry created for the "
+                            + annualFeeYear(transaction) + " account anniversary";
+            default -> entryType + " statement entry created for " + initialDescription(transaction);
+        };
+    }
+
+    private String outboxAuditDescription(BankTransaction transaction, boolean completed) {
+        String outcome = completed ? "completion" : "failure";
+        return switch (transaction.getTransactionType()) {
+            case INTEREST_CREDIT -> "Savings interest " + outcome
+                    + " event queued for period ending " + businessDate(transaction);
+            case FIXED_DEPOSIT_INTEREST_CREDIT -> "Fixed-deposit interest " + outcome
+                    + " event queued for period ending " + businessDate(transaction);
+            case MONTHLY_MAINTENANCE_FEE -> "Monthly maintenance fee " + outcome
+                    + " event queued for " + YearMonth.from(businessDate(transaction));
+            case ANNUAL_MAINTENANCE_FEE -> "Annual maintenance fee " + outcome
+                    + " event queued for the " + annualFeeYear(transaction) + " account anniversary";
+            default -> "Transaction " + outcome + " event queued";
+        };
+    }
+
+    private LocalDate businessDate(BankTransaction transaction) {
+        if (transaction.getInterestPeriodEnd() != null) return transaction.getInterestPeriodEnd();
+        if (transaction.getCompletedAt() != null) return transaction.getCompletedAt().toLocalDate();
+        if (transaction.getInitiatedAt() != null) return transaction.getInitiatedAt().toLocalDate();
+        return LocalDate.now();
+    }
+
+    private int annualFeeYear(BankTransaction transaction) {
+        String reference = transaction.getTransactionRef();
+        if (reference != null && reference.matches("AF\\d{4}-.+")) {
+            return Integer.parseInt(reference.substring(2, 6));
+        }
+        return businessDate(transaction).getYear();
+    }
+
+    private boolean isSystemGenerated(BankTransaction transaction) {
+        if (!"SYSTEM".equalsIgnoreCase(transaction.getInitiatedByUserId())) return false;
+        return transaction.getTransactionType() == TransactionType.INTEREST_CREDIT
+                || transaction.getTransactionType() == TransactionType.FIXED_DEPOSIT_INTEREST_CREDIT
+                || transaction.getTransactionType() == TransactionType.MONTHLY_MAINTENANCE_FEE
+                || transaction.getTransactionType() == TransactionType.ANNUAL_MAINTENANCE_FEE
+                || transaction.getTransactionType() == TransactionType.FIXED_DEPOSIT_MATURITY;
     }
 
     private Map<String, Object> transactionValues(BankTransaction transaction) {
@@ -445,6 +665,7 @@ public class BankTransactionService {
         values.put("initiatedByCustomerId", transaction.getInitiatedByCustomerId());
         values.put("initiatedByUserId", transaction.getInitiatedByUserId());
         values.put("completedAt", transaction.getCompletedAt());
+        values.put("interestPeriodEnd", transaction.getInterestPeriodEnd());
         values.put("failureCode", transaction.getFailureCode());
         values.put("failureReason", transaction.getFailureReason());
         return values;

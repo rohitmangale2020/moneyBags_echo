@@ -72,7 +72,8 @@ public class AccountStatementService {
         return (root, query, builder) -> {
             var transaction = root.join("transaction");
             return switch (channel) {
-                case DEPOSIT -> builder.equal(transaction.get("transactionType"), TransactionType.DEPOSIT);
+                case DEPOSIT -> transaction.get("transactionType").in(
+                        TransactionType.OPENING_DEPOSIT, TransactionType.DEPOSIT);
                 case WITHDRAWAL -> builder.equal(transaction.get("transactionType"), TransactionType.WITHDRAWAL);
                 case INTERNAL_TRANSFER -> builder.and(
                         builder.equal(transaction.get("transactionType"), TransactionType.TRANSFER),

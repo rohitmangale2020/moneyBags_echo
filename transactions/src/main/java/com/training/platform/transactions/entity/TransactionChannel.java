@@ -13,7 +13,7 @@ public enum TransactionChannel {
             case TRANSFER -> transaction.getInitiatedByCustomerId() == null
                     || transaction.getInitiatedByCustomerId().isBlank()
                     ? INTERNAL_TRANSFER : SELF_TRANSFER;
-            case DEPOSIT -> DEPOSIT;
+            case OPENING_DEPOSIT, DEPOSIT -> DEPOSIT;
             case WITHDRAWAL -> WITHDRAWAL;
             default -> null;
         };

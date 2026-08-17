@@ -11,6 +11,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +28,16 @@ public class Account {
     @Column(name = "account_number", nullable = false, length = 24) private String accountNumber;
     @Column(name = "customer_id", nullable = false, length = 36) private String customerId;
     @Column(name = "product_id", nullable = false, length = 36) private String productId;
+    @Column(name = "product_type_code", length = 30) private String productTypeCode;
+    @Column(name = "minimum_balance", precision = 19, scale = 4) private BigDecimal minimumBalance;
+    @Column(name = "maximum_balance", precision = 19, scale = 4) private BigDecimal maximumBalance;
+    @Column(name = "annual_interest_rate", precision = 8, scale = 4) private BigDecimal annualInterestRate;
+    @Column(name = "tenure_months") private Integer tenureMonths;
+    @Column(name = "lock_in_period_months") private Integer lockInPeriodMonths;
+    @Column(name = "maturity_instruction", length = 50) private String maturityInstruction;
+    @Column(name = "premature_withdrawal_allowed") private Boolean prematureWithdrawalAllowed;
+    @Column(name = "interest_accrued_through") private LocalDate interestAccruedThrough;
+    @Column(name = "next_interest_payout_date") private LocalDate nextInterestPayoutDate;
     @Enumerated(EnumType.STRING) @Column(name = "ownership_type", nullable = false, length = 20) private OwnershipType ownershipType;
     @Enumerated(EnumType.STRING) @Column(nullable = false, length = 20) private AccountStatus status;
     @Column(name = "currency_code", nullable = false, length = 3) private String currencyCode;
@@ -51,6 +62,16 @@ public class Account {
     public String getAccountNumber() { return accountNumber; }
     public String getCustomerId() { return customerId; }
     public String getProductId() { return productId; }
+    public String getProductTypeCode() { return productTypeCode; }
+    public BigDecimal getMinimumBalance() { return minimumBalance; }
+    public BigDecimal getMaximumBalance() { return maximumBalance; }
+    public BigDecimal getAnnualInterestRate() { return annualInterestRate; }
+    public Integer getTenureMonths() { return tenureMonths; }
+    public Integer getLockInPeriodMonths() { return lockInPeriodMonths; }
+    public String getMaturityInstruction() { return maturityInstruction; }
+    public Boolean getPrematureWithdrawalAllowed() { return prematureWithdrawalAllowed; }
+    public LocalDate getInterestAccruedThrough() { return interestAccruedThrough; }
+    public LocalDate getNextInterestPayoutDate() { return nextInterestPayoutDate; }
     public String getCurrencyCode() { return currencyCode; }
     public BigDecimal getAvailableBalance() { return availableBalance; }
     public LocalDateTime getOpenedAt() { return openedAt; }
@@ -64,6 +85,16 @@ public class Account {
     public void setAccountNumber(String accountNumber) { this.accountNumber = accountNumber; }
     public void setCustomerId(String customerId) { this.customerId = customerId; }
     public void setProductId(String productId) { this.productId = productId; }
+    public void setProductTypeCode(String productTypeCode) { this.productTypeCode = productTypeCode; }
+    public void setMinimumBalance(BigDecimal minimumBalance) { this.minimumBalance = minimumBalance; }
+    public void setMaximumBalance(BigDecimal maximumBalance) { this.maximumBalance = maximumBalance; }
+    public void setAnnualInterestRate(BigDecimal annualInterestRate) { this.annualInterestRate = annualInterestRate; }
+    public void setTenureMonths(Integer tenureMonths) { this.tenureMonths = tenureMonths; }
+    public void setLockInPeriodMonths(Integer lockInPeriodMonths) { this.lockInPeriodMonths = lockInPeriodMonths; }
+    public void setMaturityInstruction(String maturityInstruction) { this.maturityInstruction = maturityInstruction; }
+    public void setPrematureWithdrawalAllowed(Boolean prematureWithdrawalAllowed) { this.prematureWithdrawalAllowed = prematureWithdrawalAllowed; }
+    public void setInterestAccruedThrough(LocalDate interestAccruedThrough) { this.interestAccruedThrough = interestAccruedThrough; }
+    public void setNextInterestPayoutDate(LocalDate nextInterestPayoutDate) { this.nextInterestPayoutDate = nextInterestPayoutDate; }
     public void setOwnershipType(OwnershipType ownershipType) { this.ownershipType = ownershipType; }
     public void setStatus(AccountStatus status) { this.status = status; }
     public void setCurrencyCode(String currencyCode) { this.currencyCode = currencyCode; }
