@@ -115,8 +115,7 @@ public class BankTransactionService {
                 completeTransfer(persisted, transfer);
             } else {
                 String accountId = postingAccountId(persisted);
-                AccountAdjustmentRequest.AdjustmentType adjustmentType =
-                        AccountAdjustmentRequest.AdjustmentType.valueOf(persisted.getTransactionType().name());
+                AccountAdjustmentRequest.AdjustmentType adjustmentType = adjustmentType(persisted);
                 AccountAdjustmentResponse adjustment = accountsClient.adjust(accountId,
                         new AccountAdjustmentRequest(persisted.getTransactionRef(), adjustmentType,
                                 persisted.getAmount(), persisted.getCurrencyCode()));
@@ -162,9 +161,9 @@ public class BankTransactionService {
             throw new IllegalArgumentException("Transaction type is required");
         }
         if (transaction.getTransactionType() != TransactionType.TRANSFER
-                && transaction.getTransactionType() != TransactionType.DEPOSIT
+                && !isDeposit(transaction)
                 && transaction.getTransactionType() != TransactionType.WITHDRAWAL) {
-            throw new IllegalArgumentException("Only TRANSFER, DEPOSIT, and WITHDRAWAL posting is supported");
+            throw new IllegalArgumentException("Only TRANSFER, DEPOSIT, OPENING_DEPOSIT, FIXED_DEPOSIT_FUNDING, and WITHDRAWAL posting is supported");
         }
         if (isBlank(transaction.getTransactionRef())) {
             throw new IllegalArgumentException("Transaction reference is required");
@@ -176,7 +175,7 @@ public class BankTransactionService {
             if (transaction.getDebitAccountId().equals(transaction.getCreditAccountId())) {
                 throw new IllegalArgumentException("Debit and credit accounts must be different");
             }
-        } else if (transaction.getTransactionType() == TransactionType.DEPOSIT
+        } else if (isDeposit(transaction)
                 && isBlank(transaction.getCreditAccountId())) {
             throw new IllegalArgumentException("Credit account ID is required for a deposit");
         } else if (transaction.getTransactionType() == TransactionType.WITHDRAWAL
@@ -208,7 +207,7 @@ public class BankTransactionService {
                                             AccountAdjustmentResponse response) {
         if (!transaction.getTransactionRef().equals(response.transactionRef())
                 || !accountId.equals(response.accountId())
-                || transaction.getTransactionType() != TransactionType.valueOf(response.adjustmentType().name())) {
+                || adjustmentType(transaction) != response.adjustmentType()) {
             throw new AccountPostingException("ACCOUNT_RESPONSE_INVALID",
                     "Accounts service returned a response for a different posting");
         }
@@ -267,11 +266,15 @@ public class BankTransactionService {
         transaction.setTransactionStatus(TransactionStatus.COMPLETED);
         transaction.setCompletedAt(LocalDateTime.now());
 
-        StatementEntryType entryType = transaction.getTransactionType() == TransactionType.DEPOSIT
+        StatementEntryType entryType = isDeposit(transaction)
                 ? StatementEntryType.CREDIT : StatementEntryType.DEBIT;
         String holder = customerName(adjustment.customerId());
-        String operation = transaction.getTransactionType() == TransactionType.DEPOSIT
-                ? "DEPOSIT BY " : "WITHDRAWAL BY ";
+        String operation = isDeposit(transaction)
+                ? (transaction.getTransactionType() == TransactionType.FIXED_DEPOSIT_FUNDING
+                    ? "FIXED DEPOSIT FUNDING BY "
+                    : transaction.getTransactionType() == TransactionType.OPENING_DEPOSIT
+                        ? "OPENING DEPOSIT BY " : "DEPOSIT BY ")
+                : "WITHDRAWAL BY ";
         String description = operation + holder + " | REF " + transaction.getTransactionRef();
         transaction.setDescription(limit(operation + holder, 500));
         AccountStatement statementEntry = statement(transaction, accountId, entryType,
@@ -294,8 +297,19 @@ public class BankTransactionService {
     }
 
     private String postingAccountId(BankTransaction transaction) {
-        return transaction.getTransactionType() == TransactionType.DEPOSIT
+        return isDeposit(transaction)
                 ? transaction.getCreditAccountId() : transaction.getDebitAccountId();
+    }
+
+    private AccountAdjustmentRequest.AdjustmentType adjustmentType(BankTransaction transaction) {
+        return isDeposit(transaction) ? AccountAdjustmentRequest.AdjustmentType.DEPOSIT
+                : AccountAdjustmentRequest.AdjustmentType.WITHDRAWAL;
+    }
+
+    private boolean isDeposit(BankTransaction transaction) {
+        return transaction.getTransactionType() == TransactionType.DEPOSIT
+                || transaction.getTransactionType() == TransactionType.OPENING_DEPOSIT
+                || transaction.getTransactionType() == TransactionType.FIXED_DEPOSIT_FUNDING;
     }
 
     private void fail(BankTransaction transaction, AccountPostingException exception) {
