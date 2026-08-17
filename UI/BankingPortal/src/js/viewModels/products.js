@@ -41,6 +41,10 @@ define([
         product.productTypeName,
         product.description,
       ].some((value) => String(value || '').toLowerCase().includes(query));
+    }).sort((left, right) => {
+      const typeOrder = String(left.productTypeName || left.productTypeCode || '')
+        .localeCompare(String(right.productTypeName || right.productTypeCode || ''));
+      return typeOrder || String(left.productCode || '').localeCompare(String(right.productCode || ''));
     });
   }
   function productTypeOptions(products) {
@@ -62,6 +66,16 @@ define([
     s.editingCode = ko.observable(null);
     s.selected = ko.observable(null);
     s.history = ko.observableArray([]);
+    s.retirementImpact = ko.observable(null);
+    s.retirementProduct = ko.observable(null);
+    s.retirementMigrationProduct = ko.observable('');
+    s.retirementInProgress = ko.observable(false);
+    s.impactLabel = (riskLevel) => riskLevel === 'NO_IMPACT' ? 'No impact' : `${riskLevel} impact`;
+    s.riskLabel = (riskLevel) => riskLevel === 'NO_IMPACT' ? 'No impact' : `${riskLevel} risk`;
+    s.canProceedRetirement = ko.pureComputed(() => {
+      const impact = s.retirementImpact();
+      return !!impact && (impact.affectedAccountCount === 0 || !!s.retirementMigrationProduct());
+    });
     s.activeProducts = ko.pureComputed(() => s.state.data().filter((product) => product.status === 'ACTIVE'));
     s.retiredProducts = ko.pureComputed(() => s.state.data().filter((product) => product.status === 'RETIRED'));
     s.activeSearch = ko.observable('');
@@ -86,6 +100,7 @@ define([
       : `${s.retiredProducts().length} retired`);
     s.clearActiveFilters = () => { s.activeSearch(''); s.activeType(''); };
     s.clearRetiredFilters = () => { s.retiredSearch(''); s.retiredType(''); };
+    s.refreshProducts = () => s.load();
     s.toggleActiveCompact = () => s.activeCompact(!s.activeCompact());
     s.toggleRetiredCompact = () => s.retiredCompact(!s.retiredCompact());
     s.typeForm = {
@@ -239,13 +254,36 @@ define([
         app.notify('Only administrators can retire products.', 'warning');
         return;
       }
-      if (!window.confirm(`Retire product ${p.productCode}?`)) return;
       try {
-        await app.services.products.retire(p.productCode);
-        document.getElementById('productDetailDialog').close();
-        app.notify('Product retired.');
-        s.load();
+        const impact = await app.services.products.retirementImpact(p.productCode);
+        s.retirementProduct(p);
+        s.retirementImpact(impact);
+        s.retirementMigrationProduct(impact.recommendedProducts && impact.recommendedProducts.length
+          ? impact.recommendedProducts[0].productCode : '');
+        document.getElementById('retirementImpactDialog').open();
       } catch (e) { app.notify(e.message, 'error'); }
+    };
+    s.cancelRetirement = () => {
+      s.retirementImpact(null);
+      s.retirementProduct(null);
+      s.retirementMigrationProduct('');
+      document.getElementById('retirementImpactDialog').close();
+    };
+    s.proceedRetirement = async () => {
+      const product = s.retirementProduct();
+      const impact = s.retirementImpact();
+      if (!product || !impact) return;
+      s.retirementInProgress(true);
+      try {
+        await app.services.products.retire(product.productCode, {
+          migrationProductCode: s.retirementMigrationProduct() || null,
+        });
+        document.getElementById('retirementImpactDialog').close();
+        document.getElementById('productDetailDialog').close();
+        app.notify(`Product retired. ${impact.riskLevel} impact was recorded in lifecycle history.`);
+        s.load();
+      } catch (e) { app.notify(e.message, 'error');
+      } finally { s.retirementInProgress(false); }
     };
     s.load();
   }

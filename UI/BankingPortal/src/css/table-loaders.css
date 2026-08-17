@@ -17,3 +17,98 @@
   color: var(--acct-ink);
   text-align: center;
 }
+
+.mb-stack:has(> .mb-moneybags-loader),
+.mb-dialog [slot="body"]:has(> .mb-moneybags-loader) {
+  position: relative;
+}
+
+.mb-moneybags-loader {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 8px;
+  min-height: 260px;
+  padding: 32px 16px;
+  background: rgba(237, 243, 250, 0.58);
+  -webkit-backdrop-filter: blur(9px);
+  backdrop-filter: blur(9px);
+  color: #273b60;
+  text-align: center;
+}
+
+.mb-moneybags-loader-logo {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 6px;
+  opacity: 0;
+}
+
+.mb-moneybags-loader::before,
+.mb-moneybags-loader::after {
+  position: absolute;
+  top: calc(50% - 25px);
+  left: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+.mb-moneybags-loader::before {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 12px 30px rgba(53, 94, 184, 0.24);
+  content: "";
+}
+
+.mb-moneybags-loader::after {
+  overflow: hidden;
+  width: 42px;
+  color: #355eb8;
+  content: "M";
+  clip-path: inset(0 100% 0 0);
+  font-family: Arial, sans-serif;
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1;
+  animation: mb-moneybags-loader-draw-m 1.6s ease-in-out infinite;
+}
+
+.mb-moneybags-loader strong {
+  font-size: 16px;
+}
+
+.mb-moneybags-loader small {
+  color: #647a9e;
+}
+
+@keyframes mb-moneybags-loader-draw-m {
+  0%, 10% {
+    opacity: 0;
+    clip-path: inset(0 100% 0 0);
+  }
+  18% {
+    opacity: 1;
+    clip-path: inset(0 92% 0 0);
+  }
+  75%, 90% {
+    opacity: 1;
+    clip-path: inset(0);
+  }
+  100% {
+    opacity: 0;
+    clip-path: inset(0 100% 0 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mb-moneybags-loader::after {
+    animation: none;
+    opacity: 1;
+    clip-path: inset(0);
+  }
+}

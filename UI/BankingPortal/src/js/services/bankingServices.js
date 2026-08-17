@@ -4,7 +4,7 @@ define(['services/apiClient'], function (api) {
   return {
     auth: { login: (u, p) => api.post('/auth/login', { username: u, password: p }) },
     users: {
-      list: () => api.get('/api/v1/users?page=0&size=100&sort=id,desc'),
+      list: (page = 0, size = 20, query = '') => api.get(`/api/v1/users?page=${e(page)}&size=${e(size)}${query ? `&q=${e(query)}` : ''}`),
       get: (id) => api.get(`/api/v1/users/${e(id)}`),
       create: (d) => api.post('/api/v1/users', d),
       update: (id, d) => api.put(`/api/v1/users/${e(id)}`, d),
@@ -61,9 +61,10 @@ define(['services/apiClient'], function (api) {
       createType: (d) => api.post('/api/v1/product-types', d),
       get: (c) => api.get(`/api/v1/products/${e(c)}`),
       history: (c) => api.get(`/api/v1/products/${e(c)}/status-history`),
+      retirementImpact: (c) => api.get(`/api/v1/products/${e(c)}/retirement-impact`),
       update: (c, d) => api.put(`/api/v1/products/${e(c)}`, d),
       status: (c, s, r) => api.patch(`/api/v1/products/${e(c)}/status`, { status: s, reason: r }),
-      retire: (c) => api.delete(`/api/v1/products/${e(c)}`),
+      retire: (c, d) => api.post(`/api/v1/products/${e(c)}/retire`, d),
     },
     accounts: {
       list: (page, size) => api.get(page === undefined ? '/api/accounts' : `/api/accounts?page=${e(page)}&size=${e(size || 10)}`),

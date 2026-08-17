@@ -42,6 +42,12 @@ define([
     self.toasts = ko.observableArray([]);
     self.manner = ko.observable("polite");
     self.message = ko.observable("");
+    document.addEventListener("pointerdown", (event) => {
+      document.querySelectorAll("details.mb-profile-menu[open], details.mb-user-actions[open]")
+        .forEach((menu) => {
+          if (!menu.contains(event.target)) menu.removeAttribute("open");
+        });
+    });
     self.sidebarCollapsed = ko.observable(localStorage.getItem("moneybags.sidebar.collapsed") === "true");
     self.toggleSidebar = () => {
       const collapsed = !self.sidebarCollapsed();

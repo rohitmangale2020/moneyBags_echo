@@ -13,6 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.security.test.context.support.WithMockUser;
 
 import java.util.Map;
+import java.util.HashMap;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -96,18 +97,57 @@ class UserControllerIntegrationTest {
                 .andExpect(jsonPath("$.errors.email").exists());
     }
 
+    @Test
+    void list_paginatesNewestFirst_andSearchesAllSupportedFields() throws Exception {
+        for (int index = 0; index < 21; index++) {
+            String username = "member-" + index;
+            String email = username + "@example.com";
+            String firstName = index == 20 ? "FirstTarget" : "First" + index;
+            String middleName = index == 20 ? "MiddleTarget" : null;
+            String lastName = index == 20 ? "LastTarget" : "Last" + index;
+            mockMvc.perform(post("/api/v1/users")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(validCreateRequest(username, email, firstName, middleName, lastName)))
+                    .andExpect(status().isCreated());
+        }
+
+        mockMvc.perform(get("/api/v1/users").param("page", "0").param("size", "20"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(21))
+                .andExpect(jsonPath("$.totalPages").value(2))
+                .andExpect(jsonPath("$.content.length()").value(20))
+                .andExpect(jsonPath("$.content[0].username").value("member-20"));
+
+        for (String query : new String[]{"MEMBER-20", "member-20@example.com", "firsttarget", "middletarget", "lasttarget"}) {
+            mockMvc.perform(get("/api/v1/users").param("q", query))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.totalElements").value(1))
+                    .andExpect(jsonPath("$.content[0].username").value("member-20"));
+        }
+
+        mockMvc.perform(get("/api/v1/users").param("q", "does-not-exist"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(0))
+                .andExpect(jsonPath("$.content.length()").value(0));
+    }
+
     private String validCreateRequest(String username, String email) throws Exception {
+        return validCreateRequest(username, email, "Priyansh", null, "Pachauri");
+    }
+
+    private String validCreateRequest(String username, String email, String firstName, String middleName, String lastName) throws Exception {
+        Map<String, Object> profile = new HashMap<>();
+        profile.put("firstName", firstName);
+        profile.put("lastName", lastName);
+        profile.put("phoneNumber", "+919876543210");
+        profile.put("countryCode", "IN");
+        if (middleName != null) profile.put("middleName", middleName);
         return objectMapper.writeValueAsString(Map.of(
                 "username", username,
                 "email", email,
                 "password", "correct-horse-battery-staple",
                 "role", "CUSTOMER",
-                "profile", Map.of(
-                        "firstName", "Priyansh",
-                        "lastName", "Pachauri",
-                        "phoneNumber", "+919876543210",
-                        "countryCode", "IN"
-                )
+                "profile", profile
         ));
     }
 }

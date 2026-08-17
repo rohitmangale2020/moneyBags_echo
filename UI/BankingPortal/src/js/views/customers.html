@@ -1,22 +1,28 @@
 <section class="mb-stack">
   <div class="mb-heading" data-bind="visible:!showDetailPage()">
-    <div><small>CUSTOMER SERVICE / DIRECTORY</small><h1>Customer management</h1><p>Manage profiles, KYC, addresses, documents, nominees, and lifecycle status.</p></div>
-    <oj-button chroming="callToAction" on-oj-action="[[openOnboarding]]" :style.display="[[isEmployee()?'inline-flex':'none']]">Onboard customer</oj-button>
+    <div class="mb-account-intro">
+      <div><small>CUSTOMER SERVICE / DIRECTORY</small><h1>Customer management</h1><p>Manage profiles, KYC, addresses, documents, nominees, and lifecycle status.</p></div>
+      <oj-button class="mb-open-account" chroming="callToAction" on-oj-action="[[openOnboarding]]" :style.display="[[isEmployee()?'inline-flex':'none']]">Onboard customer</oj-button>
+    </div>
   </div>
   <div class="mb-search-panel mb-directory-search" data-bind="visible:!showDetailPage()">
     <label>Search using<select data-bind="value:searchMode"><option value="local">Loaded records</option><option value="firstName">First name</option><option value="cif">CIF</option><option value="email">Email</option><option value="phone">Phone</option></select></label>
     <oj-input-text placeholder="Search value" value="{{query}}"></oj-input-text>
     <oj-button chroming="callToAction" on-oj-action="[[backendSearch]]">Search</oj-button>
-    <label>Status<select data-bind="value:statusFilter"><option value="">All customers</option><option value="NEW">New</option><option value="ACTIVE">Active</option><option value="INACTIVE">Inactive</option></select></label>
+    <label>Status<select data-bind="value:statusFilter"><option value="">All customers</option><option value="KYC_PENDING">KYC pending</option><option value="ACTIVE">Active</option><option value="INACTIVE">Inactive</option></select></label>
   </div>
   <div class="mb-error" data-bind="visible:state.error"><span data-bind="text:state.error"></span><button data-bind="click:load">Retry</button></div>
-  <div class="mb-loading" data-bind="visible:!showDetailPage() && state.loading()">Loading customers…</div>
+  <div class="mb-loading mb-moneybags-loader" data-bind="visible:!showDetailPage() && state.loading()" role="status" aria-live="polite">
+    <img class="mb-moneybags-loader-logo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Crect width='36' height='36' rx='10' fill='white'/%3E%3Ctext x='18' y='25' text-anchor='middle' font-family='Arial,sans-serif' font-size='20' font-weight='800' fill='%23355eb8'%3EM%3C/text%3E%3C/svg%3E" alt="" aria-hidden="true" />
+    <strong>Loading customers</strong>
+    <small>Fetching the latest customer records…</small>
+  </div>
   <div class="mb-table" data-bind="visible:!showDetailPage() && orderedCustomers().length">
     <table><thead><tr><th>Customer</th><th>CIF</th><th>Status</th><th>Contact</th><th>Actions</th></tr></thead>
       <tbody data-bind="foreach:orderedCustomers"><tr>
         <td><strong data-bind="text:`${firstName} ${lastName||''}`"></strong><small data-bind="text:occupation||'Occupation not provided'"></small></td>
         <td><code data-bind="text:cifNo"></code></td>
-        <td><span class="mb-badge" data-bind="text:status.replaceAll('_',' '),css:status.toLowerCase()"></span></td>
+        <td><span class="mb-badge" data-bind="text:(status==='NEW'?'KYC PENDING':status.replaceAll('_',' ')),css:(status==='NEW'?'kyc_pending':status.toLowerCase())"></span></td>
         <td><span data-bind="text:phone"></span><small data-bind="text:email||'No email'"></small></td>
         <td><button class="mb-link" data-bind="click:()=>$parent.openDetail($data)">Manage</button><button class="mb-link" data-bind="click:()=>$parent.status($data),text:status==='ACTIVE'?'Deactivate':'Activate'"></button></td>
       </tr></tbody></table>
@@ -35,7 +41,11 @@
       <oj-button on-oj-action="[[backToDirectory]]">← Back to customers</oj-button>
     </div>
     <div class="mb-error" data-bind="visible:error,text:error"></div>
-    <div class="mb-loading" data-bind="visible:detailState.loading">Loading customer records…</div>
+    <div class="mb-loading mb-moneybags-loader" data-bind="visible:detailState.loading" role="status" aria-live="polite">
+      <img class="mb-moneybags-loader-logo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Crect width='36' height='36' rx='10' fill='white'/%3E%3Ctext x='18' y='25' text-anchor='middle' font-family='Arial,sans-serif' font-size='20' font-weight='800' fill='%23355eb8'%3EM%3C/text%3E%3C/svg%3E" alt="" aria-hidden="true" />
+      <strong>Loading customer records</strong>
+      <small>Fetching customer details…</small>
+    </div>
     <div data-bind="with:selected">
       <div class="mb-detail-hero"><div><small data-bind="text:cifNo"></small><h2 data-bind="text:`${firstName} ${lastName||''}`"></h2><p data-bind="text:`${email||'No email'} · ${phone}`"></p></div><span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span></div>
       <div class="mb-detail-actions"><button class="mb-link" data-bind="click:$parent.editCustomer">Edit profile</button><button class="mb-link" data-bind="click:()=>$parent.status($data),text:status==='ACTIVE'?'Deactivate':'Activate'"></button><button class="mb-link" data-bind="click:$parent.openAccountForCustomer,text:$parent.accountActionLabel"></button><button class="mb-link danger" data-bind="click:()=>$parent.remove($data)">Delete</button></div>
@@ -54,7 +64,11 @@
   <oj-dialog id="customerDetailDialog" class="mb-dialog mb-dialog-xl" dialog-title="Customer workspace" cancel-behavior="icon">
     <div slot="body">
       <div class="mb-error" data-bind="visible:error,text:error"></div>
-      <div class="mb-loading" data-bind="visible:detailState.loading">Loading customer records…</div>
+      <div class="mb-loading mb-moneybags-loader" data-bind="visible:detailState.loading" role="status" aria-live="polite">
+        <img class="mb-moneybags-loader-logo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Crect width='36' height='36' rx='10' fill='white'/%3E%3Ctext x='18' y='25' text-anchor='middle' font-family='Arial,sans-serif' font-size='20' font-weight='800' fill='%23355eb8'%3EM%3C/text%3E%3C/svg%3E" alt="" aria-hidden="true" />
+        <strong>Loading customer records</strong>
+        <small>Fetching customer details…</small>
+      </div>
       <div data-bind="with:selected">
         <div class="mb-detail-hero"><div><small data-bind="text:cifNo"></small><h2 data-bind="text:`${firstName} ${lastName||''}`"></h2><p data-bind="text:`${email||'No email'} · ${phone}`"></p></div><span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span></div>
         <div class="mb-detail-actions"><button class="mb-link" data-bind="click:$parent.editCustomer">Edit profile</button><button class="mb-link" data-bind="click:()=>$parent.status($data),text:status==='ACTIVE'?'Deactivate':'Activate'"></button><button class="mb-link" data-bind="click:$parent.openAccountForCustomer,text:$parent.accountActionLabel"></button><button class="mb-link danger" data-bind="click:()=>$parent.remove($data)">Delete</button></div>
@@ -117,7 +131,7 @@
 
   <oj-dialog id="customerAccountDialog" class="mb-dialog" dialog-title="Open customer account" cancel-behavior="icon"><div slot="body"><div class="mb-error" data-bind="visible:error,text:error"></div><div class="mb-info">KYC is verified. Select the banking product to open an active account for this customer.</div><div class="mb-form"><label>Active product<select data-bind="value:accountForm.productId"><option value="">Select product</option><!-- ko foreach:accountProducts --><option data-bind="value:productId,text:`${productName} · ${productCode} · ${currency}`"></option><!-- /ko --></select></label><label>Ownership<select data-bind="value:accountForm.ownershipType"><option>INDIVIDUAL</option><option>JOINT</option><option>CORPORATE</option><option>TRUST</option></select></label><oj-input-text label-hint="Opening balance" value="{{accountForm.availableBalance}}"></oj-input-text></div></div><div slot="footer" class="mb-dialog-actions"><oj-button on-oj-action="[[$data.close.bind(null,'customerAccountDialog')]]">Cancel</oj-button><oj-button chroming="callToAction" on-oj-action="[[createAccount]]">Open account</oj-button></div></oj-dialog>
 
-  <oj-dialog id="documentDialog" class="mb-dialog" dialog-title="Customer document" cancel-behavior="icon"><div slot="body"><div class="mb-error" data-bind="visible:error,text:error"></div><div class="mb-form"><div class="mb-select-field"><label>Document type</label><select data-bind="value:documentForm().documentType,event:{change:onDocumentTypeChange}"><option value="" disabled>Select document type</option><option>PAN</option><option>AADHAAR</option><option>PASSPORT</option><option>DRIVING_LICENSE</option><option>SALARY_SLIP</option><option>PHOTO</option><option>SIGNATURE</option></select></div><oj-input-text data-bind="visible:documentRequiresNumber" label-hint="Document number" required value="{{documentForm().documentNumber}}"></oj-input-text><label>Issue date<input type="date" data-bind="value:documentForm().issueDate" /></label><label data-bind="visible:documentRequiresExpiry">Expiry date<input type="date" data-bind="value:documentForm().expiryDate" /></label><label>Status<select data-bind="value:documentForm().status"><option>UPLOADED</option><option>VERIFIED</option><option>REJECTED</option><option>EXPIRED</option></select></label><label class="wide">File<input type="file" data-bind="attr:{accept:documentFileAccept},event:{change:pickFile}" /></label><label class="wide">Remarks<textarea data-bind="value:documentForm().remarks"></textarea></label><label class="wide">Rejection reason<textarea data-bind="value:documentForm().rejectedReason"></textarea></label></div></div><div slot="footer" class="mb-dialog-actions"><oj-button on-oj-action="[[$data.close.bind(null,'documentDialog')]]">Cancel</oj-button><oj-button chroming="callToAction" on-oj-action="[[saveDocument]]">Save document</oj-button></div></oj-dialog>
+  <oj-dialog id="documentDialog" class="mb-dialog" dialog-title="Customer document" cancel-behavior="icon"><div slot="body"><div class="mb-error" data-bind="visible:error,text:error"></div><div class="mb-form"><div class="mb-select-field"><label>Document type</label><select data-bind="value:documentForm().documentType,event:{change:onDocumentTypeChange}"><option value="" disabled>Select document type</option><option>PAN</option><option>AADHAAR</option><option>PASSPORT</option><option>DRIVING_LICENSE</option><option>SALARY_SLIP</option><option>PHOTO</option><option>SIGNATURE</option></select></div><oj-input-text data-bind="visible:documentRequiresNumber" label-hint="Document number" required value="{{documentForm().documentNumber}}"></oj-input-text><label data-bind="visible:documentShowsIssueDate">Issue date<input type="date" data-bind="value:documentForm().issueDate" /></label><label data-bind="visible:documentRequiresExpiry">Expiry date<input type="date" data-bind="value:documentForm().expiryDate" /></label><label>Status<select data-bind="value:documentForm().status"><option>UPLOADED</option><option>VERIFIED</option><option>REJECTED</option><option>EXPIRED</option></select></label><label class="wide">File<input type="file" data-bind="attr:{accept:documentFileAccept},event:{change:pickFile}" /></label><label class="wide">Remarks<textarea data-bind="value:documentForm().remarks"></textarea></label><label class="wide">Rejection reason<textarea data-bind="value:documentForm().rejectedReason"></textarea></label></div></div><div slot="footer" class="mb-dialog-actions"><oj-button on-oj-action="[[$data.close.bind(null,'documentDialog')]]">Cancel</oj-button><oj-button chroming="callToAction" on-oj-action="[[saveDocument]]">Save document</oj-button></div></oj-dialog>
 
   <oj-dialog id="nomineeDialog" class="mb-dialog mb-dialog-wide" dialog-title="Nominee or account relation" cancel-behavior="icon">
     <div slot="body">

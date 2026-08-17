@@ -49,5 +49,9 @@ management:
         include: health,info
 
 app:
+  retirement-risk:
+    medium-customer-count: ${RETIREMENT_MEDIUM_CUSTOMER_COUNT:11}
+    high-customer-count: ${RETIREMENT_HIGH_CUSTOMER_COUNT:101}
+    high-balance: ${RETIREMENT_HIGH_BALANCE:1000000}
   cors:
     allowed-origins: ${PRODUCT_UI_ORIGINS:http://localhost:8000,http://localhost:8001,http://localhost:8002,http://localhost:8082}

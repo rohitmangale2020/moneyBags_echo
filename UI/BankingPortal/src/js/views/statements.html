@@ -1,11 +1,13 @@
 <section class="mb-stack">
   <div class="mb-heading">
-    <div>
-      <small>ACCOUNTS / STATEMENTS</small>
-      <h1>Account statements</h1>
-      <p>View account activity, descriptions, withdrawals, deposits, and closing balances.</p>
+    <div class="mb-account-intro">
+      <div>
+        <small>ACCOUNTS / STATEMENTS</small>
+        <h1>Account statements</h1>
+        <p>View account activity, descriptions, withdrawals, deposits, and closing balances.</p>
+      </div>
+      <oj-button on-oj-action="[[download]]" disabled="[[!filteredStatements().length]]">Download CSV</oj-button>
     </div>
-    <oj-button on-oj-action="[[download]]" disabled="[[!filteredStatements().length]]">Download CSV</oj-button>
   </div>
 
   <div class="mb-filter-panel mb-filter-panel-statements">

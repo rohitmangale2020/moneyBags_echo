@@ -52,7 +52,7 @@ public class CustomerServiceImpl implements CustomerService {
         CustomerEntity customerEntity = customerMapper.toEntity(request);
         customerEntity.setCustomerId(null);
         customerEntity.setCifNo(generateUniqueCif());
-        customerEntity.setStatus(CustomerStatus.NEW);
+        customerEntity.setStatus(CustomerStatus.KYC_PENDING);
 
         CustomerEntity saved = customerRepository.save(customerEntity);
         auditCustomerChange(saved, "CUSTOMER_CREATED", "Customer profile created",
@@ -74,7 +74,9 @@ public class CustomerServiceImpl implements CustomerService {
     public Page<CustomerResponse> getAllCustomers(Pageable pageable, CustomerStatus status) {
         Page<CustomerEntity> customers = status == null
                 ? customerRepository.findAll(pageable)
-                : customerRepository.findByStatus(status, pageable);
+                : status == CustomerStatus.KYC_PENDING
+                    ? customerRepository.findByStatusIn(List.of(CustomerStatus.NEW, CustomerStatus.KYC_PENDING), pageable)
+                    : customerRepository.findByStatus(status, pageable);
         return customers
                 .map(customerMapper::toResponse);
     }
@@ -193,7 +195,10 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     @Transactional(readOnly = true)
     public List<CustomerResponse> getCustomersByStatus(CustomerStatus status) {
-        return customerRepository.findByStatus(status)
+        List<CustomerEntity> customers = status == CustomerStatus.KYC_PENDING
+                ? customerRepository.findByStatusIn(List.of(CustomerStatus.NEW, CustomerStatus.KYC_PENDING))
+                : customerRepository.findByStatus(status);
+        return customers
                 .stream()
                 .map(customerMapper::toResponse)
                 .collect(Collectors.toList());

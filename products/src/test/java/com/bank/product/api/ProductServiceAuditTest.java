@@ -5,12 +5,7 @@ import com.bank.product.domain.ProductFee;
 import com.bank.product.domain.ProductRate;
 import com.bank.product.domain.ProductTerm;
 import com.bank.product.domain.ProductType;
-import com.bank.product.repository.ProductFeeRepository;
-import com.bank.product.repository.ProductRateRepository;
-import com.bank.product.repository.ProductRepository;
-import com.bank.product.repository.ProductStatusHistoryRepository;
-import com.bank.product.repository.ProductTermRepository;
-import com.bank.product.repository.ProductTypeRepository;
+import com.bank.product.repository.*;
 import com.training.platform.auditclient.AuditClient;
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
@@ -41,6 +36,7 @@ class ProductServiceAuditTest {
     @Mock private ProductFeeRepository fees;
     @Mock private ProductStatusHistoryRepository statusHistory;
     @Mock private AuditClient auditClient;
+    @Mock private ProductRetirementImpactRepository retirementImpact;
 
     private ProductService service;
     private Product product;
@@ -50,7 +46,7 @@ class ProductServiceAuditTest {
 
     @BeforeEach
     void setUp() {
-        service = new ProductService(products, productTypes, rates, terms, fees, statusHistory, auditClient);
+        service = new ProductService(products, productTypes, rates, terms, fees, statusHistory, auditClient,retirementImpact);
 
         ProductType type = new ProductType();
         type.setProductTypeCode("SAVINGS");
