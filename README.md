@@ -72,6 +72,28 @@ default audit URL is `http://localhost:8086`; override it with
 share the same `AUDIT_INTERNAL_KEY`. The audit service creates/updates its seven
 audit tables through Hibernate when it starts against Oracle.
 
+## Oracle Digital Assistant banking assistant
+
+The security service exposes a protected, read-only optimisation API for an
+Oracle Digital Assistant (ODA) custom component or web channel:
+
+```text
+POST /oda/assistant/chat
+Authorization: Bearer <banking access token>
+
+{ "message": "Prepare a customer 360 briefing", "customerId": 42 }
+```
+
+It returns an intent, plain-language answer, supporting evidence, policy
+decision, next steps, and (when requested) product recommendations. Customer
+360 and transaction-review requests require an `EMPLOYEE` or `ADMIN` role. The
+assistant cannot execute transfers, change customer data, reveal passwords, or
+give personalised financial advice. Configure the ODA custom component to call
+this endpoint with the signed-in user's bearer token. The API gateway routes
+`/oda/**` to the security service. Override service discovery URLs with
+`ODA_CUSTOMERS_URL`, `ODA_ACCOUNTS_URL`, `ODA_TRANSACTIONS_URL`, and
+`ODA_PRODUCTS_URL` when required.
+
 ## Accounts and statements
 
 New accounts receive an immutable, unique 12-digit numeric account number. Existing
@@ -110,3 +132,74 @@ POST /api/ledger/entries
 `transactions/src/main/resources/db/ledger-schema-oracle.sql` is the reference
 Oracle DDL for managed environments. Local development creates these tables using
 the existing Hibernate `ddl-auto=update` setting.
+
+## Deposit products
+
+Accounts snapshot the selected product's type, minimum balance, annual rate, FD tenure
+and maturity rules when the account is opened. Maximum-balance limits are not used;
+legacy maximum-balance columns and API fields remain null for database/API compatibility.
+Savings and salary accounts receive monthly interest; current accounts do not receive
+interest. Ordinary customer withdrawals must preserve the configured minimum balance.
+Existing accounts can be backfilled once by an admin:
+
+```text
+POST /api/accounts/product-rules/refresh
+```
+
+Monthly interest is processed at 01:15 on the first day of the month. The basic
+calculation uses the account balance at processing time, the snapshotted annual rate,
+and actual elapsed days over a 365-day year. Every non-zero payout creates a completed
+bank transaction, account statement, ledger posting and outbox event. Run a period
+manually as an admin with:
+
+```text
+POST /api/deposit-processing/interest?asOf=2026-08-31
+```
+
+Every account is persisted with a zero balance. A requested opening amount for a savings,
+salary or current account is then posted through an idempotent `OPENING_DEPOSIT`
+transaction, producing the account balance change, statement, ledger and outbox records.
+This avoids creating money by writing an account balance directly.
+
+An FD account must first be opened with zero balance using an active `FD` product.
+Fund it from the customer's savings/current/salary account. The funding account is also
+the mandatory payout account, so principal and interest always return to the account
+from which the FD was funded:
+
+```text
+POST /api/fixed-deposits
+{
+  "fdAccountId": "<empty FD account>",
+  "fundingAccountId": "<source account>",
+  "payoutAccountId": "<same source account>",
+  "principal": 10000.00
+}
+```
+
+The funding transfer is idempotent and creates its normal transaction, statement,
+ledger and outbox rows. A daily job pays principal and accrued interest to the original
+funding account on maturity. There is no lock-in: an active FD can be withdrawn at any
+time with `POST /api/fixed-deposits/{contractId}/close`. The default premature-withdrawal
+penalty reduces the applicable annual rate by one percentage point, so principal is
+protected but the interest payout is lower.
+
+A transactional account linked to an active FD cannot be closed. Withdraw the FD first,
+move the returned balance out of the account, and then close the now-zero-balance account.
+Directly closing an FD account is also rejected because it would bypass its payout flow.
+
+Annual maintenance fees configured on active savings and current products are processed
+by a daily 02:00 anniversary scan. Each account/year uses one deterministic transaction
+reference, creates a debit statement, posts fee income to the ledger and emits the normal
+outbox event. A missed anniversary is caught up by a later scan, while a completed yearly
+fee is skipped. A fee may take the balance below the product minimum but never below zero.
+Run the scan manually as admin:
+
+```text
+POST /api/deposit-processing/annual-fees?asOf=2026-08-17
+```
+
+Scheduler timings, local service URLs, the shared internal service key and the premature
+rate penalty are configurable through the variables documented in `.env.example`. The
+physical `PRODUCT_FEE.MONTHLY_MAINTENANCE_FEE` column is deliberately reused as the
+annual fee value to avoid changing the existing database schema; review old product fee
+amounts once because values previously entered as monthly amounts now mean annual amounts.

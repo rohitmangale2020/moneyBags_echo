@@ -16,6 +16,8 @@ class LedgerBootstrapConfiguration {
             createIfMissing(repository, LedgerService.CASH_ON_HAND, "Cash on Hand", LedgerAccountType.ASSET);
             createIfMissing(repository, LedgerService.CUSTOMER_DEPOSITS, "Customer Deposits", LedgerAccountType.LIABILITY);
             createIfMissing(repository, LedgerService.INTERNAL_CLEARING, "Internal Clearing", LedgerAccountType.LIABILITY);
+            createIfMissing(repository, LedgerService.INTEREST_EXPENSE, "Deposit Interest Expense", LedgerAccountType.EXPENSE);
+            createIfMissing(repository, LedgerService.FEE_INCOME, "Maintenance Fee Income", LedgerAccountType.INCOME);
         };
     }
 

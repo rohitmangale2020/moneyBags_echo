@@ -29,6 +29,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.mockito.ArgumentCaptor;
 
 class AccountControllerTest {
     private AccountService accountService;
@@ -129,6 +130,20 @@ class AccountControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
+    @Test
+    void createsAccountWithTokenSubjectWhenLegacyTokenHasNoUserIdClaim() throws Exception {
+        authenticateLegacyUser("riya_patil");
+        Account response = account("ACC-1", "customer-1");
+        when(accountService.create(any(Account.class))).thenReturn(response);
+
+        mockMvc.perform(post("/api/accounts").contentType(MediaType.APPLICATION_JSON).content(requestBody()))
+                .andExpect(status().isCreated());
+
+        ArgumentCaptor<Account> captor = ArgumentCaptor.forClass(Account.class);
+        verify(accountService).create(captor.capture());
+        org.junit.jupiter.api.Assertions.assertEquals("riya_patil", captor.getValue().getCreatedByUserId());
+    }
+
     private Account account(String number, String customerId) {
         Account account = mock(Account.class);
         when(account.getAccountId()).thenReturn("account-1");
@@ -150,6 +165,14 @@ class AccountControllerTest {
     private void authenticateUser() {
         Jwt jwt = mock(Jwt.class);
         when(jwt.getClaim("userId")).thenReturn(1L);
+        JwtAuthenticationToken authentication = mock(JwtAuthenticationToken.class);
+        when(authentication.getToken()).thenReturn(jwt);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
+
+    private void authenticateLegacyUser(String subject) {
+        Jwt jwt = mock(Jwt.class);
+        when(jwt.getSubject()).thenReturn(subject);
         JwtAuthenticationToken authentication = mock(JwtAuthenticationToken.class);
         when(authentication.getToken()).thenReturn(jwt);
         SecurityContextHolder.getContext().setAuthentication(authentication);

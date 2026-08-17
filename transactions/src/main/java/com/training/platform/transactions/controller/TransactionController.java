@@ -53,6 +53,12 @@ public class TransactionController {
 
     @PostMapping
     public ResponseEntity<TransactionResponse> initiate(@Valid @RequestBody TransactionRequest request) {
+        if (request.transactionType() != com.training.platform.transactions.entity.TransactionType.TRANSFER
+                && request.transactionType() != com.training.platform.transactions.entity.TransactionType.OPENING_DEPOSIT
+                && request.transactionType() != com.training.platform.transactions.entity.TransactionType.DEPOSIT
+                && request.transactionType() != com.training.platform.transactions.entity.TransactionType.WITHDRAWAL) {
+            throw new IllegalArgumentException("Use the dedicated deposit workflow for bank-generated transaction types");
+        }
         BankTransaction transaction = transactionService.initiate(toEntity(request));
         HttpStatus status = transaction.getTransactionStatus() == TransactionStatus.FAILED
                 ? HttpStatus.UNPROCESSABLE_ENTITY : HttpStatus.CREATED;
@@ -89,10 +95,12 @@ public class TransactionController {
         if (!(authentication instanceof JwtAuthenticationToken jwtAuthentication)) {
             throw new IllegalStateException("An authenticated JWT user is required");
         }
-        Number userId = jwtAuthentication.getToken().getClaim("userId");
-        if (userId == null) {
-            throw new IllegalStateException("JWT does not contain a userId claim");
+        Object userId = jwtAuthentication.getToken().getClaim("userId");
+        String value = userId == null ? jwtAuthentication.getToken().getSubject()
+                : String.valueOf(userId);
+        if (value == null || value.isBlank()) {
+            throw new IllegalStateException("JWT does not identify the authenticated user");
         }
-        return userId.longValue() + "";
+        return value.length() <= 36 ? value : value.substring(0, 36);
     }
 }

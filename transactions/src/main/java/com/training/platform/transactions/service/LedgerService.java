@@ -26,6 +26,8 @@ public class LedgerService {
     public static final String CASH_ON_HAND = "CASH_ON_HAND";
     public static final String CUSTOMER_DEPOSITS = "CUSTOMER_DEPOSITS";
     public static final String INTERNAL_CLEARING = "INTERNAL_CLEARING";
+    public static final String INTEREST_EXPENSE = "INTEREST_EXPENSE";
+    public static final String FEE_INCOME = "FEE_INCOME";
 
     private final LedgerAccountRepository accountRepository;
     private final LedgerEntryRepository entryRepository;
@@ -81,17 +83,36 @@ public class LedgerService {
         BigDecimal amount = transaction.getAmount();
         String description = transaction.getDescription();
         List<Posting> postings = switch (transaction.getTransactionType()) {
-            case DEPOSIT, OPENING_DEPOSIT, FIXED_DEPOSIT_FUNDING -> List.of(
-                    new Posting(CASH_ON_HAND, null, LedgerEntryType.DEBIT, amount, description),
-                    new Posting(CUSTOMER_DEPOSITS, transaction.getCreditAccountId(), LedgerEntryType.CREDIT, amount, description));
+            case OPENING_DEPOSIT, DEPOSIT -> List.of(
+                    new Posting(CASH_ON_HAND, null, LedgerEntryType.DEBIT, amount,
+                            lineDescription("Cash received", description)),
+                    new Posting(CUSTOMER_DEPOSITS, transaction.getCreditAccountId(), LedgerEntryType.CREDIT, amount,
+                            lineDescription("Customer deposit liability credited", description)));
             case WITHDRAWAL -> List.of(
-                    new Posting(CUSTOMER_DEPOSITS, transaction.getDebitAccountId(), LedgerEntryType.DEBIT, amount, description),
-                    new Posting(CASH_ON_HAND, null, LedgerEntryType.CREDIT, amount, description));
-            case TRANSFER -> List.of(
-                    new Posting(CUSTOMER_DEPOSITS, transaction.getDebitAccountId(), LedgerEntryType.DEBIT, amount, description),
-                    new Posting(INTERNAL_CLEARING, null, LedgerEntryType.CREDIT, amount, description),
-                    new Posting(INTERNAL_CLEARING, null, LedgerEntryType.DEBIT, amount, description),
-                    new Posting(CUSTOMER_DEPOSITS, transaction.getCreditAccountId(), LedgerEntryType.CREDIT, amount, description));
+                    new Posting(CUSTOMER_DEPOSITS, transaction.getDebitAccountId(), LedgerEntryType.DEBIT, amount,
+                            lineDescription("Customer deposit liability debited", description)),
+                    new Posting(CASH_ON_HAND, null, LedgerEntryType.CREDIT, amount,
+                            lineDescription("Cash paid", description)));
+            case MONTHLY_MAINTENANCE_FEE, ANNUAL_MAINTENANCE_FEE -> List.of(
+                    new Posting(CUSTOMER_DEPOSITS, transaction.getDebitAccountId(), LedgerEntryType.DEBIT, amount,
+                            lineDescription("Customer maintenance fee debited", description)),
+                    new Posting(FEE_INCOME, null, LedgerEntryType.CREDIT, amount,
+                            lineDescription("Bank maintenance fee income credited", description)));
+            case INTEREST_CREDIT, FIXED_DEPOSIT_INTEREST_CREDIT -> List.of(
+                    new Posting(INTEREST_EXPENSE, null, LedgerEntryType.DEBIT, amount,
+                            lineDescription("Bank deposit interest expense debited", description)),
+                    new Posting(CUSTOMER_DEPOSITS, transaction.getCreditAccountId(), LedgerEntryType.CREDIT, amount,
+                            lineDescription("Customer deposit liability credited with interest", description)));
+            case TRANSFER, FIXED_DEPOSIT_FUNDING, FIXED_DEPOSIT_MATURITY,
+                    FIXED_DEPOSIT_PREMATURE_CLOSURE -> List.of(
+                    new Posting(CUSTOMER_DEPOSITS, transaction.getDebitAccountId(), LedgerEntryType.DEBIT, amount,
+                            lineDescription("Source customer deposit liability debited", description)),
+                    new Posting(INTERNAL_CLEARING, null, LedgerEntryType.CREDIT, amount,
+                            lineDescription("Internal clearing credited for source leg", description)),
+                    new Posting(INTERNAL_CLEARING, null, LedgerEntryType.DEBIT, amount,
+                            lineDescription("Internal clearing debited for destination leg", description)),
+                    new Posting(CUSTOMER_DEPOSITS, transaction.getCreditAccountId(), LedgerEntryType.CREDIT, amount,
+                            lineDescription("Destination customer deposit liability credited", description)));
             default -> throw new IllegalArgumentException("No ledger mapping exists for " + transaction.getTransactionType());
         };
         return postNew(transaction.getTransactionRef(), LocalDate.now(), transaction.getCurrencyCode(), description, postings);
@@ -147,6 +168,11 @@ public class LedgerService {
     }
 
     private static String blankToNull(String value) { return value == null || value.isBlank() ? null : value.trim(); }
+
+    private static String lineDescription(String accountingEffect, String businessDescription) {
+        String business = blankToNull(businessDescription);
+        return business == null ? accountingEffect : accountingEffect + ": " + business;
+    }
 
     private record Posting(String ledgerAccountCode, String customerAccountId, LedgerEntryType entryType,
                            BigDecimal amount, String description) { }

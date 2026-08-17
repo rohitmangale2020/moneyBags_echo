@@ -2,7 +2,7 @@
  * Adds a same-origin development proxy for API Gateway requests.
  *
  * The browser calls the Oracle JET server on port 8000. Requests beginning
- * with /auth or /api are forwarded by this middleware to the existing API
+ * with /auth, /api, or /oda are forwarded by this middleware to the existing API
  * Gateway, which defaults to http://localhost:8080.
  */
 'use strict';
@@ -11,7 +11,7 @@ const http = require('http');
 const https = require('https');
 
 const DEFAULT_GATEWAY_URL = 'http://localhost:8080';
-const PROXIED_PATH = /^\/(auth|api)(\/|$)/;
+const PROXIED_PATH = /^\/(auth|api|oda)(\/|$)/;
 
 function createGatewayProxy(gatewayUrl) {
   const target = new URL(gatewayUrl);
@@ -74,7 +74,7 @@ module.exports = function beforeServe(configObj) {
   const gatewayUrl = process.env.MONEYBAGS_GATEWAY_URL || DEFAULT_GATEWAY_URL;
   const existingMiddleware = configObj.preMiddleware || [];
 
-  console.log(`Proxying /auth and /api requests to ${gatewayUrl}`);
+  console.log(`Proxying /auth, /api, and /oda requests to ${gatewayUrl}`);
   configObj.preMiddleware = [createGatewayProxy(gatewayUrl), ...existingMiddleware];
 
   return Promise.resolve(configObj);

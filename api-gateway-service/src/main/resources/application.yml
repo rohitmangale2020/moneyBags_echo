@@ -15,7 +15,7 @@ spring:
           routes:
             - id: security-service
               uri: lb://security-service
-              predicates: ["Path=/auth,/auth/**,/.well-known,/.well-known/**"]
+              predicates: ["Path=/auth,/auth/**,/.well-known,/.well-known/**,/oda,/oda/**"]
             - id: users-service
               uri: lb://users-service
               predicates: ["Path=/api/v1/users,/api/v1/users/**"]
@@ -31,6 +31,9 @@ spring:
             - id: transactions-service
               uri: lb://transactions-service
               predicates: ["Path=/api/transactions,/api/transactions/**"]
+            - id: fixed-deposits-service
+              uri: lb://transactions-service
+              predicates: ["Path=/api/fixed-deposits,/api/fixed-deposits/**,/api/deposit-processing,/api/deposit-processing/**"]
             - id: statements-service
               uri: lb://transactions-service
               predicates: ["Path=/api/statements,/api/statements/**"]
