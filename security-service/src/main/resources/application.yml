@@ -11,6 +11,11 @@ security-service:
   jwt-private-key: ${JWT_PRIVATE_KEY:}
   jwt-public-key: ${JWT_PUBLIC_KEY:}
   key-id: ${JWT_KEY_ID:banking-dev-key}
+oda-assistant:
+  customers-url: ${ODA_CUSTOMERS_URL:http://customers-service}
+  accounts-url: ${ODA_ACCOUNTS_URL:http://accounts-service}
+  transactions-url: ${ODA_TRANSACTIONS_URL:http://transactions-service}
+  products-url: ${ODA_PRODUCTS_URL:http://products-service}
 
 eureka:
   client:

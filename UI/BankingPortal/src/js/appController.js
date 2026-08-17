@@ -146,6 +146,15 @@ define([
         },
       },
       {
+        path: "assistant",
+        detail: {
+          label: "Banking assistant",
+          iconClass: "oj-ux-ico-chat",
+          hidden: true,
+          roles: ["ADMIN", "EMPLOYEE", "CUSTOMER"],
+        },
+      },
+      {
         path: "profile",
         detail: { hidden: true, roles: ["ADMIN", "EMPLOYEE", "CUSTOMER"] },
       },
@@ -194,6 +203,11 @@ define([
       () => new ArrayDataProvider(self.navItems(), { keyAttributes: "path" }),
     );
     self.go = (p) => router.go({ path: p });
+    self.assistantContext = ko.observable('');
+    self.openAssistant = () => {
+      self.assistantContext(self.selection.path() || 'platform');
+      return router.go({ path: 'assistant' });
+    };
     const savedCustomerContext = (() => {
       try { return JSON.parse(sessionStorage.getItem('moneybags.activeCustomer') || 'null'); } catch (_) { return null; }
     })();
