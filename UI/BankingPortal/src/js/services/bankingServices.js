@@ -67,7 +67,16 @@ define(['services/apiClient'], function (api) {
       retire: (c, d) => api.post(`/api/v1/products/${e(c)}/retire`, d),
     },
     accounts: {
-      list: (page, size) => api.get(page === undefined ? '/api/accounts' : `/api/accounts?page=${e(page)}&size=${e(size || 10)}`),
+      list: (page, size, filters = {}) => {
+        if (page === undefined) return api.get('/api/accounts');
+        const params = new URLSearchParams({ page, size: size || 10 });
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value !== null && value !== undefined && value !== '' && value !== 'ALL') {
+            params.set(key, value);
+          }
+        });
+        return api.get(`/api/accounts?${params.toString()}`);
+      },
       customer: (id) => api.get(`/api/accounts?customerId=${e(id)}`),
       number: (v) => api.get(`/api/accounts?accountNumber=${e(v)}`),
       get: (id) => api.get(`/api/accounts/${e(id)}`),

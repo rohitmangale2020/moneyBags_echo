@@ -65,7 +65,9 @@ define([
     s.money = u.money;
     s.date = u.date;
     s.currencies = ko.pureComputed(() =>
-      Array.from(new Set(s.state.data().map((account) => account.currencyCode).filter(Boolean))).sort(),
+      Array.from(new Set(['INR', 'USD', ...s.state.data()
+        .map((account) => account.currencyCode)
+        .filter(Boolean)])).sort(),
     );
     s.filteredAccounts = ko.pureComputed(() => {
       const accounts = s.state.data().filter((account) => {
@@ -127,8 +129,14 @@ define([
     };
     s.load = (requestedPage) => s.state.run(async () => {
       const page = Number.isInteger(requestedPage) ? requestedPage : s.currentPage();
-      const append = page > 0;
-      const response = await app.services.accounts.list(page, s.pageSize);
+      const customerId = s.searchCustomerId()
+        || (s.hasActiveCustomer() ? s.activeCustomer().customerId : null);
+      const response = await app.services.accounts.list(page, s.pageSize, {
+        customerId,
+        status: s.statusFilter(),
+        ownershipType: s.ownershipFilter(),
+        currencyCode: s.currencyFilter(),
+      });
       const accounts = u.list(response);
       s.currentPage(Number(response.number || 0));
       s.totalAccounts(Number(response.totalElements === undefined ? accounts.length : response.totalElements));
@@ -165,14 +173,23 @@ define([
         balanceDisplay: ko.observable(0),
       }));
       s.lastLoadedAccounts = loadedAccounts;
-      return append ? s.state.data().concat(loadedAccounts) : loadedAccounts;
+      return loadedAccounts;
     }).then((accounts) => {
       if (accounts) s.animateBalances(s.lastLoadedAccounts);
       return accounts;
     }).catch(() => null);
-    s.loadMore = () => {
-      if (!s.state.loading() && s.currentPage() < s.totalPages() - 1) s.load(s.currentPage() + 1);
+    s.previousPage = () => {
+      if (s.currentPage() > 0) s.load(s.currentPage() - 1);
     };
+    s.nextPage = () => {
+      if (s.currentPage() < s.totalPages() - 1) s.load(s.currentPage() + 1);
+    };
+    let resettingFilters = false;
+    [s.statusFilter, s.ownershipFilter, s.currencyFilter].forEach((filter) => {
+      filter.subscribe(() => {
+        if (!resettingFilters) s.load(0);
+      });
+    });
     s.search = () => {
       const searchValue = s.query().trim();
       if (!searchValue) {
@@ -187,27 +204,7 @@ define([
       return s.state.run(async () => {
         const customer = await app.services.customers.byCif(cifNo);
         s.searchCustomerId(String(customer.customerId));
-        const accounts = u.list(await app.services.accounts.customer(customer.customerId));
-        const productsResult = await Promise.allSettled([app.services.products.list()]);
-        const products = productsResult[0].status === 'fulfilled' ? u.list(productsResult[0].value) : [];
-        const productNames = new Map(products.map((product) => [String(product.productId), product.productName]));
-        const productDetails = new Map(products.map((product) => [String(product.productId), product]));
-        const customerName = [customer.firstName, customer.lastName].filter(Boolean).join(' ');
-        const loadedAccounts = accounts.map((account) => Object.assign({}, account, {
-          customerName: account.customerName || customerName,
-          productName: account.productName || productNames.get(String(account.productId)) || '',
-          productTypeCode: account.productTypeCode || productDetails.get(String(account.productId))?.productTypeCode || '',
-          productStatus: account.productStatus || productDetails.get(String(account.productId))?.status || '',
-          balanceDisplay: ko.observable(0),
-        }));
-        s.currentPage(0);
-        s.totalAccounts(loadedAccounts.length);
-        s.totalPages(1);
-        s.lastLoadedAccounts = loadedAccounts;
-        return loadedAccounts;
-      }).then((accounts) => {
-        if (accounts) s.animateBalances(s.lastLoadedAccounts);
-        return accounts;
+        return s.load(0);
       }).catch(() => null);
     };
     s.searchByAccountNumber = (accountNumber) => s.state.run(async () => {
@@ -342,12 +339,14 @@ define([
       return '';
     };
     s.clearFilters = () => {
+      resettingFilters = true;
       s.query('');
       s.searchCustomerId(null);
       s.statusFilter('ALL');
       s.ownershipFilter('ALL');
       s.currencyFilter('ALL');
       s.sortBy('opened-desc');
+      resettingFilters = false;
       s.load(0);
     };
     s.open = async () => {
@@ -410,17 +409,22 @@ define([
     };
     s.create = async () => {
       const p = s.products().find((x) => String(x.productId) === String(s.form.productId()));
-      if ((!p && !s.editingId()) || !s.form.customerId())
+      if ((!p && !s.editingId()) || (s.editingId() && !s.form.customerId()))
         return s.error('Complete all required fields.');
+      if (!s.editingId() && !s.form.customerCif().trim()) return s.error('Customer CIF is required.');
       if (Number(s.form.availableBalance()) < 0) return s.error('Available balance cannot be negative.');
       if (!s.editingId() && Number(s.form.availableBalance()) < Number(p.minimumBalance || 0)) {
         return s.error(`Opening balance must be at least ${u.money(p.minimumBalance, p.currency || 'INR')} for ${p.productName}.`);
       }
       if (!/^[A-Za-z]{3}$/.test(s.editingId() ? s.form.currencyCode() : p.currency)) return s.error('Currency must be a three-letter code.');
       try {
+        const customerId = s.editingId()
+          ? String(s.form.customerId())
+          : String((await app.services.customers.byCif(s.form.customerCif().trim())).customerId);
+        s.form.customerId(customerId);
         const payload = {
           accountNumber: s.editingId() ? s.form.accountNumber() : null,
-          customerId: String(s.form.customerId()),
+          customerId,
           productId: String(p ? p.productId : s.form.productId()),
           ownershipType: s.form.ownershipType(),
           status: s.editingId() ? s.form.status() : 'ACTIVE',
@@ -445,13 +449,6 @@ define([
     };
     s.close = () => document.getElementById('accountDialog').close();
     s.load();
-    setTimeout(() => {
-      const sentinel = document.getElementById('accountsLoadMore');
-      if (!sentinel || !window.IntersectionObserver) return;
-      new IntersectionObserver((entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) s.loadMore();
-      }, { rootMargin: '240px' }).observe(sentinel);
-    }, 0);
   }
   return VM;
 });

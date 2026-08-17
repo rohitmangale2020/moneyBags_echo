@@ -4,6 +4,8 @@ package com.training.platform.transactions.entity;
 public enum TransactionType {
     TRANSFER,
     DEPOSIT,
+    OPENING_DEPOSIT,
+    FIXED_DEPOSIT_FUNDING,
     WITHDRAWAL,
     PAYMENT,
     REVERSAL

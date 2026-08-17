@@ -2,6 +2,7 @@ package com.training.platform.accounts.controller;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -22,6 +23,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -87,6 +89,23 @@ class AccountControllerTest {
                 .andExpect(jsonPath("$[1].accountNumber").value("ACC-2"));
 
         verify(accountService).getAllAccounts();
+    }
+
+    @Test
+    void returnsFilteredPageMetadata() throws Exception {
+        Account account = account("ACC-USD", "customer-1");
+        when(accountService.getAccounts(any(), eq(null), eq(AccountStatus.INACTIVE),
+                eq(null), eq("USD"))).thenReturn(new PageImpl<>(List.of(account)));
+
+        mockMvc.perform(get("/api/accounts")
+                        .param("page", "0")
+                        .param("size", "10")
+                        .param("status", "INACTIVE")
+                        .param("currencyCode", "USD"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.totalPages").value(1))
+                .andExpect(jsonPath("$.content[0].accountNumber").value("ACC-USD"));
     }
 
     @Test

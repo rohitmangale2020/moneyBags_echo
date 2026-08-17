@@ -81,7 +81,7 @@ public class LedgerService {
         BigDecimal amount = transaction.getAmount();
         String description = transaction.getDescription();
         List<Posting> postings = switch (transaction.getTransactionType()) {
-            case DEPOSIT -> List.of(
+            case DEPOSIT, OPENING_DEPOSIT, FIXED_DEPOSIT_FUNDING -> List.of(
                     new Posting(CASH_ON_HAND, null, LedgerEntryType.DEBIT, amount, description),
                     new Posting(CUSTOMER_DEPOSITS, transaction.getCreditAccountId(), LedgerEntryType.CREDIT, amount, description));
             case WITHDRAWAL -> List.of(
