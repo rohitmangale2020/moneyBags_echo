@@ -7,7 +7,8 @@ $urls = @(
     'http://localhost:8084/actuator/health',
     'http://localhost:8085/actuator/health',
     'http://localhost:8086/actuator/health',
-    'http://localhost:8087/actuator/health'
+    'http://localhost:8087/actuator/health',
+    'http://localhost:8090/actuator/health'
 )
 
 foreach ($url in $urls) {

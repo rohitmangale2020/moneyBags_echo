@@ -1,17 +1,23 @@
 <section class="mb-stack">
   <div class="mb-heading">
-    <div>
-      <small>CATALOGUE / PRODUCTS</small>
-      <h1>Banking products</h1>
-      <p>Configure rates, fees, terms, and availability using Product Service.</p>
-    </div>
-    <div class="mb-product-actions" :style.display="[[isAdmin()?'flex':'none']]">
-      <oj-button on-oj-action="[[openType]]">Create product type</oj-button>
-      <oj-button chroming="callToAction" on-oj-action="[[open]]">Create product</oj-button>
+    <div class="mb-account-intro">
+      <div>
+        <small>CATALOGUE / PRODUCTS</small>
+        <h1>Banking products</h1>
+        <p>Configure rates, fees, terms, and availability using Product Service.</p>
+      </div>
+      <div class="mb-product-actions" :style.display="[[isAdmin()?'flex':'none']]">
+        <oj-button on-oj-action="[[openType]]">Create product type</oj-button>
+        <oj-button chroming="callToAction" on-oj-action="[[open]]">Create product</oj-button>
+      </div>
     </div>
   </div>
   <div class="mb-error" data-bind="visible:state.error,text:state.error"></div>
-  <div class="mb-loading" data-bind="visible:state.loading">Loading products…</div>
+  <div class="mb-loading mb-moneybags-loader" data-bind="visible:state.loading" role="status" aria-live="polite">
+    <img class="mb-moneybags-loader-logo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Crect width='36' height='36' rx='10' fill='white'/%3E%3Ctext x='18' y='25' text-anchor='middle' font-family='Arial,sans-serif' font-size='20' font-weight='800' fill='%23355eb8'%3EM%3C/text%3E%3C/svg%3E" alt="" aria-hidden="true" />
+    <strong>Loading products</strong>
+    <small>Fetching the latest product catalogue…</small>
+  </div>
   <section class="mb-product-section" aria-labelledby="active-products-heading">
     <div class="mb-product-section-heading"><div><small>AVAILABLE NOW</small><h2 id="active-products-heading">Active products</h2><p>Products currently available for customers.</p></div><div class="mb-product-heading-actions"><oj-button class="mb-product-refresh" on-oj-action="[[refreshProducts]]">Refresh</oj-button><button type="button" class="mb-view-toggle" data-bind="click:toggleActiveCompact,text:activeCompact()?'Card view':'Compact view',attr:{'aria-pressed':activeCompact}"></button><span class="mb-product-count" data-bind="text:activeCountLabel"></span></div></div>
     <div class="mb-search-panel mb-product-filter-panel">
@@ -37,8 +43,8 @@
           ><strong data-bind="text:$parent.money(minimumBalance,currency)"></strong>
         </div>
         <div>
-          <small>Monthly fee</small
-          ><strong data-bind="text:$parent.money(fee&&fee.monthlyMaintenanceFee,currency)"></strong>
+          <small>Annual fee</small
+          ><strong data-bind="text:$parent.money(fee&&fee.annualMaintenanceFee,currency)"></strong>
         </div>
       </div>
       <button
@@ -56,7 +62,7 @@
       <dl class="mb-product-row-stats">
         <div><dt>Interest</dt><dd data-bind="text:`${rate&&rate.interestRate||0}%`"></dd></div>
         <div><dt>Min balance</dt><dd data-bind="text:$parent.money(minimumBalance,currency)"></dd></div>
-        <div><dt>Monthly fee</dt><dd data-bind="text:$parent.money(fee&&fee.monthlyMaintenanceFee,currency)"></dd></div>
+        <div><dt>Annual fee</dt><dd data-bind="text:$parent.money(fee&&fee.annualMaintenanceFee,currency)"></dd></div>
       </dl>
       <button class="mb-link" data-bind="click:()=>$parent.manage($data)">View and manage</button>
     </article>
@@ -71,7 +77,7 @@
       <oj-button on-oj-action="[[clearRetiredFilters]]" disabled="[[!retiredFiltersApplied()]]">Clear filters</oj-button>
     </div>
     <div class="mb-card-grid" data-bind="visible:!retiredCompact(),foreach:filteredRetiredProducts">
-      <article class="mb-card mb-card-retired"><div class="mb-card-top"><span class="mb-card-icon mb-product-icon" data-bind="css:$parent.productIcon($data)" aria-hidden="true"></span><span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span></div><small data-bind="text:productTypeName||productTypeCode"></small><h2 data-bind="text:$parent.productHeading($data)"></h2><code data-bind="text:$parent.productSubheading($data)"></code><div class="mb-card-stats"><div><small>Interest</small><strong data-bind="text:`${rate&&rate.interestRate||0}%`"></strong></div><div><small>Min balance</small><strong data-bind="text:$parent.money(minimumBalance,currency)"></strong></div><div><small>Monthly fee</small><strong data-bind="text:$parent.money(fee&&fee.monthlyMaintenanceFee,currency)"></strong></div></div><button class="mb-link" data-bind="click:()=>$parent.manage($data)">View details</button></article>
+      <article class="mb-card mb-card-retired"><div class="mb-card-top"><span class="mb-card-icon mb-product-icon" data-bind="css:$parent.productIcon($data)" aria-hidden="true"></span><span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span></div><small data-bind="text:productTypeName||productTypeCode"></small><h2 data-bind="text:$parent.productHeading($data)"></h2><code data-bind="text:$parent.productSubheading($data)"></code><div class="mb-card-stats"><div><small>Interest</small><strong data-bind="text:`${rate&&rate.interestRate||0}%`"></strong></div><div><small>Min balance</small><strong data-bind="text:$parent.money(minimumBalance,currency)"></strong></div><div><small>Annual fee</small><strong data-bind="text:$parent.money(fee&&fee.annualMaintenanceFee,currency)"></strong></div></div><button class="mb-link" data-bind="click:()=>$parent.manage($data)">View details</button></article>
     </div>
     <div class="mb-product-list" data-bind="visible:retiredCompact,foreach:filteredRetiredProducts">
       <article class="mb-product-row mb-card-retired">
@@ -82,7 +88,7 @@
         <dl class="mb-product-row-stats">
           <div><dt>Interest</dt><dd data-bind="text:`${rate&&rate.interestRate||0}%`"></dd></div>
           <div><dt>Min balance</dt><dd data-bind="text:$parent.money(minimumBalance,currency)"></dd></div>
-          <div><dt>Monthly fee</dt><dd data-bind="text:$parent.money(fee&&fee.monthlyMaintenanceFee,currency)"></dd></div>
+          <div><dt>Annual fee</dt><dd data-bind="text:$parent.money(fee&&fee.annualMaintenanceFee,currency)"></dd></div>
         </dl>
         <button class="mb-link" data-bind="click:()=>$parent.manage($data)">View details</button>
       </article>
@@ -109,10 +115,9 @@
             <!-- /ko -->
           </select></div>
         <oj-input-text label-hint="Currency" help.instruction="Product currency. Currently INR." value="{{form().currency}}" readonly="true"></oj-input-text>
-        <oj-input-text data-bind="visible:hasProductType() && !isCreditCard()" label-hint="Minimum balance" help.instruction="Minimum INR balance. Cannot exceed maximum balance." value="{{form().minimumBalance}}"></oj-input-text>
-        <oj-input-text data-bind="visible:hasProductType() && !isCreditCard()" label-hint="Maximum balance" help.instruction="Maximum INR balance. Must be at least the minimum." value="{{form().maximumBalance}}"></oj-input-text>
+        <oj-input-text data-bind="visible:hasProductType() && !isCreditCard()" label-hint="Minimum balance" help.instruction="Minimum INR balance that withdrawals and transfers must preserve." value="{{form().minimumBalance}}"></oj-input-text>
         <oj-input-text data-bind="visible:isInterestBearing" label-hint="Interest rate %" help.instruction="Annual interest rate for savings and deposit products." value="{{form().rate.interestRate}}"></oj-input-text>
-        <oj-input-text data-bind="visible:hasProductType" label-hint="Monthly fee" help.instruction="Monthly fee in INR. Enter 0 if none." value="{{form().fee.monthlyMaintenanceFee}}"></oj-input-text>
+        <oj-input-text data-bind="visible:selectedProductType()==='SAVINGS'||selectedProductType()==='CURRENT'" label-hint="Annual maintenance fee" help.instruction="Charged once on the account-opening anniversary. Enter 0 if none." value="{{form().fee.annualMaintenanceFee}}"></oj-input-text>
         <oj-input-text data-bind="visible:isTermDeposit" label-hint="Tenure months" help.instruction="Deposit term in whole months. Required for FD and RD." value="{{form().term.tenureMonths}}"></oj-input-text>
         <oj-input-text data-bind="visible:isTermDeposit" label-hint="Lock-in period (months)" help.instruction="Months before early withdrawal is allowed." value="{{form().term.lockInPeriod}}"></oj-input-text>
         <oj-input-text data-bind="visible:isRecurringDeposit" label-hint="Installment amount" help.instruction="Amount per installment in INR. Required for RD." value="{{form().term.installmentAmount}}"></oj-input-text>
@@ -149,7 +154,7 @@
       <oj-button chroming="callToAction" on-oj-action="[[saveType]]">Create type</oj-button>
     </div>
   </oj-dialog>
-  <oj-dialog id="productDetailDialog" class="mb-dialog mb-dialog-wide" dialog-title="Product details" cancel-behavior="icon"><div slot="body"><div class="mb-error" data-bind="visible:error,text:error"></div><div data-bind="with:selected"><div class="mb-detail-hero"><div><small data-bind="text:$parent.productSubheading($data)"></small><h2 data-bind="text:$parent.productHeading($data)"></h2><p data-bind="visible:description,text:description"></p></div><span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span></div><dl class="mb-kv three"><div><dt>Type</dt><dd data-bind="text:productTypeName"></dd></div><div><dt>Interest</dt><dd data-bind="text:`${rate&&rate.interestRate||0}%`"></dd></div><div><dt>Monthly fee</dt><dd data-bind="text:fee&&fee.monthlyMaintenanceFee"></dd></div><div><dt>Minimum</dt><dd data-bind="text:minimumBalance"></dd></div><div><dt>Maximum</dt><dd data-bind="text:maximumBalance"></dd></div><div><dt>Currency</dt><dd data-bind="text:currency"></dd></div></dl></div><div class="mb-detail-actions"><button class="mb-link" data-bind="visible:isAdmin() && selected() && selected().status==='ACTIVE',click:edit">Edit product</button><button class="mb-link danger" data-bind="visible:isAdmin() && selected() && selected().status==='ACTIVE',click:()=>retire(selected())">Retire</button></div><div class="mb-section-title"><small>ACTIVITY HISTORY</small><h3>Lifecycle changes</h3></div><div class="mb-table compact"><table><thead><tr><th>Change</th><th>Reason</th><th>By</th><th>Date</th></tr></thead><tbody data-bind="foreach:history"><tr><td data-bind="text:previousStatus===newStatus ? 'Product updated' : `${previousStatus} → ${newStatus}`"></td><td data-bind="text:changeReason"></td><td data-bind="text:changedBy"></td><td data-bind="text:changedDate"></td></tr></tbody></table></div></div></oj-dialog>
+  <oj-dialog id="productDetailDialog" class="mb-dialog mb-dialog-wide" dialog-title="Product details" cancel-behavior="icon"><div slot="body"><div class="mb-error" data-bind="visible:error,text:error"></div><div data-bind="with:selected"><div class="mb-detail-hero"><div><small data-bind="text:$parent.productSubheading($data)"></small><h2 data-bind="text:$parent.productHeading($data)"></h2><p data-bind="visible:description,text:description"></p></div><span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span></div><dl class="mb-kv three"><div><dt>Type</dt><dd data-bind="text:productTypeName"></dd></div><div><dt>Interest</dt><dd data-bind="text:`${rate&&rate.interestRate||0}%`"></dd></div><div><dt>Annual fee</dt><dd data-bind="text:fee&&fee.annualMaintenanceFee"></dd></div><div><dt>Minimum</dt><dd data-bind="text:minimumBalance"></dd></div><div><dt>Currency</dt><dd data-bind="text:currency"></dd></div></dl></div><div class="mb-detail-actions"><button class="mb-link" data-bind="visible:isAdmin() && selected() && selected().status==='ACTIVE',click:edit">Edit product</button><button class="mb-link danger" data-bind="visible:isAdmin() && selected() && selected().status==='ACTIVE',click:()=>retire(selected())">Retire</button></div><div class="mb-section-title"><small>ACTIVITY HISTORY</small><h3>Lifecycle changes</h3></div><div class="mb-table compact"><table><thead><tr><th>Change</th><th>Reason</th><th>By</th><th>Date</th></tr></thead><tbody data-bind="foreach:history"><tr><td data-bind="text:previousStatus===newStatus ? 'Product updated' : `${previousStatus} → ${newStatus}`"></td><td data-bind="text:changeReason"></td><td data-bind="text:changedBy"></td><td data-bind="text:changedDate"></td></tr></tbody></table></div></div></oj-dialog>
   <oj-dialog id="retirementImpactDialog" class="mb-dialog" dialog-title="Retirement impact review" cancel-behavior="icon">
     <div slot="body" data-bind="with:retirementImpact">
       <div class="mb-retirement-impact">

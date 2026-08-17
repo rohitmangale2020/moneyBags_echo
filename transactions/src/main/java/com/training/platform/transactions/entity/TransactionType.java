@@ -3,10 +3,19 @@ package com.training.platform.transactions.entity;
 /** Defines the supported kinds of monetary transaction. */
 public enum TransactionType {
     TRANSFER,
-    DEPOSIT,
-    /** Initial funding posted when an account is opened; treated as a credit in statements. */
     OPENING_DEPOSIT,
+    DEPOSIT,
+//    OPENING_DEPOSIT,
+    FIXED_DEPOSIT_FUNDING,
+    FIXED_DEPOSIT_PREMATURE_CLOSURE,
     WITHDRAWAL,
+    MONTHLY_MAINTENANCE_FEE,
+    ANNUAL_MAINTENANCE_FEE,
+    INTEREST_CREDIT,
+    FIXED_DEPOSIT_INTEREST_CREDIT,
+//    FIXED_DEPOSIT_FUNDING,
+    FIXED_DEPOSIT_MATURITY,
+//    FIXED_DEPOSIT_PREMATURE_CLOSURE,
     PAYMENT,
     REVERSAL
 }

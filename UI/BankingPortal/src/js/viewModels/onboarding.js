@@ -41,6 +41,7 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
     s.kycRecord = ko.observable(null);
     s.kycSaved = ko.pureComputed(() => Boolean(s.kycRecord()));
     s.products = ko.observableArray([]);
+    s.customerAccounts = ko.observableArray([]);
     s.account = ko.observable(null);
     s.resumedOnboarding = ko.observable(false);
     s.file = ko.observable(null);
@@ -113,7 +114,60 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
       productId: ko.observable(''),
       ownershipType: ko.observable('INDIVIDUAL'),
       availableBalance: ko.observable(0),
+      fundingAccountId: ko.observable(''),
+      payoutAccountId: ko.observable(''),
     };
+    s.selectedAccountProduct = ko.pureComputed(() =>
+      s.products().find((product) => String(product.productId) === String(s.accountForm.productId())) || null,
+    );
+    s.isFixedDeposit = ko.pureComputed(() =>
+      String(s.selectedAccountProduct()?.productTypeCode || '').toUpperCase() === 'FD',
+    );
+    s.transactionalAccounts = ko.pureComputed(() => {
+      const product = s.selectedAccountProduct();
+      if (!product) return [];
+      return s.customerAccounts().filter((account) =>
+        String(account.status || '').toUpperCase() === 'ACTIVE'
+        && String(account.productTypeCode || '').toUpperCase() !== 'FD'
+        && String(account.currencyCode || '').toUpperCase() === String(product.currency || '').toUpperCase(),
+      );
+    });
+    s.eligibleFundingAccounts = ko.pureComputed(() => {
+      const principal = Number(s.accountForm.availableBalance());
+      return s.transactionalAccounts().filter((account) => {
+        if (!Number.isFinite(principal) || principal <= 0) return true;
+        return Number(account.availableBalance || 0) - principal >= Number(account.minimumBalance || 0);
+      });
+    });
+    s.fixedDepositAccountLabel = (account) => {
+      const type = String(account.productTypeCode || 'ACCOUNT').replace(/_/g, ' ');
+      const amount = Number(account.availableBalance || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+      return `${account.accountNumber} · ${type} · ${account.currencyCode} ${amount}`;
+    };
+    s.postOpeningDeposit = (account, amount) => app.services.transactions.transfer({
+      transactionRef: `OPEN-${String(account.accountId).replace(/-/g, '').slice(0, 32)}`,
+      transactionType: 'OPENING_DEPOSIT', transactionStatus: 'INITIATED',
+      debitAccountId: null, creditAccountId: String(account.accountId), externalBeneficiary: null,
+      amount, currencyCode: account.currencyCode, feeAmount: 0,
+      initiatedByCustomerId: String(account.customerId), initiatedByUserId: null,
+      completedAt: null, failureCode: null, failureReason: null,
+    });
+    s.accountForm.productId.subscribe(() => {
+      s.accountForm.fundingAccountId('');
+      s.accountForm.payoutAccountId('');
+      const product = s.selectedAccountProduct();
+      if (s.isFixedDeposit() && Number(s.accountForm.availableBalance()) <= 0) {
+        s.accountForm.availableBalance(Number(product?.minimumBalance || 0));
+      }
+      const eligible = s.transactionalAccounts();
+      if (s.isFixedDeposit() && eligible.length) {
+        s.accountForm.fundingAccountId(String(eligible[0].accountId));
+        s.accountForm.payoutAccountId(String(eligible[0].accountId));
+      }
+    });
+    s.accountForm.fundingAccountId.subscribe((accountId) => {
+      if (s.isFixedDeposit()) s.accountForm.payoutAccountId(accountId || '');
+    });
     s.documentRequiresNumber = ko.pureComputed(() => {
       const type = s.document.documentType();
       return Boolean(type) && !['PHOTO', 'SIGNATURE', 'SALARY_SLIP'].includes(type);
@@ -396,10 +450,22 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
     };
     s.proceedToAccount = async () => {
       if (!s.canProceedToAccount()) return;
-      const products = await s.run(() => app.services.products.list());
-      if (!products) return;
+      const result = await s.run(() => Promise.all([
+        app.services.products.list(),
+        app.services.accounts.customer(s.customer().customerId),
+      ]));
+      if (!result) return;
+      const products = result[0];
+      const productById = new Map(products.map((product) => [String(product.productId), product]));
       s.products(products.filter((product) => product.status === 'ACTIVE'));
+      s.customerAccounts(result[1].map((account) => Object.assign({}, account, {
+        productTypeCode: account.productTypeCode || productById.get(String(account.productId))?.productTypeCode || '',
+      })));
       if (!s.products().length) return s.setErrors({ resumeValue: 'No active banking products are available for account opening.' });
+      s.accountForm.productId('');
+      s.accountForm.availableBalance(0);
+      s.accountForm.fundingAccountId('');
+      s.accountForm.payoutAccountId('');
       s.account(null);
       s.step(6);
     };
@@ -479,9 +545,16 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
       }
       const e = {};
       const product = s.products().find((item) => String(item.productId) === String(s.accountForm.productId()));
-      const openingBalance = Number(s.accountForm.availableBalance());
+      const requestedBalance = Number(s.accountForm.availableBalance());
+      const fixedDeposit = s.isFixedDeposit();
       if (!product) e.productId = 'Select an active banking product.';
-      if (!Number.isFinite(openingBalance) || openingBalance < 0) e.availableBalance = 'Opening balance must be zero or a positive number.';
+      if (!Number.isFinite(requestedBalance) || requestedBalance < 0) e.availableBalance = 'Opening balance must be zero or a positive number.';
+      if (product && requestedBalance < Number(product.minimumBalance || 0)) {
+        e.availableBalance = `${fixedDeposit ? 'Principal' : 'Opening balance'} is below the product minimum.`;
+      }
+      if (fixedDeposit && !s.eligibleFundingAccounts().some((account) => String(account.accountId) === String(s.accountForm.fundingAccountId()))) {
+        e.fundingAccountId = 'Select an eligible customer account with enough balance.';
+      }
       if (!s.setErrors(e)) return;
       const payload = {
         accountNumber: null,
@@ -490,12 +563,29 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
         ownershipType: s.accountForm.ownershipType(),
         status: 'ACTIVE',
         currencyCode: product.currency,
-        availableBalance: openingBalance,
+        availableBalance: 0,
         closedAt: null,
       };
       const result = await s.run(
-        () => app.services.accounts.create(payload),
-        'Account opened successfully.',
+        async () => {
+          const savedAccount = await app.services.accounts.create(payload);
+          if (!fixedDeposit) {
+            if (requestedBalance > 0) await s.postOpeningDeposit(savedAccount, requestedBalance);
+            return savedAccount;
+          }
+          const contract = await app.services.fixedDeposits.open({
+            fdAccountId: String(savedAccount.accountId),
+            fundingAccountId: String(s.accountForm.fundingAccountId()),
+            payoutAccountId: String(s.accountForm.fundingAccountId()),
+            principal: requestedBalance,
+          });
+          if (String(contract.status || '').toUpperCase() !== 'ACTIVE') {
+            throw new Error(`FD account ${savedAccount.accountNumber || savedAccount.accountId} was created, but its funding transaction failed.`);
+          }
+          return savedAccount;
+        },
+        fixedDeposit ? 'Fixed deposit opened and funded successfully.'
+          : 'Account opened and its opening deposit was posted successfully.',
       );
       if (result) s.account(result);
     };

@@ -2,9 +2,10 @@ define([
   'knockout',
   'appController',
   'viewModels/util',
+  'jspdf',
   'ojs/ojinputtext',
   'ojs/ojbutton',
-], function (ko, app, u) {
+], function (ko, app, u, jspdf) {
   const dateValue = (date) => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -107,28 +108,105 @@ define([
     s.displayMoney = (value, currencyCode) =>
       value === null || value === undefined ? '' : u.money(value, currencyCode);
 
-    s.download = () => {
-      const rows = [
-          ['Posted', 'Description', 'Reference', 'Channel', 'Withdrawal', 'Deposit', 'Currency', 'Closing balance'],
-          ...s.filteredStatements().map((x) => [
-            x.postedAt,
-            x.description,
-            x.transactionRef,
-            x.channel,
-            x.withdrawalAmount,
-            x.depositAmount,
-            x.currencyCode,
-            x.closingBalance,
-          ]),
+    const statementPassword = (customer) => {
+      const letters = String(customer.firstName || '').replace(/[^a-z]/gi, '');
+      const dob = String(customer.dob || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (letters.length < 4 || !dob) {
+        throw new Error('A four-letter first name and date of birth are required to protect this statement.');
+      }
+      return `${letters.slice(0, 4).toUpperCase()}${dob[3]}${dob[2]}`;
+    };
+
+    const pdfDate = (value) => value ? new Date(value).toLocaleDateString('en-IN') : '';
+    const shortText = (value, maxLength) => {
+      const text = String(value || '');
+      return text.length > maxLength ? `${text.slice(0, maxLength - 3)}...` : text;
+    };
+
+    s.download = async () => {
+      if (!s.filteredStatements().length) return;
+      try {
+        const accountNumber = String(s.accountNumber() || '').trim();
+        const accounts = u.list(await app.services.accounts.number(accountNumber));
+        const account = accounts[0];
+        if (!account || !account.customerId) throw new Error('The statement account could not be resolved.');
+        const customer = await app.services.customers.get(account.customerId);
+        const password = statementPassword(customer);
+        const { jsPDF } = jspdf;
+        const document = new jsPDF({
+          orientation: 'landscape',
+          unit: 'mm',
+          format: 'a4',
+          encryption: {
+            userPassword: password,
+            ownerPassword: password,
+            userPermissions: ['print'],
+          },
+        });
+        const margin = 12;
+        const pageWidth = document.internal.pageSize.getWidth();
+        const pageHeight = document.internal.pageSize.getHeight();
+        const columns = [
+          { label: 'Posted', width: 26 }, { label: 'Description', width: 72 },
+          { label: 'Reference', width: 35 }, { label: 'Channel', width: 31 },
+          { label: 'Withdrawal', width: 31 }, { label: 'Deposit', width: 31 },
+          { label: 'Closing balance', width: 38 },
         ];
-      const csv = rows
-        .map((row) => row.map((value) => `"${String(value === null || value === undefined ? '' : value).replaceAll('"', '""')}"`).join(','))
-        .join('\n');
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-      link.download = `statement-${s.accountNumber()}-${s.fromDate()}-${s.toDate()}.csv`;
-      link.click();
-      URL.revokeObjectURL(link.href);
+        const header = () => {
+          document.setFont('helvetica', 'bold');
+          document.setFontSize(16);
+          document.text('Account Statement', margin, 15);
+          document.setFont('helvetica', 'normal');
+          document.setFontSize(9);
+          document.text(`Account: ${accountNumber}   |   ${s.fromDate()} to ${s.toDate()}`, margin, 22);
+          document.text(`Customer: ${customer.firstName} ${customer.lastName || ''}`.trim(), margin, 27);
+          let x = margin;
+          document.setFillColor(31, 78, 121);
+          document.rect(margin, 32, pageWidth - (margin * 2), 7, 'F');
+          document.setTextColor(255, 255, 255);
+          document.setFont('helvetica', 'bold');
+          document.setFontSize(7);
+          columns.forEach((column) => {
+            document.text(column.label, x + 1, 36.5);
+            x += column.width;
+          });
+          document.setTextColor(0, 0, 0);
+          return 39;
+        };
+        let y = header();
+        document.setFont('helvetica', 'normal');
+        document.setFontSize(7);
+        s.filteredStatements().forEach((entry, index) => {
+          if (y > pageHeight - 14) {
+            document.addPage();
+            y = header();
+            document.setFont('helvetica', 'normal');
+            document.setFontSize(7);
+          }
+          if (index % 2 === 0) {
+            document.setFillColor(245, 248, 252);
+            document.rect(margin, y, pageWidth - (margin * 2), 6, 'F');
+          }
+          const values = [
+            pdfDate(entry.postedAt), shortText(entry.description, 48), shortText(entry.transactionRef, 23),
+            shortText(entry.channel, 18), s.displayMoney(entry.withdrawalAmount, entry.currencyCode),
+            s.displayMoney(entry.depositAmount, entry.currencyCode), s.displayMoney(entry.closingBalance, entry.currencyCode),
+          ];
+          let x = margin;
+          values.forEach((value, valueIndex) => {
+            document.text(String(value || ''), x + 1, y + 4);
+            x += columns[valueIndex].width;
+          });
+          y += 6;
+        });
+        document.setFontSize(7);
+        document.setTextColor(90, 90, 90);
+        document.text('Password: first four letters of the account holder first name (uppercase) + date of birth (DDMM).', margin, pageHeight - 7);
+        document.save(`statement-${accountNumber}-${s.fromDate()}-${s.toDate()}.pdf`);
+        app.notify('Password-protected statement PDF downloaded.', 'success');
+      } catch (error) {
+        s.state.error(error.message || 'The statement PDF could not be created.');
+      }
     };
 
     s.loadActiveCustomerAccounts();

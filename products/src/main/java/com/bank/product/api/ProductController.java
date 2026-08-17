@@ -13,6 +13,7 @@ public class ProductController {
     private final ProductService service;
     @PostMapping @PreAuthorize("hasRole('ADMIN')") public ResponseEntity<ProductResponse> create(@Valid @RequestBody ProductRequest r) { return ResponseEntity.status(HttpStatus.CREATED).body(service.create(r)); }
     @GetMapping public List<ProductResponse> findAll(Authentication authentication) { return service.findAll(authentication); }
+    @GetMapping("/id/{productId}") public ProductResponse findById(@PathVariable Long productId, Authentication authentication) { return service.findById(productId, authentication); }
     @GetMapping("/{productCode}") public ProductResponse findOne(@PathVariable String productCode, Authentication authentication) { return service.findByCode(productCode, authentication); }
     @GetMapping("/{productCode}/status-history") public List<ProductStatusHistoryResponse> statusHistory(@PathVariable String productCode) { return service.statusHistory(productCode); }
     @GetMapping("/{productCode}/retirement-impact") @PreAuthorize("hasRole('ADMIN')") public ProductRetirementImpactResponse retirementImpact(@PathVariable String productCode) { return service.retirementImpact(productCode); }

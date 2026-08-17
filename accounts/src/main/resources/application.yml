@@ -16,11 +16,24 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  flyway:
+    enabled: true
+    table: flyway_accounts_schema_history
+    locations: classpath:db/migration/{vendor}
+    baseline-on-migrate: true
+    baseline-version: 0
   security:
     oauth2:
       resourceserver:
         jwt:
           issuer-uri: ${JWT_ISSUER:http://localhost:8087}
+
+services:
+  products:
+    base-url: ${PRODUCTS_SERVICE_URL:http://products-service}
+  transactions:
+    base-url: ${TRANSACTIONS_SERVICE_URL:http://transactions-service}
+  internal-key: ${BANKING_INTERNAL_KEY:local-banking-key}
 
 eureka:
   client:

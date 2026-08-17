@@ -29,5 +29,9 @@ public interface CustomerRepository extends JpaRepository<CustomerEntity, Long> 
 
     Page<CustomerEntity> findByStatus(CustomerStatus status, Pageable pageable);
 
+    List<CustomerEntity> findByStatusIn(List<CustomerStatus> statuses);
+
+    Page<CustomerEntity> findByStatusIn(List<CustomerStatus> statuses, Pageable pageable);
+
     List<CustomerEntity> findByFirstNameContainingIgnoreCase(String firstName);
 }

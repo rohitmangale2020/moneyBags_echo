@@ -100,10 +100,23 @@ class UserServiceImplTest {
         when(userRepository.findAll(any(PageRequest.class)))
                 .thenReturn(new org.springframework.data.domain.PageImpl<>(java.util.List.of(savedUser)));
 
-        var response = userService.getAll(PageRequest.of(0, 20));
+        var response = userService.getAll(null, PageRequest.of(0, 20));
 
         assertEquals(1, response.getTotalElements());
         assertEquals("priyansh", response.getContent().get(0).username());
+    }
+
+    @Test
+    void getAll_query_usesDatabaseSearch() {
+        User savedUser = user(1L, "priyansh", "priyansh@example.com");
+        PageRequest pageable = PageRequest.of(0, 20);
+        when(userRepository.search("priy", pageable))
+                .thenReturn(new org.springframework.data.domain.PageImpl<>(java.util.List.of(savedUser)));
+
+        var response = userService.getAll("  priy  ", pageable);
+
+        assertEquals(1, response.getTotalElements());
+        verify(userRepository).search("priy", pageable);
     }
 
     @Test
