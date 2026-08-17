@@ -12,7 +12,11 @@
     <label>Status<select data-bind="value:statusFilter"><option value="">All customers</option><option value="KYC_PENDING">KYC pending</option><option value="ACTIVE">Active</option><option value="INACTIVE">Inactive</option></select></label>
   </div>
   <div class="mb-error" data-bind="visible:state.error"><span data-bind="text:state.error"></span><button data-bind="click:load">Retry</button></div>
-  <div class="mb-loading" data-bind="visible:!showDetailPage() && state.loading()">Loading customers…</div>
+  <div class="mb-loading mb-moneybags-loader" data-bind="visible:!showDetailPage() && state.loading()" role="status" aria-live="polite">
+    <img class="mb-moneybags-loader-logo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Crect width='36' height='36' rx='10' fill='white'/%3E%3Ctext x='18' y='25' text-anchor='middle' font-family='Arial,sans-serif' font-size='20' font-weight='800' fill='%23355eb8'%3EM%3C/text%3E%3C/svg%3E" alt="" aria-hidden="true" />
+    <strong>Loading customers</strong>
+    <small>Fetching the latest customer records…</small>
+  </div>
   <div class="mb-table" data-bind="visible:!showDetailPage() && orderedCustomers().length">
     <table><thead><tr><th>Customer</th><th>CIF</th><th>Status</th><th>Contact</th><th>Actions</th></tr></thead>
       <tbody data-bind="foreach:orderedCustomers"><tr>
@@ -37,7 +41,11 @@
       <oj-button on-oj-action="[[backToDirectory]]">← Back to customers</oj-button>
     </div>
     <div class="mb-error" data-bind="visible:error,text:error"></div>
-    <div class="mb-loading" data-bind="visible:detailState.loading">Loading customer records…</div>
+    <div class="mb-loading mb-moneybags-loader" data-bind="visible:detailState.loading" role="status" aria-live="polite">
+      <img class="mb-moneybags-loader-logo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Crect width='36' height='36' rx='10' fill='white'/%3E%3Ctext x='18' y='25' text-anchor='middle' font-family='Arial,sans-serif' font-size='20' font-weight='800' fill='%23355eb8'%3EM%3C/text%3E%3C/svg%3E" alt="" aria-hidden="true" />
+      <strong>Loading customer records</strong>
+      <small>Fetching customer details…</small>
+    </div>
     <div data-bind="with:selected">
       <div class="mb-detail-hero"><div><small data-bind="text:cifNo"></small><h2 data-bind="text:`${firstName} ${lastName||''}`"></h2><p data-bind="text:`${email||'No email'} · ${phone}`"></p></div><span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span></div>
       <div class="mb-detail-actions"><button class="mb-link" data-bind="click:$parent.editCustomer">Edit profile</button><button class="mb-link" data-bind="click:()=>$parent.status($data),text:status==='ACTIVE'?'Deactivate':'Activate'"></button><button class="mb-link" data-bind="click:$parent.openAccountForCustomer,text:$parent.accountActionLabel"></button><button class="mb-link danger" data-bind="click:()=>$parent.remove($data)">Delete</button></div>
@@ -56,7 +64,11 @@
   <oj-dialog id="customerDetailDialog" class="mb-dialog mb-dialog-xl" dialog-title="Customer workspace" cancel-behavior="icon">
     <div slot="body">
       <div class="mb-error" data-bind="visible:error,text:error"></div>
-      <div class="mb-loading" data-bind="visible:detailState.loading">Loading customer records…</div>
+      <div class="mb-loading mb-moneybags-loader" data-bind="visible:detailState.loading" role="status" aria-live="polite">
+        <img class="mb-moneybags-loader-logo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Crect width='36' height='36' rx='10' fill='white'/%3E%3Ctext x='18' y='25' text-anchor='middle' font-family='Arial,sans-serif' font-size='20' font-weight='800' fill='%23355eb8'%3EM%3C/text%3E%3C/svg%3E" alt="" aria-hidden="true" />
+        <strong>Loading customer records</strong>
+        <small>Fetching customer details…</small>
+      </div>
       <div data-bind="with:selected">
         <div class="mb-detail-hero"><div><small data-bind="text:cifNo"></small><h2 data-bind="text:`${firstName} ${lastName||''}`"></h2><p data-bind="text:`${email||'No email'} · ${phone}`"></p></div><span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span></div>
         <div class="mb-detail-actions"><button class="mb-link" data-bind="click:$parent.editCustomer">Edit profile</button><button class="mb-link" data-bind="click:()=>$parent.status($data),text:status==='ACTIVE'?'Deactivate':'Activate'"></button><button class="mb-link" data-bind="click:$parent.openAccountForCustomer,text:$parent.accountActionLabel"></button><button class="mb-link danger" data-bind="click:()=>$parent.remove($data)">Delete</button></div>

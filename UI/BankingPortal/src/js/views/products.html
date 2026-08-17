@@ -13,7 +13,11 @@
     </div>
   </div>
   <div class="mb-error" data-bind="visible:state.error,text:state.error"></div>
-  <div class="mb-loading" data-bind="visible:state.loading">Loading products…</div>
+  <div class="mb-loading mb-moneybags-loader" data-bind="visible:state.loading" role="status" aria-live="polite">
+    <img class="mb-moneybags-loader-logo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Crect width='36' height='36' rx='10' fill='white'/%3E%3Ctext x='18' y='25' text-anchor='middle' font-family='Arial,sans-serif' font-size='20' font-weight='800' fill='%23355eb8'%3EM%3C/text%3E%3C/svg%3E" alt="" aria-hidden="true" />
+    <strong>Loading products</strong>
+    <small>Fetching the latest product catalogue…</small>
+  </div>
   <section class="mb-product-section" aria-labelledby="active-products-heading">
     <div class="mb-product-section-heading"><div><small>AVAILABLE NOW</small><h2 id="active-products-heading">Active products</h2><p>Products currently available for customers.</p></div><div class="mb-product-heading-actions"><oj-button class="mb-product-refresh" on-oj-action="[[refreshProducts]]">Refresh</oj-button><button type="button" class="mb-view-toggle" data-bind="click:toggleActiveCompact,text:activeCompact()?'Card view':'Compact view',attr:{'aria-pressed':activeCompact}"></button><span class="mb-product-count" data-bind="text:activeCountLabel"></span></div></div>
     <div class="mb-search-panel mb-product-filter-panel">
