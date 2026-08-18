@@ -28,6 +28,7 @@
         <module>audit</module>
         <module>security-service</module>
         <module>api-gateway-service</module>
+        <module>risk-service</module>
     </modules>
 
     <properties>
