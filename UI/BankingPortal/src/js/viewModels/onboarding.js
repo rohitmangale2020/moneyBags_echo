@@ -36,10 +36,12 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
     s.customer = ko.observable(null);
     s.profileSaved = ko.observable(false);
     s.addressSaved = ko.observable(false);
+    s.addressRecord = ko.observable(null);
     s.uploadedDocuments = ko.observableArray([]);
     s.uploadedDocumentCount = ko.pureComputed(() => s.uploadedDocuments().length);
     s.kycRecord = ko.observable(null);
     s.kycSaved = ko.pureComputed(() => Boolean(s.kycRecord()));
+    s.skippedKyc = ko.observable(false);
     s.products = ko.observableArray([]);
     s.customerAccounts = ko.observableArray([]);
     s.account = ko.observable(null);
@@ -103,6 +105,8 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
       country: ko.observable(''),
       pincode: ko.observable(''),
     };
+    s.addNominee = ko.observable(false);
+    s.addNomineeAddress = ko.observable(false);
     s.indianStates = ko.observableArray(indiaAddress.states());
     s.addressDistricts = ko.pureComputed(() => { s.indianStates(); return indiaAddress.districts(s.address.state()); });
     s.nomineeDistricts = ko.pureComputed(() => { s.indianStates(); return indiaAddress.districts(s.nominee.state()); });
@@ -221,11 +225,27 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
       s.clearErrors();
       s.step(Math.max(1, s.step() - 1));
     };
+    s.editSection = (step) => {
+      s.clearErrors();
+      if (step === 4) s.skippedKyc(false);
+      s.step(step);
+    };
     // Returning to profile must validate and persist the current form values, not
     // merely move forward with the customer object that was saved earlier.
     s.nextFromProfile = () => s.createProfile();
     s.nextFromAddress = () => { s.clearErrors(); s.step(3); };
-    s.skipDocuments = () => { s.clearErrors(); s.step(4); };
+    s.skipDocuments = () => {
+      s.clearErrors();
+      s.kyc.kycStatus('PENDING');
+      s.skippedKyc(true);
+      s.step(5);
+    };
+    s.continueFromDocuments = () => {
+      if (!s.uploadedDocuments().length) return s.skipDocuments();
+      s.clearErrors();
+      s.skippedKyc(false);
+      s.step(4);
+    };
     s.goCustomers = () => app.go('customers');
 
     s.validateProfile = () => {
@@ -297,10 +317,13 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
       } catch (error) { e.pincode = 'PIN validation is temporarily unavailable. Please try again.'; }
       if (!s.setErrors(e)) return;
       const result = await s.run(
-        () => app.services.customers.address(s.customer().customerId, values),
+        () => s.addressRecord()
+          ? app.services.customers.updateAddress(s.customer().customerId, s.addressRecord().addressId, values)
+          : app.services.customers.address(s.customer().customerId, values),
         'Address saved.',
       );
       if (result) {
+        s.addressRecord(result);
         s.addressSaved(true);
         s.step(3);
       }
@@ -357,7 +380,10 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
       }
     };
 
-    s.saveKyc = async () => {
+    s.reviewOnboarding = async () => s.saveKyc(true);
+    s.confirmOnboarding = async () => s.saveKyc(false);
+
+    s.saveKyc = async (reviewOnly = false) => {
       // A saved assessment is retained when navigating back from review. Continue
       // forward instead of submitting a second KYC record for the same customer.
       if (s.kycSaved()) {
@@ -373,16 +399,16 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
       else if (!dateValue(s.kyc.kycDate())) e.kycDate = 'Enter a valid KYC date.';
       else if (s.kyc.kycDate() > today()) e.kycDate = 'KYC date cannot be in the future.';
       if (text(s.kyc.remarks()).length > 500) e.remarks = 'Remarks cannot exceed 500 characters.';
-      const nomineeAddressStarted = Boolean(text(s.nominee.line1()) || text(s.nominee.line2()) || text(s.nominee.city()) || text(s.nominee.state()) || text(s.nominee.country()) || text(s.nominee.pincode()));
-      const hasNominee = Boolean(text(s.nominee.nomineeName()) || text(s.nominee.relationship()) || text(s.nominee.dob()) || text(s.nominee.phone()) || nomineeAddressStarted);
+      const hasNominee = s.addNominee();
+      const nomineeAddressStarted = hasNominee && s.addNomineeAddress();
       if (hasNominee && !text(s.nominee.nomineeName())) e.nomineeName = 'Nominee name is required when nominee details are entered.';
-      if (text(s.nominee.nomineeName()).length > 150) e.nomineeName = 'Nominee name cannot exceed 150 characters.';
+      if (hasNominee && text(s.nominee.nomineeName()).length > 150) e.nomineeName = 'Nominee name cannot exceed 150 characters.';
       if (hasNominee && !text(s.nominee.relationship())) e.relationship = 'Select the nominee relationship.';
-      else if (text(s.nominee.relationship()).length > 100) e.relationship = 'Relationship cannot exceed 100 characters.';
-      if (s.nominee.dob() && !dateValue(s.nominee.dob())) e.nomineeDob = 'Enter a valid nominee date of birth.';
-      else if (s.nominee.dob() && s.nominee.dob() >= today()) e.nomineeDob = 'Nominee date of birth must be in the past.';
-      else if (s.nominee.dob() && ageInYears(s.nominee.dob()) < 18) e.nomineeDob = 'Nominee must be at least 18 years old.';
-      if (text(s.nominee.phone()) && !/^[6-9][0-9]{9}$/.test(text(s.nominee.phone()))) e.nomineePhone = 'Enter a valid 10-digit mobile number.';
+      else if (hasNominee && text(s.nominee.relationship()).length > 100) e.relationship = 'Relationship cannot exceed 100 characters.';
+      if (hasNominee && s.nominee.dob() && !dateValue(s.nominee.dob())) e.nomineeDob = 'Enter a valid nominee date of birth.';
+      else if (hasNominee && s.nominee.dob() && s.nominee.dob() >= today()) e.nomineeDob = 'Nominee date of birth must be in the past.';
+      else if (hasNominee && s.nominee.dob() && ageInYears(s.nominee.dob()) < 18) e.nomineeDob = 'Nominee must be at least 18 years old.';
+      if (hasNominee && text(s.nominee.phone()) && !/^[6-9][0-9]{9}$/.test(text(s.nominee.phone()))) e.nomineePhone = 'Enter a valid 10-digit mobile number.';
       const share = Number(s.nominee.sharePercentage());
       if (hasNominee && (!Number.isFinite(share) || share < 0.01 || share > 100)) e.sharePercentage = 'Nominee share must be between 0.01 and 100.';
       if (nomineeAddressStarted) {
@@ -402,6 +428,13 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
         }
       }
       if (!s.setErrors(e)) return;
+
+      // Let the employee inspect every entered value before any nominee or KYC
+      // data is sent to the services.
+      if (reviewOnly) {
+        s.step(5);
+        return;
+      }
 
       const payload = {
         kycStatus: s.kyc.kycStatus(),
@@ -447,11 +480,12 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
       );
       if (!result) return;
       s.kycRecord(result);
+      s.skippedKyc(false);
       s.step(5);
     };
 
     s.finishOnboarding = () => {
-      app.notify('Onboarding details saved. Activate the verified customer from Customer Management.');
+      app.notify('Onboarding finished. Verify and activate the customer before opening an account.');
       app.go('customers');
     };
     s.proceedToAccount = async () => {
@@ -512,8 +546,16 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
       }
       if (nominees.length) {
         const savedNominee = nominees[0];
+        s.addNominee(true);
         ['nomineeName', 'relationship', 'dob', 'phone', 'sharePercentage'].forEach((key) => {
           if (savedNominee[key] !== undefined && savedNominee[key] !== null) s.nominee[key](savedNominee[key]);
+        });
+      }
+      if (addresses.length) {
+        const savedAddress = addresses[0];
+        s.addressRecord(savedAddress);
+        Object.keys(s.address).forEach((key) => {
+          if (savedAddress[key] !== undefined && savedAddress[key] !== null) s.address[key](savedAddress[key]);
         });
       }
       s.addressSaved(addresses.length > 0);
