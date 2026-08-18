@@ -39,7 +39,7 @@ define(['knockout', 'appController'], function (ko, app) {
     const onboardingQuestions = [
       { key: 'firstName', prompt: 'What is the customer’s first name?', valid: (value) => value.length <= 100 || 'First name must be 100 characters or fewer.' },
       { key: 'lastName', prompt: 'What is the customer’s last name?', valid: (value) => value.length <= 100 || 'Last name must be 100 characters or fewer.' },
-      { key: 'dob', prompt: 'What is the date of birth? Use YYYY-MM-DD.', valid: (value) => /^\d{4}-\d{2}-\d{2}$/.test(value) && new Date(`${value}T00:00:00`) < new Date() ? true : 'Enter a date of birth in YYYY-MM-DD format that is in the past.' },
+      { key: 'dob', prompt: 'What is the date of birth? Use YYYY-MM-DD.', valid: (value) => isAdultDateOfBirth(value) || 'The customer must be at least 18 years old. Enter a valid date in YYYY-MM-DD format.' },
       { key: 'gender', prompt: 'What is the gender? Reply Male, Female, or Other.', valid: (value) => ['MALE', 'FEMALE', 'OTHER'].includes(value.toUpperCase()) || 'Reply Male, Female, or Other.', transform: (value) => value.toUpperCase() },
       { key: 'phone', prompt: 'What is the 10-digit Indian mobile number?', valid: (value) => /^[6-9]\d{9}$/.test(value) || 'Enter a valid 10-digit Indian mobile number.' },
       { key: 'email', prompt: 'What is the email address?', valid: (value) => /^\S+@\S+\.\S+$/.test(value) || 'Enter a valid email address.' },
@@ -78,6 +78,40 @@ define(['knockout', 'appController'], function (ko, app) {
     const isBankingQuestion = (message) => bankingTerms.some((term) => message.toLowerCase().includes(term));
     const rows = (value) => Array.isArray(value) ? value : (value && (value.content || value.items || value.data)) || [];
     const currency = (amount, code) => `${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 }).format(Number(amount || 0))} ${code || 'INR'}`;
+    function isAdultDateOfBirth(value) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+      const [year, month, day] = value.split('-').map(Number);
+      const dob = new Date(year, month - 1, day);
+      if (Number.isNaN(dob.getTime()) || dob.getFullYear() !== year || dob.getMonth() !== month - 1 || dob.getDate() !== day) return false;
+      const today = new Date();
+      const adultDate = new Date(dob.getFullYear() + 18, dob.getMonth(), dob.getDate());
+      return adultDate <= new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    }
+    const isNotFound = (error) => error && error.status === 404;
+    const ensureContactIsAvailable = async (field, value) => {
+      try {
+        await (field === 'phone' ? app.services.customers.byPhone(value) : app.services.customers.byEmail(value));
+        return `${field === 'phone' ? 'Phone number' : 'Email address'} already exists. Enter a different ${field === 'phone' ? 'mobile number' : 'email address'}.`;
+      } catch (error) {
+        if (isNotFound(error)) return true;
+        throw error;
+      }
+    };
+    const lookupPincode = async (pincode) => {
+      let response;
+      try {
+        response = await fetch(`https://api.postalpincode.in/pincode/${encodeURIComponent(pincode)}`);
+      } catch (_) {
+        throw new Error('Unable to validate the PIN code right now. Check the connection and try again.');
+      }
+      if (!response.ok) throw new Error('Unable to validate the PIN code right now. Please try again.');
+      const result = await response.json();
+      const offices = result && result[0] && result[0].PostOffice;
+      if (!Array.isArray(offices) || !offices.length) return null;
+      const primary = offices[0];
+      const names = offices.flatMap((office) => [office.Name, office.District]).filter(Boolean);
+      return { city: primary.District || primary.Name, state: primary.State, names };
+    };
     const requestError = (error, fallback) => {
       if (error && error.status === 403) {
         const detail = error.message && error.message !== 'Request failed (403).' ? ` ${error.message}` : '';
@@ -292,7 +326,15 @@ define(['knockout', 'appController'], function (ko, app) {
       self.onboardingActive(false);
       self.onboardingError('');
     };
-    self.captureOnboardingReply = (reply) => {
+    self.discardOnboarding = () => {
+      self.cancelOnboarding();
+      self.onboardingStep(0);
+      self.onboardingReply('');
+      self.onboardingMessages([]);
+      self.onboardedCustomer(null);
+      Object.keys(self.onboarding).forEach((key) => self.onboarding[key](''));
+    };
+    self.captureOnboardingReply = async (reply) => {
       const question = onboardingQuestions[self.onboardingStep()];
       if (!question) return;
       const value = reply.trim();
@@ -300,9 +342,38 @@ define(['knockout', 'appController'], function (ko, app) {
       if (!value) { addOnboardingMessage('assistant', `Please provide a value. ${question.prompt}`); return; }
       const result = question.valid(value);
       if (result !== true) { addOnboardingMessage('assistant', `${result} ${question.prompt}`); return; }
-      self.onboarding[question.key](question.transform ? question.transform(value) : value);
-      self.onboardingStep(self.onboardingStep() + 1);
-      askOnboardingQuestion();
+      self.onboardingBusy(true);
+      try {
+        if (question.key === 'phone' || question.key === 'email') {
+          const availability = await ensureContactIsAvailable(question.key, value);
+          if (availability !== true) { addOnboardingMessage('assistant', `${availability} ${question.prompt}`); return; }
+        }
+
+        if (question.key === 'pincode') {
+          const location = await lookupPincode(value);
+          if (!location) {
+            addOnboardingMessage('assistant', `This PIN code could not be mapped to an Indian city. ${question.prompt}`);
+            return;
+          }
+          const enteredCity = String(self.onboarding.city()).trim().toLocaleLowerCase('en-IN');
+          const validCities = location.names.map((name) => String(name).trim().toLocaleLowerCase('en-IN'));
+          if (!validCities.includes(enteredCity)) {
+            addOnboardingMessage('assistant', `PIN code ${value} belongs to ${location.city}, ${location.state}, not ${self.onboarding.city()}. Enter a PIN code for the stated city.`);
+            return;
+          }
+          self.onboarding.city(location.city);
+          self.onboarding.state(location.state);
+          addOnboardingMessage('assistant', `PIN code verified. City and state are mapped to ${location.city}, ${location.state}.`);
+        }
+
+        self.onboarding[question.key](question.transform ? question.transform(value) : value);
+        self.onboardingStep(self.onboardingStep() + 1);
+        askOnboardingQuestion();
+      } catch (error) {
+        addOnboardingMessage('assistant', `${requestError(error, 'Unable to validate this detail. Please try again.')} ${question.prompt}`);
+      } finally {
+        self.onboardingBusy(false);
+      }
     };
     self.sendOnboardingReply = (reply) => {
       if (self.onboardingBusy()) return;
@@ -333,7 +404,7 @@ define(['knockout', 'appController'], function (ko, app) {
       if (missing) { self.onboardingError(`Please provide ${missing.replace(/([A-Z])/g, ' $1').toLowerCase()}.`); return; }
       if (!/^[6-9]\d{9}$/.test(value('phone'))) { self.onboardingError('Enter a valid 10-digit Indian mobile number.'); return; }
       if (!/^\S+@\S+\.\S+$/.test(value('email'))) { self.onboardingError('Enter a valid email address.'); return; }
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(value('dob')) || new Date(`${value('dob')}T00:00:00`) >= new Date()) { self.onboardingError('Enter a date of birth in the past.'); return; }
+      if (!isAdultDateOfBirth(value('dob'))) { self.onboardingError('Customer must be at least 18 years old.'); return; }
       if (!/^[1-9]\d{5}$/.test(value('pincode'))) { self.onboardingError('Enter a valid six-digit PIN code.'); return; }
       self.onboardingBusy(true); self.onboardingError('');
       try {

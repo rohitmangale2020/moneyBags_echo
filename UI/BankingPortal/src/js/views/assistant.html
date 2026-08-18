@@ -52,7 +52,7 @@
     </div>
     <div class="mb-error" data-bind="visible:onboardingError"><span data-bind="text:onboardingError"></span></div>
     <div class="mb-dialog-actions">
-      <button type="button" class="mb-link" data-bind="click:cancelOnboarding">Save later</button>
+      <button type="button" class="mb-link" data-bind="click:discardOnboarding">Discard</button>
       <oj-button chroming="callToAction" on-oj-action="[[submitOnboarding]]" disabled="[[onboardingBusy || !onboardingReady()]]">Create customer and start KYC</oj-button>
     </div>
     <div class="mb-success" data-bind="visible:onboardedCustomer"><strong>Customer onboarding started</strong><span data-bind="text:onboardedCustomer() && onboardedCustomer().cifNo"></span><button type="button" class="mb-link" data-bind="click:continueOnboarding">Continue with documents and KYC</button></div>
