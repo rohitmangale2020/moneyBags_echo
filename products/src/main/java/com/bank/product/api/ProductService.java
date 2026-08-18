@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.core.Authentication;
 import org.springframework.beans.factory.annotation.Value;
 import java.math.BigDecimal;
+import java.util.Locale;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -43,7 +44,8 @@ public class ProductService {
     @Value("${app.retirement-risk.high-balance:1000000}") private BigDecimal highRiskBalance;
 
     public ProductResponse create(ProductRequest request) {
-        if (products.findByProductCode(request.productCode()).isPresent()) throw new IllegalArgumentException("Product code already exists");
+        String productCode = normalizedCode(request.productCode());
+        if (products.findByProductCode(productCode).isPresent()) throw new IllegalArgumentException("Product code already exists");
         if (!"ACTIVE".equals(request.status())) throw new IllegalArgumentException("New products must be created with ACTIVE status");
         Product product = new Product(); apply(product, request); product = products.save(product); saveConfiguration(product, request);
         recordHistory(product, "NEW", "ACTIVE", "Product created");
@@ -222,7 +224,7 @@ public class ProductService {
         ProductType type = productTypes.findById(r.productTypeCode()).orElseThrow(() -> new EntityNotFoundException("Product type " + r.productTypeCode() + " was not found"));
         if (!"ACTIVE".equals(type.getStatus())) throw new IllegalArgumentException("Selected product type is retired");
         validateConfiguration(r);
-        p.setProductCode(r.productCode()); p.setProductName(r.productName()); p.setProductType(type); p.setDescription(r.description());
+        p.setProductCode(normalizedCode(r.productCode())); p.setProductName(r.productName().trim()); p.setProductType(type); p.setDescription(trimToNull(r.description()));
         p.setMinimumBalance("CREDIT_CARD".equals(r.productTypeCode()) ? null : r.minimumBalance());
         // Maximum-balance limits are intentionally not used by deposit products.
         // Keep the legacy column null so no database migration is required.
@@ -230,13 +232,23 @@ public class ProductService {
     }
     private void validateConfiguration(ProductRequest request) {
         String type = request.productTypeCode();
-        if (("FD".equals(type) || "RD".equals(type)) && (request.term().tenureMonths() == null || request.term().tenureMonths() <= 0)) throw new IllegalArgumentException("Tenure in months is required for FD and RD products");
-        if ("RD".equals(type) && (request.term().installmentAmount() == null || request.term().installmentFrequency() == null || request.term().installmentFrequency().isBlank())) throw new IllegalArgumentException("Installment amount and frequency are required for RD products");
+        boolean termDeposit = "FD".equals(type) || "RD".equals(type);
+        if (termDeposit && (request.term().tenureMonths() == null || request.term().tenureMonths() <= 0 || request.term().tenureMonths() > 1200)) throw new IllegalArgumentException("Tenure for FD and RD products must be between 1 and 1200 months");
+        if (termDeposit && request.term().lockInPeriod() != null && (request.term().lockInPeriod() < 0 || request.term().lockInPeriod() > request.term().tenureMonths())) throw new IllegalArgumentException("Lock-in period must be between zero and the product tenure");
+        if (termDeposit && request.term().maturityInstruction() != null && !request.term().maturityInstruction().isBlank() && !List.of("CREDIT_TO_ACCOUNT", "RENEW").contains(request.term().maturityInstruction())) throw new IllegalArgumentException("Maturity instruction must be CREDIT_TO_ACCOUNT or RENEW");
+        if ("RD".equals(type) && (request.term().installmentAmount() == null || request.term().installmentAmount().signum() <= 0 || request.term().installmentFrequency() == null || !List.of("MONTHLY", "QUARTERLY").contains(request.term().installmentFrequency()))) throw new IllegalArgumentException("RD products require a positive installment amount and MONTHLY or QUARTERLY frequency");
+        if (!termDeposit && hasTermConfiguration(request.term())) throw new IllegalArgumentException("Term configuration is allowed only for FD and RD products");
+        if (!"RD".equals(type) && hasRdConfiguration(request.term())) throw new IllegalArgumentException("Installment configuration is allowed only for RD products");
+        if ("CREDIT_CARD".equals(type) && request.minimumBalance() != null && request.minimumBalance().signum() > 0) throw new IllegalArgumentException("Credit card products cannot have a minimum balance");
         if (!List.of("SAVINGS", "CURRENT").contains(type)
                 && request.fee().annualMaintenanceFee().signum() > 0) {
             throw new IllegalArgumentException("Annual maintenance fees apply only to savings and current products");
         }
     }
+    private boolean hasTermConfiguration(TermRequest term) { return term.tenureMonths() != null || term.lockInPeriod() != null || (term.maturityInstruction() != null && !term.maturityInstruction().isBlank()) || Boolean.TRUE.equals(term.prematureWithdrawalAllowed()); }
+    private boolean hasRdConfiguration(TermRequest term) { return term.installmentAmount() != null || (term.installmentFrequency() != null && !term.installmentFrequency().isBlank()); }
+    private String normalizedCode(String value) { return value.trim().toUpperCase(Locale.ROOT); }
+    private String trimToNull(String value) { if (value == null) return null; String trimmed = value.trim(); return trimmed.isEmpty() ? null : trimmed; }
     private void saveConfiguration(Product product, ProductRequest request) {
         ProductRate rate = rates.findByProductProductId(product.getProductId()).orElseGet(ProductRate::new); rate.setProduct(product); rate.setInterestRate(request.rate().interestRate()); rates.save(rate);
         boolean hasTerm = "FD".equals(request.productTypeCode()) || "RD".equals(request.productTypeCode());

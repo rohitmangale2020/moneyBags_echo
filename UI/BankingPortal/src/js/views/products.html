@@ -121,8 +121,8 @@
         <oj-input-text data-bind="visible:isTermDeposit" label-hint="Tenure months" help.instruction="Deposit term in whole months. Required for FD and RD." value="{{form().term.tenureMonths}}"></oj-input-text>
         <oj-input-text data-bind="visible:isTermDeposit" label-hint="Lock-in period (months)" help.instruction="Months before early withdrawal is allowed." value="{{form().term.lockInPeriod}}"></oj-input-text>
         <oj-input-text data-bind="visible:isRecurringDeposit" label-hint="Installment amount" help.instruction="Amount per installment in INR. Required for RD." value="{{form().term.installmentAmount}}"></oj-input-text>
-        <oj-input-text data-bind="visible:isRecurringDeposit" label-hint="Installment frequency" help.instruction="Installment interval, e.g. MONTHLY. Required for RD." value="{{form().term.installmentFrequency}}"></oj-input-text>
-        <oj-input-text data-bind="visible:isTermDeposit" label-hint="Maturity instruction" help.instruction="Action at maturity, e.g. CREDIT_TO_ACCOUNT or RENEW." value="{{form().term.maturityInstruction}}"></oj-input-text>
+        <label data-bind="visible:isRecurringDeposit">Installment frequency<select data-bind="value:form().term.installmentFrequency"><option value="">Select frequency</option><option value="MONTHLY">Monthly</option><option value="QUARTERLY">Quarterly</option></select></label>
+        <label data-bind="visible:isTermDeposit">Maturity instruction<select data-bind="value:form().term.maturityInstruction"><option value="">Select instruction</option><option value="CREDIT_TO_ACCOUNT">Credit to account</option><option value="RENEW">Renew</option></select></label>
         <div class="mb-product-toggle" data-bind="visible:isTermDeposit"><span>Premature withdrawal <span class="mb-tooltip" tabindex="0" role="img" aria-label="Allow withdrawal before maturity." data-tooltip="Allow withdrawal before maturity.">i</span></span><oj-switch aria-label="Allow premature withdrawal" value="{{form().term.prematureWithdrawalAllowed}}"></oj-switch></div>
       </div>
     </div>
