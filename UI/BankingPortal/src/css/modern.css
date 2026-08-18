@@ -1748,6 +1748,12 @@ body:not(:has(#navDrawer)) .mb-content {
 .mb-ledger-totals.unbalanced em { color: #bd3040; background: #fff0f1; }
 
 /* Transaction submission feedback */
+.mb-transaction-parties { display: grid; gap: 16px; }
+.mb-transaction-party { display: grid; gap: 15px; padding: 18px; border: 1px solid var(--mb-line); border-radius: var(--mb-radius); background: #f9fbff; }
+.mb-transaction-party h3 { margin: 0; color: var(--mb-text); font-size: 15px; }
+.mb-transaction-cif-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 12px; }
+.mb-transaction-cif-row oj-input-text { width: 100%; }
+.mb-transaction-cif-row oj-button { min-width: 128px; }
 .mb-transaction-submit-state { display: grid; min-height: 270px; place-items: center; align-content: center; gap: 12px; padding: 28px; border-radius: var(--mb-radius); text-align: center; }
 .mb-transaction-submit-state.submitting { color: var(--mb-primary); background: var(--mb-primary-soft); }
 .mb-transaction-submit-state.success { color: #18794e; background: #e9f7f0; }
@@ -1770,6 +1776,8 @@ body:not(:has(#navDrawer)) .mb-content {
 }
 
 @media (max-width: 540px) {
+  .mb-transaction-cif-row { grid-template-columns: 1fr; }
+  .mb-transaction-cif-row oj-button { width: 100%; }
   .mb-ledger-accounts,
   .mb-filter-panel-ledger,
   .mb-ledger-posting-header { grid-template-columns: 1fr; }

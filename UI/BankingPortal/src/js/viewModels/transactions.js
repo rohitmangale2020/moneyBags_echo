@@ -31,7 +31,9 @@ define([
     s.submissionState = ko.observable('idle');
     s.submissionMessage = ko.observable('');
     s.loadingAccounts = ko.observable(false);
+    s.loadingRecipientAccounts = ko.observable(false);
     s.accounts = ko.observableArray([]);
+    s.recipientAccounts = ko.observableArray([]);
     s.activeCustomer = app.activeCustomer;
     s.hasActiveCustomer = app.hasActiveCustomer;
     s.customerId = ko.observable('');
@@ -39,9 +41,10 @@ define([
     s.form = {
       transactionRef: ko.observable(u.ref()),
       debitAccountId: ko.observable(''),
-      creditAccountNumber: ko.observable(''),
+      creditAccountId: ko.observable(''),
       accountId: ko.observable(''),
       customerCif: ko.observable(''),
+      recipientCustomerCif: ko.observable(''),
       fromAccountId: ko.observable(''),
       toAccountId: ko.observable(''),
       amount: ko.observable(''),
@@ -56,6 +59,15 @@ define([
       () => s.operation() === 'DEPOSIT' || s.operation() === 'WITHDRAWAL',
     );
     s.hasCustomerAccounts = ko.pureComputed(() => s.accounts().length > 0);
+    s.eligibleRecipientAccounts = ko.pureComputed(() => {
+      const debitAccountId = String(s.form.debitAccountId() || '');
+      const currencyCode = String(s.form.currencyCode() || '').toUpperCase();
+      return s.recipientAccounts().filter((account) =>
+        String(account.accountId) !== debitAccountId
+        && (!currencyCode || String(account.currencyCode || '').toUpperCase() === currencyCode),
+      );
+    });
+    s.hasRecipientAccounts = ko.pureComputed(() => s.eligibleRecipientAccounts().length > 0);
     s.operationTitle = ko.pureComputed(() => ({
       TRANSFER: 'Internal transfer',
       DEPOSIT: 'Deposit',
@@ -164,15 +176,17 @@ define([
       clearCloseTimer();
       s.form.transactionRef(u.ref());
       s.form.debitAccountId('');
-      s.form.creditAccountNumber('');
+      s.form.creditAccountId('');
       s.form.accountId('');
       s.form.customerCif(s.hasActiveCustomer() ? s.activeCustomer().cifNo : '');
+      s.form.recipientCustomerCif('');
       s.customerId('');
       s.form.fromAccountId('');
       s.form.toAccountId('');
       s.form.amount('');
       s.form.currencyCode('INR');
       s.accounts([]);
+      s.recipientAccounts([]);
       s.operation('TRANSFER');
       s.error('');
       s.submissionState('idle');
@@ -198,7 +212,8 @@ define([
         const customerId = String(customer.customerId);
         if (app.setTransactionCustomerId) app.setTransactionCustomerId(customerId);
         const accounts = (await app.services.accounts.customer(customerId))
-          .filter((account) => account.status === 'ACTIVE');
+          .filter((account) => account.status === 'ACTIVE'
+            && String(account.productTypeCode || '').toUpperCase() !== 'FD');
         s.customerId(customerId);
         s.accounts(accounts);
         const firstAccountId = accounts[0] ? String(accounts[0].accountId) : '';
@@ -220,7 +235,44 @@ define([
       }
     };
 
+    s.loadRecipientAccounts = async () => {
+      const recipientCif = s.form.recipientCustomerCif().trim();
+      if (!recipientCif) return s.error('Enter the recipient CIF first.');
+      s.loadingRecipientAccounts(true);
+      s.error('');
+      try {
+        const customer = await app.services.customers.byCif(recipientCif);
+        const accounts = (await app.services.accounts.customer(String(customer.customerId)))
+          .filter((account) => account.status === 'ACTIVE'
+            && String(account.productTypeCode || '').toUpperCase() !== 'FD');
+        s.recipientAccounts(accounts);
+        const eligibleAccounts = s.eligibleRecipientAccounts();
+        s.form.creditAccountId(eligibleAccounts[0] ? String(eligibleAccounts[0].accountId) : '');
+        if (!eligibleAccounts.length) {
+          s.error('The recipient has no eligible active account in the selected currency.');
+        }
+      } catch (error) {
+        s.recipientAccounts([]);
+        s.form.creditAccountId('');
+        s.error(error.message);
+      } finally {
+        s.loadingRecipientAccounts(false);
+      }
+    };
+
     s.form.fromAccountId.subscribe((accountId) => {
+      const account = s.accounts().find((item) => String(item.accountId) === String(accountId));
+      if (account) s.form.currencyCode(account.currencyCode);
+    });
+    s.form.debitAccountId.subscribe((accountId) => {
+      const account = s.accounts().find((item) => String(item.accountId) === String(accountId));
+      if (account) s.form.currencyCode(account.currencyCode);
+      const eligibleAccounts = s.eligibleRecipientAccounts();
+      if (!eligibleAccounts.some((item) => String(item.accountId) === String(s.form.creditAccountId()))) {
+        s.form.creditAccountId(eligibleAccounts[0] ? String(eligibleAccounts[0].accountId) : '');
+      }
+    });
+    s.form.accountId.subscribe((accountId) => {
       const account = s.accounts().find((item) => String(item.accountId) === String(accountId));
       if (account) s.form.currencyCode(account.currencyCode);
     });
@@ -234,6 +286,7 @@ define([
 
       if (operation === 'TRANSFER') {
         debitAccountId = String(s.form.debitAccountId() || '').trim();
+        creditAccountId = String(s.form.creditAccountId() || '').trim();
       } else if (operation === 'SELF_TRANSFER') {
         debitAccountId = String(s.form.fromAccountId() || '').trim();
         creditAccountId = String(s.form.toAccountId() || '').trim();
@@ -247,7 +300,7 @@ define([
       return {
         transactionRef: s.form.transactionRef(),
         transactionType: type,
-        transactionStatus: null,
+        transactionStatus: 'INITIATED',
         debitAccountId,
         creditAccountId,
         externalBeneficiary: null,
@@ -262,24 +315,19 @@ define([
       };
     }
 
-    async function resolveCreditAccount(payload) {
-      if (s.operation() !== 'TRANSFER') return payload;
-      const accountNumber = s.form.creditAccountNumber().trim();
-      if (!accountNumber) throw new Error('Enter the recipient account number.');
-      const accounts = u.list(await app.services.accounts.number(accountNumber));
-      const account = accounts.find((item) => String(item.accountNumber) === accountNumber) || accounts[0];
-      if (!account) throw new Error('No account was found for that recipient account number.');
-      if (String(account.accountId) === payload.debitAccountId) {
-        throw new Error('Recipient account must be different from the debit account.');
-      }
-      return Object.assign(payload, { creditAccountId: String(account.accountId) });
-    }
-
     function validate(payload) {
       if (!Number.isFinite(payload.amount) || payload.amount <= 0) return 'Enter a positive amount.';
       if (!/^[A-Z]{3}$/.test(payload.currencyCode)) return 'Currency must contain three letters.';
       if (s.operation() === 'TRANSFER' && !payload.debitAccountId) {
         return 'Load a customer CIF and select a debit account.';
+      }
+      if (s.operation() === 'TRANSFER' && !payload.creditAccountId) {
+        return 'Load the recipient CIF and select a recipient account.';
+      }
+      if (s.operation() === 'TRANSFER'
+        && !s.eligibleRecipientAccounts().some((account) =>
+          String(account.accountId) === String(payload.creditAccountId))) {
+        return 'Select an eligible account belonging to the loaded recipient.';
       }
       if (s.isSingleAccount() && !(payload.debitAccountId || payload.creditAccountId)) {
         return 'Enter the account ID.';
@@ -308,7 +356,6 @@ define([
       s.submissionState('submitting');
       s.submissionMessage(`Posting ${s.operationTitle().toLowerCase()}...`);
       try {
-        payload = await resolveCreditAccount(payload);
         const transaction = await app.services.transactions.transfer(payload);
 
         app.setActiveAccount(payload.debitAccountId || payload.creditAccountId);
@@ -322,10 +369,10 @@ define([
         if (error.details && error.details.transactionId) {
           await s.load(0);
         }
-        s.submissionState('failure');
-        s.submissionMessage(error.message || 'The transaction could not be completed.');
+        s.error(error.message || 'The transaction could not be completed.');
+        s.submissionState('idle');
+        s.submissionMessage('');
         app.notify(`${s.operationTitle()} failed.`, 'error');
-        closeAfter(2600);
       } finally {
         s.busy(false);
       }

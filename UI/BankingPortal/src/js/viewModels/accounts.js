@@ -40,6 +40,22 @@ define([
       return product ? `${product.productName} · ${product.productCode}` : s.form.productId();
     });
     s.selectedProductMinimum = ko.pureComputed(() => Number(s.selectedProduct()?.minimumBalance || 0));
+    s.selectedProductInterestRate = ko.pureComputed(() => {
+      const product = s.selectedProduct();
+      const rate = product?.rate?.interestRate ?? product?.annualInterestRate;
+      if (rate === null || rate === undefined || rate === '') return 'Not configured';
+      const numericRate = Number(rate);
+      return Number.isFinite(numericRate) ? `${numericRate.toLocaleString()}% p.a.` : `${rate}% p.a.`;
+    });
+    s.selectedProductTenure = ko.pureComputed(() => {
+      const product = s.selectedProduct();
+      const months = product?.term?.tenureMonths ?? product?.tenureMonths;
+      if (months === null || months === undefined || months === '') return 'No fixed tenure';
+      const numericMonths = Number(months);
+      return Number.isFinite(numericMonths) && numericMonths > 0
+        ? `${numericMonths} month${numericMonths === 1 ? '' : 's'}`
+        : 'No fixed tenure';
+    });
     s.isFixedDeposit = ko.pureComputed(() =>
       String(s.selectedProduct()?.productTypeCode || '').toUpperCase() === 'FD',
     );
@@ -89,6 +105,8 @@ define([
     };
     s.customerAccounts = ko.observableArray([]);
     s.loadingCustomerAccounts = ko.observable(false);
+    s.fixedDepositAccountsLoaded = ko.observable(false);
+    s.loadedFundingCustomerCif = ko.observable('');
     s.fixedDepositAccountLabel = (account) => {
       const type = String(account.productTypeCode || 'ACCOUNT').replace(/_/g, ' ');
       return `${account.accountNumber} · ${type} · ${u.money(account.availableBalance, account.currencyCode)}`;
@@ -127,29 +145,46 @@ define([
       });
     });
     s.loadFixedDepositAccounts = async () => {
-      const customerId = String(s.form.customerId() || '').trim();
-      if (!customerId) {
+      const customerCif = String(s.form.customerCif() || '').trim();
+      let customerId = String(s.form.customerId() || '').trim();
+      if (!s.editingId() && !customerCif) {
         s.customerAccounts([]);
-        return;
+        s.fixedDepositAccountsLoaded(false);
+        s.error('Enter the customer CIF before loading eligible accounts.');
+        return false;
       }
       s.loadingCustomerAccounts(true);
+      s.fixedDepositAccountsLoaded(false);
+      s.error('');
       try {
+        if (!s.editingId()) {
+          const customer = await app.services.customers.byCif(customerCif);
+          customerId = String(customer.customerId);
+          s.form.customerId(customerId);
+        }
+        if (!customerId) throw new Error('The customer could not be resolved from the entered CIF.');
         const accounts = u.list(await app.services.accounts.customer(customerId));
         const productById = new Map(s.products().map((product) => [String(product.productId), product]));
         s.customerAccounts(accounts.map((account) => Object.assign({}, account, {
           productTypeCode: account.productTypeCode || productById.get(String(account.productId))?.productTypeCode || '',
           minimumBalance: account.minimumBalance ?? productById.get(String(account.productId))?.minimumBalance ?? 0,
         })));
-        const eligible = s.transactionalCustomerAccounts();
+        const eligible = s.eligibleFundingAccounts();
         if (!eligible.some((account) => String(account.accountId) === String(s.form.fundingAccountId()))) {
           s.form.fundingAccountId(eligible.length ? String(eligible[0].accountId) : '');
         }
         if (!eligible.some((account) => String(account.accountId) === String(s.form.payoutAccountId()))) {
           s.form.payoutAccountId(eligible.length ? String(eligible[0].accountId) : '');
         }
+        s.loadedFundingCustomerCif(customerCif);
+        s.fixedDepositAccountsLoaded(true);
+        return true;
       } catch (error) {
         s.customerAccounts([]);
+        s.loadedFundingCustomerCif('');
+        s.fixedDepositAccountsLoaded(false);
         s.error(error.message);
+        return false;
       } finally {
         s.loadingCustomerAccounts(false);
       }
@@ -158,10 +193,24 @@ define([
       s.form.fundingAccountId('');
       s.form.payoutAccountId('');
       s.customerAccounts([]);
+      s.fixedDepositAccountsLoaded(false);
+      s.loadedFundingCustomerCif('');
       if (!s.editingId() && s.isFixedDeposit()) {
         if (Number(s.form.availableBalance()) <= 0) s.form.availableBalance(s.selectedProductMinimum());
         if (String(s.form.customerId() || '').trim()) s.loadFixedDepositAccounts();
       }
+    });
+    s.form.customerCif.subscribe((customerCif) => {
+      if (s.editingId()) return;
+      const activeCustomer = s.hasActiveCustomer() ? s.activeCustomer() : null;
+      const matchesActiveCustomer = activeCustomer
+        && String(activeCustomer.cifNo || '').trim() === String(customerCif || '').trim();
+      s.form.customerId(matchesActiveCustomer ? String(activeCustomer.customerId) : '');
+      s.form.fundingAccountId('');
+      s.form.payoutAccountId('');
+      s.customerAccounts([]);
+      s.fixedDepositAccountsLoaded(false);
+      s.loadedFundingCustomerCif('');
     });
     s.form.fundingAccountId.subscribe((accountId) => {
       if (s.isFixedDeposit()) s.form.payoutAccountId(accountId || '');
@@ -572,6 +621,8 @@ define([
       s.form.fundingAccountId('');
       s.form.payoutAccountId('');
       s.customerAccounts([]);
+      s.fixedDepositAccountsLoaded(false);
+      s.loadedFundingCustomerCif('');
       s.closingAccount(false);
       s.submissionState('idle');
       s.submissionMessage('');
@@ -693,6 +744,11 @@ if (!s.editingId() && requestedBalance < Number(p.minimumBalance || 0)) {
     } for ${p.productName}.`,
   );
 }
+if (fixedDeposit && (!s.fixedDepositAccountsLoaded()
+  || s.loadedFundingCustomerCif() !== s.form.customerCif().trim())) {
+  const loaded = await s.loadFixedDepositAccounts();
+  if (!loaded) return;
+}
 if (fixedDeposit) {
   const funding = s.eligibleFundingAccounts().find(
     (account) => String(account.accountId) === String(s.form.fundingAccountId()),
@@ -718,7 +774,7 @@ s.submissionMessage(s.editingId() ? 'Saving account changes...' : 'Opening accou
           accountNumber: s.editingId() ? s.form.accountNumber() : null,
           customerId,
           productId: String(p ? p.productId : s.form.productId()),
-          ownershipType: s.form.ownershipType(),
+          ownershipType: s.editingId() ? s.form.ownershipType() : 'INDIVIDUAL',
           status: s.editingId() ? s.form.status() : 'ACTIVE',
           currencyCode: s.editingId() ? s.form.currencyCode() : p.currency,
           availableBalance: s.editingId() ? requestedBalance : 0,

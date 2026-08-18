@@ -118,8 +118,6 @@ public class BankTransactionService {
                         transferPurpose(persisted.getTransactionType())));
                 validateTransferResponse(persisted, transfer);
                 completeTransfer(persisted, transfer);
-            } else if (persisted.getTransactionType() == TransactionType.OPENING_DEPOSIT) {
-                completeOpeningDeposit(persisted);
             } else {
                 String accountId = postingAccountId(persisted);
                 AccountAdjustmentRequest.AdjustmentType adjustmentType = adjustmentType(persisted);
@@ -337,26 +335,6 @@ public class BankTransactionService {
                 completedAuditDescription(transaction));
     }
 
-    private void completeOpeningDeposit(BankTransaction transaction) {
-        Map<String, Object> previousValues = transactionValues(transaction);
-        transaction.setTransactionStatus(TransactionStatus.COMPLETED);
-        transaction.setCompletedAt(LocalDateTime.now());
-        transaction.setDescription("OPENING DEPOSIT | REF " + transaction.getTransactionRef());
-        AccountStatement statementEntry = statement(transaction, transaction.getCreditAccountId(),
-                StatementEntryType.CREDIT, transaction.getAmount(), transaction.getDescription());
-        statementRepository.save(statementEntry);
-        ledgerService.postCompletedTransaction(transaction);
-        auditRelatedCreated("STATEMENT_ENTRY_CREATED", transaction, "STATEMENT",
-                statementEntry.getStatementId(), "Opening-deposit statement entry created",
-                statementValues(statementEntry));
-        TransactionEventOutbox outboxEvent = TransactionEventOutbox.create(transaction.getTransactionId(),
-                TransactionEventType.TRANSACTION_COMPLETED, toJson(basePayload(transaction)));
-        outboxRepository.save(outboxEvent);
-        auditRelatedCreated("OUTBOX_EVENT_CREATED", transaction, "OUTBOX_EVENT",
-                outboxEvent.getEventId(), "Transaction-completed outbox event created", outboxValues(outboxEvent));
-        auditTransactionChange("TRANSACTION_COMPLETED", transaction, previousValues, "Opening deposit completed");
-    }
-
     private String postingAccountId(BankTransaction transaction) {
         return transaction.getTransactionType() == TransactionType.OPENING_DEPOSIT
                 || transaction.getTransactionType() == TransactionType.DEPOSIT
@@ -366,14 +344,19 @@ public class BankTransactionService {
     }
 
     private AccountAdjustmentRequest.AdjustmentType adjustmentType(BankTransaction transaction) {
-        return isDeposit(transaction) ? AccountAdjustmentRequest.AdjustmentType.DEPOSIT
-                : AccountAdjustmentRequest.AdjustmentType.WITHDRAWAL;
-    }
-
-    private boolean isDeposit(BankTransaction transaction) {
-        return transaction.getTransactionType() == TransactionType.DEPOSIT
-                || transaction.getTransactionType() == TransactionType.OPENING_DEPOSIT
-                || transaction.getTransactionType() == TransactionType.FIXED_DEPOSIT_FUNDING;
+        return switch (transaction.getTransactionType()) {
+            case OPENING_DEPOSIT -> AccountAdjustmentRequest.AdjustmentType.OPENING_DEPOSIT;
+            case DEPOSIT -> AccountAdjustmentRequest.AdjustmentType.DEPOSIT;
+            case WITHDRAWAL -> AccountAdjustmentRequest.AdjustmentType.WITHDRAWAL;
+            case MONTHLY_MAINTENANCE_FEE -> AccountAdjustmentRequest.AdjustmentType.MONTHLY_MAINTENANCE_FEE;
+            case ANNUAL_MAINTENANCE_FEE -> AccountAdjustmentRequest.AdjustmentType.ANNUAL_MAINTENANCE_FEE;
+            case INTEREST_CREDIT -> AccountAdjustmentRequest.AdjustmentType.INTEREST_CREDIT;
+            case FIXED_DEPOSIT_INTEREST_CREDIT ->
+                    AccountAdjustmentRequest.AdjustmentType.FIXED_DEPOSIT_INTEREST_CREDIT;
+            default -> throw new IllegalArgumentException(
+                    "Transaction type does not use a single-account adjustment: "
+                            + transaction.getTransactionType());
+        };
     }
 
     private void fail(BankTransaction transaction, AccountPostingException exception) {

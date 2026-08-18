@@ -116,17 +116,38 @@
 
       <div class="mb-error" data-bind="visible:error,text:error"></div>
 
-      <div class="mb-search-panel">
+      <div class="mb-transaction-parties" data-bind="visible:isInternalTransfer">
+        <section class="mb-transaction-party" aria-labelledby="debitCustomerHeading">
+          <h3 id="debitCustomerHeading">Debit Customer</h3>
+          <div class="mb-transaction-cif-row">
+            <oj-input-text label-hint="CIF no." value="{{form.customerCif}}"></oj-input-text>
+            <oj-button on-oj-action="[[loadCustomerAccounts]]" disabled="[[loadingAccounts]]">Load accounts</oj-button>
+          </div>
+          <div class="mb-form">
+            <label class="wide">Debit account
+              <select data-bind="value:form.debitAccountId,options:accounts,optionsText:accountLabel,optionsValue:'accountId',enable:hasCustomerAccounts"></select>
+            </label>
+          </div>
+        </section>
+
+        <section class="mb-transaction-party" aria-labelledby="recipientCustomerHeading">
+          <h3 id="recipientCustomerHeading">Recipient Customer</h3>
+          <div class="mb-transaction-cif-row">
+            <oj-input-text label-hint="CIF no." value="{{form.recipientCustomerCif}}"></oj-input-text>
+            <oj-button on-oj-action="[[loadRecipientAccounts]]" disabled="[[loadingRecipientAccounts]]">Load accounts</oj-button>
+          </div>
+          <div class="mb-form">
+            <label class="wide">Recipient account
+              <select data-bind="value:form.creditAccountId,options:eligibleRecipientAccounts,optionsText:accountLabel,optionsValue:'accountId',enable:hasRecipientAccounts"></select>
+            </label>
+          </div>
+        </section>
+      </div>
+
+      <div class="mb-search-panel" data-bind="visible:!isInternalTransfer()">
         <oj-input-text label-hint="Customer CIF" value="{{form.customerCif}}"></oj-input-text>
         <span></span>
         <oj-button on-oj-action="[[loadCustomerAccounts]]" disabled="[[loadingAccounts]]">Load accounts</oj-button>
-      </div>
-
-      <div class="mb-form" data-bind="visible:isInternalTransfer">
-        <label class="wide" data-bind="visible:hasCustomerAccounts">Debit account
-          <select data-bind="value:form.debitAccountId,options:accounts,optionsText:accountLabel,optionsValue:'accountId'"></select>
-        </label>
-        <oj-input-text class="wide" label-hint="Recipient account number" value="{{form.creditAccountNumber}}"></oj-input-text>
       </div>
 
       <div class="mb-form" data-bind="visible:isSingleAccount">
@@ -147,7 +168,7 @@
       </div>
 
       <div class="mb-info" data-bind="visible:hasActiveCustomer">
-        Load the customer CIF to choose from that customer's active accounts.
+        Load each CIF to choose from that customer's eligible active accounts.
       </div>
 
       <div class="mb-form">

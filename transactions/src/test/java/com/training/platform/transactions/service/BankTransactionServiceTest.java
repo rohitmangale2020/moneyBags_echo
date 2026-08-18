@@ -81,6 +81,45 @@ class BankTransactionServiceTest {
         assertThrows(IllegalArgumentException.class, () -> transactionService.initiate(transaction));
     }
 
+    @Test void openingDepositCreditsTheNewAccountAndUsesReturnedBalanceForStatement() {
+        BankTransaction openingDeposit = new BankTransaction();
+        openingDeposit.setTransactionRef("OPEN-account-1");
+        openingDeposit.setTransactionType(TransactionType.OPENING_DEPOSIT);
+        openingDeposit.setTransactionStatus(TransactionStatus.INITIATED);
+        openingDeposit.setCreditAccountId("account-1");
+        openingDeposit.setAmount(new BigDecimal("1000.00"));
+        openingDeposit.setFeeAmount(BigDecimal.ZERO);
+        openingDeposit.setCurrencyCode("INR");
+        openingDeposit.setInitiatedByCustomerId("customer-1");
+        openingDeposit.setInitiatedByUserId("employee-1");
+        when(transactionRepository.findByTransactionRef("OPEN-account-1")).thenReturn(Optional.empty());
+        when(transactionRepository.saveAndFlush(openingDeposit)).thenReturn(openingDeposit);
+        when(transactionRepository.save(openingDeposit)).thenReturn(openingDeposit);
+        when(accountsClient.adjust(eq("account-1"), any())).thenReturn(new AccountAdjustmentResponse(
+                "OPEN-account-1", "account-1", "123456789012", "customer-1",
+                AccountAdjustmentRequest.AdjustmentType.OPENING_DEPOSIT,
+                new BigDecimal("1000.00"), null));
+        when(customersClient.displayName("customer-1")).thenReturn("Test Customer");
+        when(statementRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(outboxRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        BankTransaction completed = transactionService.initiate(openingDeposit);
+
+        assertSame(TransactionStatus.COMPLETED, completed.getTransactionStatus());
+        ArgumentCaptor<AccountAdjustmentRequest> adjustment =
+                ArgumentCaptor.forClass(AccountAdjustmentRequest.class);
+        verify(accountsClient).adjust(eq("account-1"), adjustment.capture());
+        assertSame(AccountAdjustmentRequest.AdjustmentType.OPENING_DEPOSIT,
+                adjustment.getValue().adjustmentType());
+        assertEqualsMoney("1000.00", adjustment.getValue().amount());
+        ArgumentCaptor<AccountStatement> statement = ArgumentCaptor.forClass(AccountStatement.class);
+        verify(statementRepository).save(statement.capture());
+        assertSame(StatementEntryType.CREDIT, statement.getValue().getEntryType());
+        assertEqualsMoney("1000.00", statement.getValue().getDepositAmount());
+        assertEqualsMoney("1000.00", statement.getValue().getBalanceAfter());
+        verify(ledgerService).postCompletedTransaction(openingDeposit);
+    }
+
     @Test void annualFeeDebitsAccountAndCreatesStatementLedgerAndOutboxRecords() {
         BankTransaction fee = new BankTransaction();
         fee.setTransactionRef("AF2026-account1");
