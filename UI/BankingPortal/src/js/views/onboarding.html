@@ -229,10 +229,10 @@
       <div class="mb-action-group">
         <oj-button
                 chroming="callToAction"
-                disabled="[[busy()||profileSaved()]]"
+                disabled="[[busy()]]"
                 on-oj-action="[[createProfile]]"
         >
-          Create profile →
+          <span data-bind="text:profileSaved() ? 'Update profile →' : 'Create profile →'"></span>
         </oj-button>
         <!-- ko if:profileSaved -->
         <oj-button chroming="callToAction" disabled="[[busy()]]" on-oj-action="[[nextFromProfile]]">Next</oj-button>
@@ -594,8 +594,13 @@
       <div>
         <oj-input-date
                 label-hint="Nominee date of birth"
+                max="[[adultDobMax]]"
                 value="{{nominee.dob}}"
         ></oj-input-date>
+
+        <small class="mb-field-hint">
+          Nominee must be 18 years or older.
+        </small>
 
         <small
                 class="mb-field-error"

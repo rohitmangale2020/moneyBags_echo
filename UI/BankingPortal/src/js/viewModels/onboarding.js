@@ -221,7 +221,9 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
       s.clearErrors();
       s.step(Math.max(1, s.step() - 1));
     };
-    s.nextFromProfile = () => { s.clearErrors(); s.step(2); };
+    // Returning to profile must validate and persist the current form values, not
+    // merely move forward with the customer object that was saved earlier.
+    s.nextFromProfile = () => s.createProfile();
     s.nextFromAddress = () => { s.clearErrors(); s.step(3); };
     s.skipDocuments = () => { s.clearErrors(); s.step(4); };
     s.goCustomers = () => app.go('customers');
@@ -262,9 +264,12 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
       Object.keys(s.profile).forEach((key) => (payload[key] = text(s.profile[key]()) || null));
       payload.gender = s.profile.gender();
       payload.dob = s.profile.dob();
+      const isUpdate = Boolean(s.customer());
       const result = await s.run(
-        () => app.services.customers.create(payload),
-        'Customer created and CIF assigned.',
+        () => isUpdate
+          ? app.services.customers.update(s.customer().customerId, payload)
+          : app.services.customers.create(payload),
+        isUpdate ? 'Customer profile updated.' : 'Customer created and CIF assigned.',
       );
       if (result) {
         s.customer(result);
@@ -376,6 +381,7 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
       else if (text(s.nominee.relationship()).length > 100) e.relationship = 'Relationship cannot exceed 100 characters.';
       if (s.nominee.dob() && !dateValue(s.nominee.dob())) e.nomineeDob = 'Enter a valid nominee date of birth.';
       else if (s.nominee.dob() && s.nominee.dob() >= today()) e.nomineeDob = 'Nominee date of birth must be in the past.';
+      else if (s.nominee.dob() && ageInYears(s.nominee.dob()) < 18) e.nomineeDob = 'Nominee must be at least 18 years old.';
       if (text(s.nominee.phone()) && !/^[6-9][0-9]{9}$/.test(text(s.nominee.phone()))) e.nomineePhone = 'Enter a valid 10-digit mobile number.';
       const share = Number(s.nominee.sharePercentage());
       if (hasNominee && (!Number.isFinite(share) || share < 0.01 || share > 100)) e.sharePercentage = 'Nominee share must be between 0.01 and 100.';

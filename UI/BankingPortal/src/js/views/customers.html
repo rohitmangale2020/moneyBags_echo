@@ -156,7 +156,7 @@
         <label>Relationship<select data-bind="value:nomineeForm().relationship"><option value="">Select relationship</option><option>Legal guardian</option><option>Parent</option><option>Spouse</option><option>Child</option><option>Sibling</option><option>Other</option></select></label>
         <label>Relation type<select data-bind="value:nomineeForm().relationType"><option>NOMINEE</option><option>JOIN_HOLDER</option><option>GUARDIAN</option><option>AUTHORIZED_SIGNATORY</option></select></label>
         <label>Status<select data-bind="value:nomineeForm().status"><option>ACTIVE</option><option>INACTIVE</option><option>PENDING</option><option>CLOSED</option></select></label>
-        <label>Date of birth<input type="date" data-bind="value:nomineeForm().dob" /></label>
+        <label>Date of birth<input type="date" data-bind="value:nomineeForm().dob,attr:{max:adultDobMax}" /></label>
         <div>
           <div style="display:grid; grid-template-columns:80px minmax(0,1fr); gap:8px; align-items:end; width:100%;">
 

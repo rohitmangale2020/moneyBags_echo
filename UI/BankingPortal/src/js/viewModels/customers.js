@@ -24,6 +24,19 @@ define([
   const nomineeBlank = () => ({
     nomineeId: null, nomineeName: '', relationship: '', relationType: 'NOMINEE', dob: '', phone: '', sharePercentage: 100, status: 'ACTIVE', updatedBy: '', startDate: '', endDate: '', includeAddress: false, address: addressBlank(),
   });
+  const adultDobMax = () => {
+    const date = new Date();
+    date.setFullYear(date.getFullYear() - 18);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  };
+  const ageInYears = (value) => {
+    const dob = new Date(`${value}T00:00:00`);
+    if (Number.isNaN(dob.getTime())) return null;
+    const now = new Date();
+    let age = now.getFullYear() - dob.getFullYear();
+    if (now.getMonth() < dob.getMonth() || (now.getMonth() === dob.getMonth() && now.getDate() < dob.getDate())) age -= 1;
+    return age;
+  };
   function clean(value) {
     const result = {};
     Object.keys(value).forEach((key) => {
@@ -158,6 +171,7 @@ define([
       if (s.isFixedDeposit()) s.accountForm.payoutAccountId(accountId || '');
     });
     s.error = ko.observable('');
+    s.adultDobMax = adultDobMax();
     s.date = u.date;
     s.filtered = ko.pureComputed(() => {
       const q = s.query().toLowerCase();
@@ -438,7 +452,8 @@ define([
         return s.error(`Nominee share cannot exceed 100%. ${allocatedShare.toFixed(2)}% is already allocated.`);
       }
       if (d.phone && !/^[6-9][0-9]{9}$/.test(d.phone)) return s.error('Nominee phone must be a valid 10-digit Indian mobile number.');
-      if (d.dob && new Date(d.dob) >= new Date()) return s.error('Nominee date of birth must be in the past.');
+      if (d.dob && new Date(`${d.dob}T00:00:00`) >= new Date()) return s.error('Nominee date of birth must be in the past.');
+      if (d.dob && ageInYears(d.dob) < 18) return s.error('Nominee must be at least 18 years old.');
       if (d.address && (!d.address.line1 || !d.address.city || !d.address.state || !d.address.country || !/^[1-9][0-9]{5}$/.test(d.address.pincode || ''))) return s.error('Complete the nominee address and enter a valid six-digit pincode.');
       if (d.address) {
         try {
