@@ -99,6 +99,8 @@ define(['services/apiClient'], function (api) {
       get: (id) => api.get(`/api/transactions/${e(id)}`),
       transfer: (d) => api.post('/api/transactions', d),
       update: (id, d) => api.put(`/api/transactions/${e(id)}`, d),
+      pendingApprovals: () => api.get('/api/transactions/pending-approvals'),
+      decideApproval: (id, d) => api.post(`/api/transactions/${e(id)}/approval`, d),
     },
     fixedDeposits: {
       open: (d) => api.post('/api/fixed-deposits', d),

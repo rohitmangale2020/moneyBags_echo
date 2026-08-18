@@ -19,8 +19,11 @@ import com.training.platform.transactions.entity.TransactionType;
 import com.training.platform.transactions.repository.BankTransactionRepository;
 import com.training.platform.transactions.repository.AccountStatementRepository;
 import com.training.platform.transactions.repository.TransactionEventOutboxRepository;
+import com.training.platform.transactions.repository.TransactionApprovalRepository;
 import com.training.platform.transactions.client.AccountsClient;
 import com.training.platform.transactions.client.CustomersClient;
+import com.training.platform.transactions.client.RiskAssessmentResponse;
+import com.training.platform.transactions.client.RiskServiceClient;
 import com.training.platform.transactions.client.AccountTransferResponse;
 import com.training.platform.transactions.entity.AccountStatement;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,13 +47,15 @@ class BankTransactionServiceBehaviorTest {
     @Mock private CustomersClient customersClient;
     @Mock private AuditClient auditClient;
     @Mock private LedgerService ledgerService;
+    @Mock private RiskServiceClient riskServiceClient;
+    @Mock private TransactionApprovalRepository approvalRepository;
     private BankTransactionService transactionService;
 
     @BeforeEach
     void setUp() {
         transactionService = new BankTransactionService(transactionRepository, statementRepository,
                 outboxRepository, accountsClient, customersClient, new ObjectMapper().findAndRegisterModules(),
-                auditClient, ledgerService);
+                auditClient, ledgerService, riskServiceClient, approvalRepository);
     }
 
     @Test
@@ -135,6 +140,8 @@ class BankTransactionServiceBehaviorTest {
         when(transactionRepository.findByTransactionRef("REF-100")).thenReturn(Optional.empty());
         when(transactionRepository.saveAndFlush(transfer)).thenReturn(transfer);
         when(transactionRepository.save(transfer)).thenReturn(transfer);
+        when(riskServiceClient.assess(any())).thenReturn(new RiskAssessmentResponse(
+                "risk-1", "LOW", false, BigDecimal.ZERO, List.of()));
         when(accountsClient.transfer(any())).thenReturn(new AccountTransferResponse(
                 "REF-100", "account-a", "account-b", "123456789012", "987654321098",
                 "1", "2", new BigDecimal("900.00"), new BigDecimal("1100.00"),

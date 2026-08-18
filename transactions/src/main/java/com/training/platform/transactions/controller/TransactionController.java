@@ -2,6 +2,7 @@ package com.training.platform.transactions.controller;
 
 import com.training.platform.transactions.dto.TransactionRequest;
 import com.training.platform.transactions.dto.TransactionResponse;
+import com.training.platform.transactions.dto.TransactionApprovalRequest;
 import com.training.platform.transactions.entity.BankTransaction;
 import com.training.platform.transactions.entity.TransactionStatus;
 import com.training.platform.transactions.service.BankTransactionService;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/transactions")
@@ -65,6 +67,21 @@ public class TransactionController {
         return ResponseEntity.status(status).body(TransactionResponse.from(transaction));
     }
 
+    @GetMapping("/pending-approvals")
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<TransactionResponse> pendingApprovals() {
+        return transactionService.getPendingApprovals().stream().map(TransactionResponse::from).toList();
+    }
+
+    @PostMapping("/{transactionId}/approval")
+    @PreAuthorize("hasRole('ADMIN')")
+    public TransactionResponse decideApproval(@PathVariable String transactionId,
+                                              @Valid @RequestBody TransactionApprovalRequest request) {
+        return TransactionResponse.from(transactionService.decidePendingApproval(transactionId,
+                request.decision() == TransactionApprovalRequest.Decision.APPROVE,
+                request.note(), currentUserId()));
+    }
+
     @PutMapping("/{transactionId}")
     public TransactionResponse update(@PathVariable String transactionId, @Valid @RequestBody TransactionRequest request) {
         return TransactionResponse.from(transactionService.update(transactionId, toEntity(request)));
@@ -74,7 +91,8 @@ public class TransactionController {
         BankTransaction transaction = new BankTransaction();
         transaction.setTransactionRef(request.transactionRef());
         transaction.setTransactionType(request.transactionType());
-        transaction.setTransactionStatus(request.transactionStatus());
+        // POST requests never accept a caller-supplied lifecycle status. initiate() assigns it.
+        if (request.transactionStatus() != null) transaction.setTransactionStatus(request.transactionStatus());
         transaction.setDebitAccountId(request.debitAccountId());
         transaction.setCreditAccountId(request.creditAccountId());
         transaction.setExternalBeneficiary(request.externalBeneficiary());

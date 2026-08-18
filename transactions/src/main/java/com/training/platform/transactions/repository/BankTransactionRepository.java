@@ -1,6 +1,7 @@
 package com.training.platform.transactions.repository;
 
 import com.training.platform.transactions.entity.BankTransaction;
+import com.training.platform.transactions.entity.TransactionStatus;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
@@ -13,4 +14,5 @@ public interface BankTransactionRepository extends JpaRepository<BankTransaction
     Optional<BankTransaction> findByTransactionRef(String transactionRef);
     List<BankTransaction> findByDebitAccountId(String debitAccountId);
     List<BankTransaction> findByCreditAccountId(String creditAccountId);
+    List<BankTransaction> findByTransactionStatusOrderByInitiatedAtAsc(TransactionStatus transactionStatus);
 }

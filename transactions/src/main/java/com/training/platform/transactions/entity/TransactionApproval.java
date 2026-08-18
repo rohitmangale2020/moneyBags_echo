@@ -32,4 +32,17 @@ public class TransactionApproval {
 
     protected TransactionApproval() { }
     @jakarta.persistence.PrePersist void beforeInsert() { if (approvalId == null) approvalId = UUID.randomUUID().toString(); }
+
+    /** Records an internal staff review while retaining the legacy customer-approval table. */
+    public static TransactionApproval riskDecision(BankTransaction transaction, String approverId,
+                                                   ApprovalStatus status, String note) {
+        TransactionApproval approval = new TransactionApproval();
+        approval.transaction = transaction;
+        approval.accountHolderAccountId = "RISK_ADMIN";
+        approval.accountHolderCustomerId = approverId;
+        approval.approvalStatus = status;
+        approval.approvalNote = note;
+        approval.approvedAt = LocalDateTime.now();
+        return approval;
+    }
 }
