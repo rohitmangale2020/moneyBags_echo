@@ -229,8 +229,15 @@ define([
       d.term.lockInPeriod = d.term.lockInPeriod ? Number(d.term.lockInPeriod) : null;
       if (!d.productCode || !d.productName || !d.productTypeCode)
         return s.error('Complete all required fields.');
-      if (!/^[A-Z]{3}$/.test(d.currency || '')) return s.error('Currency must be a three-letter uppercase code.');
-      if ([d.minimumBalance, d.rate.interestRate, d.fee.annualMaintenanceFee, d.term.installmentAmount].some((v) => v !== null && v < 0)) return s.error('Balances, rates, fees, and installments cannot be negative.');
+      if (!/^[A-Za-z0-9_-]+$/.test(d.productCode)) return s.error('Product code can contain only letters, numbers, hyphens, and underscores.');
+      if (d.currency !== 'INR') return s.error('Products currently support INR only.');
+      if ([d.minimumBalance, d.rate.interestRate, d.fee.annualMaintenanceFee, d.term.installmentAmount].some((v) => v !== null && (v < 0 || v > 999999999.99))) return s.error('Balances, fees, and installments must be between 0 and 999,999,999.99.');
+      if (d.rate.interestRate > 100) return s.error('Interest rate cannot exceed 100%.');
+      const isTermDeposit = ['FD', 'RD'].includes(d.productTypeCode);
+      if (isTermDeposit && (!Number.isInteger(d.term.tenureMonths) || d.term.tenureMonths < 1 || d.term.tenureMonths > 1200)) return s.error('FD and RD tenure must be a whole number between 1 and 1200 months.');
+      if (isTermDeposit && d.term.lockInPeriod !== null && (!Number.isInteger(d.term.lockInPeriod) || d.term.lockInPeriod < 0 || d.term.lockInPeriod > d.term.tenureMonths)) return s.error('Lock-in period must be a whole number from zero to the product tenure.');
+      if (d.productTypeCode === 'RD' && (d.term.installmentAmount === null || d.term.installmentAmount <= 0 || !['MONTHLY', 'QUARTERLY'].includes(d.term.installmentFrequency))) return s.error('RD products require a positive installment amount and a frequency.');
+      if (d.productTypeCode === 'CREDIT_CARD' && d.minimumBalance > 0) return s.error('Credit card products cannot have a minimum balance.');
       try {
         const value = s.editingCode()
           ? await app.services.products.update(s.editingCode(), d)
