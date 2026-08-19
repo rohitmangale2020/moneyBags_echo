@@ -3,9 +3,7 @@ define([], function () {
 
   const DISTRICT_SOURCE = 'https://raw.githubusercontent.com/iaseth/data-for-india/master/data/readable/districts.json';
   const POSTAL_DIRECTORY_SOURCE = 'js/data/india-postal-directory.json';
-  const PIN_SOURCE = 'https://api.postalpincode.in/pincode/';
   const DISTRICT_CACHE_KEY = 'moneybags.india.districts.v1';
-  const PIN_CACHE_KEY = 'moneybags.india.pins.v1.';
   const fallback = {
     Karnataka: ['Bengaluru Rural', 'Bengaluru Urban', 'Belagavi', 'Mysuru', 'Udupi'],
     Maharashtra: ['Mumbai City', 'Mumbai Suburban', 'Nagpur', 'Pune', 'Thane'],
@@ -75,20 +73,7 @@ define([], function () {
 
   async function validatePincode(state, district, pincode) {
     const pin = String(pincode || '').trim();
-    if (!/^\d{6}$/.test(pin) || !state || !district) return false;
-    const local = localAreas(state, district);
-    if (local.length) return local.some((entry) => String(entry.pincode) === pin);
-    const cacheKey = PIN_CACHE_KEY + pin;
-    let offices = cache.get(cacheKey);
-    if (!offices) {
-      const response = await fetch(PIN_SOURCE + encodeURIComponent(pin));
-      if (!response.ok) throw new Error('PIN lookup is unavailable.');
-      const result = await response.json();
-      offices = result && result[0] && result[0].Status === 'Success' ? result[0].PostOffice : [];
-      cache.set(cacheKey, offices);
-    }
-    return Array.isArray(offices) && offices.some((office) =>
-      same(office.State, state) && same(office.District, district));
+    return /^[1-9][0-9]{5}$/.test(pin);
   }
 
   return {

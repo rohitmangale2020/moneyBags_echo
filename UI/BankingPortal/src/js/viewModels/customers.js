@@ -563,7 +563,7 @@ define([
       if (d.address && (!d.address.line1 || !d.address.city || !d.address.state || !d.address.country || !/^[1-9][0-9]{5}$/.test(d.address.pincode || ''))) return s.error('Complete the nominee address and enter a valid six-digit pincode.');
       if (d.address) {
         try {
-          if (!await indiaAddress.validatePincode(d.address.state, d.address.city, d.address.pincode)) return s.error('Enter a pincode valid for the selected state and city / district.');
+          if (!await indiaAddress.validatePincode(d.address.state, d.address.city, d.address.pincode)) return s.error('Enter a valid six-digit pincode.');
         } catch (e) {
           return s.error('PIN validation is temporarily unavailable. Please try again.');
         }
