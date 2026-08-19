@@ -121,7 +121,7 @@
           </select></div>
         <oj-input-text label-hint="Currency" help.instruction="Product currency. Currently INR." value="{{form().currency}}" readonly="true"></oj-input-text>
         <oj-input-text data-bind="visible:hasProductType() && !isCreditCard()" label-hint="Minimum balance" help.instruction="Minimum INR balance that withdrawals and transfers must preserve." value="{{form().minimumBalance}}"></oj-input-text>
-        <oj-input-text data-bind="visible:isInterestBearing" label-hint="Interest rate %" help.instruction="Annual interest rate for savings and deposit products." value="{{form().rate.interestRate}}"></oj-input-text>
+        <oj-input-text data-bind="visible:isInterestBearing" label-hint="Interest rate %" help.instruction="Annual interest rate for savings, deposit, and credit-card products." value="{{form().rate.interestRate}}"></oj-input-text>
         <oj-input-text data-bind="visible:selectedProductType()==='SAVINGS'||selectedProductType()==='CURRENT'" label-hint="Annual maintenance fee" help.instruction="Charged once on the account-opening anniversary. Enter 0 if none." value="{{form().fee.annualMaintenanceFee}}"></oj-input-text>
         <oj-input-text data-bind="visible:isTermDeposit" label-hint="Tenure months" help.instruction="Deposit term in whole months. Required for FD and RD." value="{{form().term.tenureMonths}}"></oj-input-text>
         <oj-input-text data-bind="visible:isTermDeposit" label-hint="Lock-in period (months)" help.instruction="Months before early withdrawal is allowed." value="{{form().term.lockInPeriod}}"></oj-input-text>

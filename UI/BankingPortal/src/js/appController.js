@@ -83,7 +83,7 @@ define([
       },
       {
         path: "risk-approvals",
-        detail: { label: "Risk approvals", iconClass: "mb-risk-approvals-icon", roles: ["ADMIN"] },
+        detail: { label: "Risk approvals", iconClass: "oj-ux-ico-shield", roles: ["ADMIN"] },
       },
       {
         path: "onboarding",
@@ -210,6 +210,10 @@ define([
     });
     self.moduleAdapter = new ModuleRouterAdapter(router);
     self.selection = new KnockoutRouterAdapter(router);
+    self.headerWorkspace = ko.pureComputed(() =>
+      self.selection.path() === 'dashboard' ? 'SERVICE DASHBOARD' : `${session.role()} WORKSPACE`);
+    self.headerTitle = ko.pureComputed(() =>
+      self.selection.path() === 'dashboard' ? 'Core banking performance overview' : 'MoneyBags Banking');
     self.navItems = ko.pureComputed(() =>
       routes.filter(
         (r) =>

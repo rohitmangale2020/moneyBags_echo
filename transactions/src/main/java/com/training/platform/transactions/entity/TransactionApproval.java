@@ -45,4 +45,11 @@ public class TransactionApproval {
         approval.approvedAt = LocalDateTime.now();
         return approval;
     }
+
+    /** Reuses the single staff-decision row allowed for this transaction and administrator. */
+    public void updateRiskDecision(ApprovalStatus status, String note) {
+        this.approvalStatus = status;
+        this.approvalNote = note;
+        this.approvedAt = LocalDateTime.now();
+    }
 }
