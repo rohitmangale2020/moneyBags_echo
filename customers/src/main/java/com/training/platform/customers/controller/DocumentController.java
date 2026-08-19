@@ -80,4 +80,14 @@ public class DocumentController {
     ) {
         return ResponseEntity.ok(documentService.updateDocument(customerId, docId, file, requestDto));
     }
+
+    @DeleteMapping("/{docId}")
+    public ResponseEntity<Void> deleteDocument(
+            @PathVariable Long customerId,
+            @PathVariable Long docId
+    ) {
+        documentService.deleteDocument(customerId, docId);
+        return ResponseEntity.noContent().build();
+    }
+
 }

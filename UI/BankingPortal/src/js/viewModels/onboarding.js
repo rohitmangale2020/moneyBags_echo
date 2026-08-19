@@ -25,6 +25,7 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
       (now.getMonth() === dob.getMonth() && now.getDate() < dob.getDate());
     return birthdayNotReached ? age - 1 : age;
   };
+  const documentTypes = ['PAN', 'AADHAAR', 'PASSPORT', 'DRIVING_LICENSE', 'SALARY_SLIP', 'PHOTO', 'SIGNATURE'];
 
   function VM() {
     const s = this;
@@ -36,15 +37,19 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
     s.customer = ko.observable(null);
     s.profileSaved = ko.observable(false);
     s.addressSaved = ko.observable(false);
-    s.addressRecord = ko.observable(null);
+    s.permanentAddressRecord = ko.observable(null);
+    s.currentAddressRecord = ko.observable(null);
+    s.sameAsPermanentAddress = ko.observable(true);
     s.uploadedDocuments = ko.observableArray([]);
     s.uploadedDocumentCount = ko.pureComputed(() => s.uploadedDocuments().length);
+    s.availableDocumentTypes = ko.pureComputed(() => {
+      const usedTypes = new Set(s.uploadedDocuments().map((document) => document.documentType));
+      const currentType = s.document.documentType();
+      return documentTypes.filter((type) => type === currentType || !usedTypes.has(type));
+    });
     s.kycRecord = ko.observable(null);
     s.kycSaved = ko.pureComputed(() => Boolean(s.kycRecord()));
     s.skippedKyc = ko.observable(false);
-    s.products = ko.observableArray([]);
-    s.customerAccounts = ko.observableArray([]);
-    s.account = ko.observable(null);
     s.resumedOnboarding = ko.observable(false);
     s.file = ko.observable(null);
     // Keep lookup neutral until the employee chooses the identifier type.
@@ -52,13 +57,6 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
     s.resumeKind = ko.observable('');
     s.resumeValue = ko.observable('');
     s.verifiedBy = ko.pureComputed(() => String(app.session.userId() || ''));
-    s.canProceedToAccount = ko.pureComputed(() =>
-      s.resumedOnboarding()
-      && s.customer()
-      && s.customer().status === 'ACTIVE'
-      && s.kycRecord()
-      && s.kycRecord().kycStatus === 'VERIFIED',
-    );
 
     s.profile = {
       firstName: ko.observable(''),
@@ -70,7 +68,7 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
       occupation: ko.observable(''),
     };
     s.address = {
-      addressType: ko.observable(''),
+      addressType: ko.observable('PERMANENT'),
       line1: ko.observable(''),
       line2: ko.observable(''),
       city: ko.observable(''),
@@ -105,73 +103,31 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
       country: ko.observable(''),
       pincode: ko.observable(''),
     };
+    s.currentAddress = {
+      addressType: ko.observable('CURRENT'),
+      line1: ko.observable(''),
+      line2: ko.observable(''),
+      city: ko.observable(''),
+      state: ko.observable(''),
+      country: ko.observable('India'),
+      pincode: ko.observable(''),
+    };
     s.addNominee = ko.observable(false);
     s.addNomineeAddress = ko.observable(false);
     s.indianStates = ko.observableArray(indiaAddress.states());
     s.addressDistricts = ko.pureComputed(() => { s.indianStates(); return indiaAddress.districts(s.address.state()); });
+    s.currentAddressDistricts = ko.pureComputed(() => { s.indianStates(); return indiaAddress.districts(s.currentAddress.state()); });
     s.nomineeDistricts = ko.pureComputed(() => { s.indianStates(); return indiaAddress.districts(s.nominee.state()); });
+    s.addressAreas = ko.pureComputed(() => indiaAddress.areas(s.address.state(), s.address.city()));
+    s.currentAddressAreas = ko.pureComputed(() => indiaAddress.areas(s.currentAddress.state(), s.currentAddress.city()));
+    s.nomineeAreas = ko.pureComputed(() => indiaAddress.areas(s.nominee.state(), s.nominee.city()));
+    s.addressPincodes = ko.pureComputed(() => indiaAddress.pincodes(s.address.state(), s.address.city(), s.address.line2()));
+    s.currentAddressPincodes = ko.pureComputed(() => indiaAddress.pincodes(s.currentAddress.state(), s.currentAddress.city(), s.currentAddress.line2()));
+    s.nomineePincodes = ko.pureComputed(() => indiaAddress.pincodes(s.nominee.state(), s.nominee.city(), s.nominee.line2()));
     indiaAddress.load().then(() => s.indianStates(indiaAddress.states()));
     s.address.state.subscribe(() => s.address.city(''));
+    s.currentAddress.state.subscribe(() => s.currentAddress.city(''));
     s.nominee.state.subscribe(() => s.nominee.city(''));
-    s.accountForm = {
-      accountNumber: ko.observable(''),
-      productId: ko.observable(''),
-      ownershipType: ko.observable('INDIVIDUAL'),
-      availableBalance: ko.observable(0),
-      fundingAccountId: ko.observable(''),
-      payoutAccountId: ko.observable(''),
-    };
-    s.selectedAccountProduct = ko.pureComputed(() =>
-      s.products().find((product) => String(product.productId) === String(s.accountForm.productId())) || null,
-    );
-    s.isFixedDeposit = ko.pureComputed(() =>
-      String(s.selectedAccountProduct()?.productTypeCode || '').toUpperCase() === 'FD',
-    );
-    s.transactionalAccounts = ko.pureComputed(() => {
-      const product = s.selectedAccountProduct();
-      if (!product) return [];
-      return s.customerAccounts().filter((account) =>
-        String(account.status || '').toUpperCase() === 'ACTIVE'
-        && String(account.productTypeCode || '').toUpperCase() !== 'FD'
-        && String(account.currencyCode || '').toUpperCase() === String(product.currency || '').toUpperCase(),
-      );
-    });
-    s.eligibleFundingAccounts = ko.pureComputed(() => {
-      const principal = Number(s.accountForm.availableBalance());
-      return s.transactionalAccounts().filter((account) => {
-        if (!Number.isFinite(principal) || principal <= 0) return true;
-        return Number(account.availableBalance || 0) - principal >= Number(account.minimumBalance || 0);
-      });
-    });
-    s.fixedDepositAccountLabel = (account) => {
-      const type = String(account.productTypeCode || 'ACCOUNT').replace(/_/g, ' ');
-      const amount = Number(account.availableBalance || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
-      return `${account.accountNumber} · ${type} · ${account.currencyCode} ${amount}`;
-    };
-    s.postOpeningDeposit = (account, amount) => app.services.transactions.transfer({
-      transactionRef: `OPEN-${String(account.accountId).replace(/-/g, '').slice(0, 32)}`,
-      transactionType: 'OPENING_DEPOSIT', transactionStatus: 'INITIATED',
-      debitAccountId: null, creditAccountId: String(account.accountId), externalBeneficiary: null,
-      amount, currencyCode: account.currencyCode, feeAmount: 0,
-      initiatedByCustomerId: String(account.customerId), initiatedByUserId: null,
-      completedAt: null, failureCode: null, failureReason: null,
-    });
-    s.accountForm.productId.subscribe(() => {
-      s.accountForm.fundingAccountId('');
-      s.accountForm.payoutAccountId('');
-      const product = s.selectedAccountProduct();
-      if (s.isFixedDeposit() && Number(s.accountForm.availableBalance()) <= 0) {
-        s.accountForm.availableBalance(Number(product?.minimumBalance || 0));
-      }
-      const eligible = s.transactionalAccounts();
-      if (s.isFixedDeposit() && eligible.length) {
-        s.accountForm.fundingAccountId(String(eligible[0].accountId));
-        s.accountForm.payoutAccountId(String(eligible[0].accountId));
-      }
-    });
-    s.accountForm.fundingAccountId.subscribe((accountId) => {
-      if (s.isFixedDeposit()) s.accountForm.payoutAccountId(accountId || '');
-    });
     s.documentRequiresNumber = ko.pureComputed(() => {
       const type = s.document.documentType();
       return Boolean(type) && !['PHOTO', 'SIGNATURE', 'SALARY_SLIP'].includes(type);
@@ -302,28 +258,38 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
 
     s.saveAddress = async () => {
       const e = {};
-      const values = {};
-      Object.keys(s.address).forEach((key) => (values[key] = text(s.address[key]())));
-      if (!values.addressType) e.addressType = 'Select an address type.';
-      if (!values.line1) e.line1 = 'Address line 1 is required.';
-      else if (values.line1.length > 250) e.line1 = 'Address line 1 cannot exceed 250 characters.';
-      if (values.line2.length > 250) e.line2 = 'Address line 2 cannot exceed 250 characters.';
-      ['city', 'state', 'country'].forEach((field) => {
-        if (!values[field]) e[field] = `${field[0].toUpperCase()}${field.slice(1)} is required.`;
-        else if (values[field].length > 100) e[field] = `${field[0].toUpperCase()}${field.slice(1)} cannot exceed 100 characters.`;
-      });
-      try {
-        if (!await indiaAddress.validatePincode(values.state, values.city, values.pincode)) e.pincode = 'Enter a pincode valid for the selected state and district.';
-      } catch (error) { e.pincode = 'PIN validation is temporarily unavailable. Please try again.'; }
+      const valuesFor = (form, addressType) => Object.fromEntries(
+        Object.keys(form).map((key) => [key, key === 'addressType' ? addressType : text(form[key]())]),
+      );
+      const validate = async (values, prefix, label) => {
+        if (!values.line1) e[`${prefix}line1`] = `${label} address line 1 is required.`;
+        else if (values.line1.length > 250) e[`${prefix}line1`] = `${label} address line 1 cannot exceed 250 characters.`;
+        if (values.line2.length > 250) e[`${prefix}line2`] = `${label} address line 2 cannot exceed 250 characters.`;
+        ['city', 'state', 'country'].forEach((field) => {
+          if (!values[field]) e[`${prefix}${field}`] = `${label} ${field} is required.`;
+          else if (values[field].length > 100) e[`${prefix}${field}`] = `${label} ${field} cannot exceed 100 characters.`;
+        });
+        try {
+          if (!await indiaAddress.validatePincode(values.state, values.city, values.pincode)) e[`${prefix}pincode`] = `Enter a pincode valid for the ${label.toLowerCase()} address state and district.`;
+        } catch (error) { e[`${prefix}pincode`] = 'PIN validation is temporarily unavailable. Please try again.'; }
+      };
+      const permanent = valuesFor(s.address, 'PERMANENT');
+      const current = s.sameAsPermanentAddress() ? Object.assign({}, permanent, { addressType: 'CURRENT' }) : valuesFor(s.currentAddress, 'CURRENT');
+      await validate(permanent, 'permanent', 'Permanent');
+      if (!s.sameAsPermanentAddress()) await validate(current, 'current', 'Current');
       if (!s.setErrors(e)) return;
-      const result = await s.run(
-        () => s.addressRecord()
-          ? app.services.customers.updateAddress(s.customer().customerId, s.addressRecord().addressId, values)
-          : app.services.customers.address(s.customer().customerId, values),
-        'Address saved.',
+      const result = await s.run(() => Promise.all([
+        s.permanentAddressRecord()
+          ? app.services.customers.updateAddress(s.customer().customerId, s.permanentAddressRecord().addressId, permanent)
+          : app.services.customers.address(s.customer().customerId, permanent),
+        s.currentAddressRecord()
+          ? app.services.customers.updateAddress(s.customer().customerId, s.currentAddressRecord().addressId, current)
+          : app.services.customers.address(s.customer().customerId, current),
+      ]), 'Addresses saved.',
       );
       if (result) {
-        s.addressRecord(result);
+        s.permanentAddressRecord(result[0]);
+        s.currentAddressRecord(result[1]);
         s.addressSaved(true);
         s.step(3);
       }
@@ -337,6 +303,16 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
       s.file(valid ? selected : null);
       if (selected && !valid) s.fieldErrors(Object.assign({}, s.fieldErrors(), { file: imageDocument ? 'Upload a PNG or JPEG image.' : 'Upload a PDF file.' }));
       if (s.file()) s.fieldErrors(Object.assign({}, s.fieldErrors(), { file: '' }));
+    };
+    s.deleteDocument = async (record) => {
+      if (!record || !record.docId) return;
+      if (!window.confirm(`Delete the ${record.documentType} document? This cannot be undone.`)) return;
+      await s.run(
+        () => app.services.customers.deleteDocument(s.customer().customerId, record.docId),
+        'Document deleted.',
+      );
+      if (s.error()) return;
+      s.uploadedDocuments.remove((document) => document.docId === record.docId);
     };
     s.upload = async () => {
       const e = {};
@@ -372,6 +348,7 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
       );
       if (result) {
         s.uploadedDocuments.push(result);
+        s.document.documentType('');
         s.document.documentNumber('');
         s.document.issueDate('');
         s.document.expiryDate('');
@@ -420,7 +397,7 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
           if (!value) e[`nominee${field[0].toUpperCase()}${field.slice(1)}`] = `${label} is required for the nominee address.`;
           else if (field !== 'pincode' && value.length > (field === 'line1' ? 250 : 100)) e[`nominee${field[0].toUpperCase()}${field.slice(1)}`] = `${label} is too long.`;
         });
-        if (text(s.nominee.line2()).length > 250) e.nomineeLine2 = 'Address line 2 cannot exceed 250 characters.';
+        if (text(s.nominee.line2()).length > 250) e.nomineeLine2 = 'Area cannot exceed 250 characters.';
         if (text(s.nominee.pincode())) {
           try {
             if (!await indiaAddress.validatePincode(text(s.nominee.state()), text(s.nominee.city()), text(s.nominee.pincode()))) e.nomineePincode = 'Enter a pincode valid for the selected state and district.';
@@ -485,29 +462,8 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
     };
 
     s.finishOnboarding = () => {
-      app.notify('Onboarding finished. Verify and activate the customer before opening an account.');
+      app.notify('Onboarding finished. Review, verify, and activate the customer from Customer Management.');
       app.go('customers');
-    };
-    s.proceedToAccount = async () => {
-      if (!s.canProceedToAccount()) return;
-      const result = await s.run(() => Promise.all([
-        app.services.products.list(),
-        app.services.accounts.customer(s.customer().customerId),
-      ]));
-      if (!result) return;
-      const products = result[0];
-      const productById = new Map(products.map((product) => [String(product.productId), product]));
-      s.products(products.filter((product) => product.status === 'ACTIVE'));
-      s.customerAccounts(result[1].map((account) => Object.assign({}, account, {
-        productTypeCode: account.productTypeCode || productById.get(String(account.productId))?.productTypeCode || '',
-      })));
-      if (!s.products().length) return s.setErrors({ resumeValue: 'No active banking products are available for account opening.' });
-      s.accountForm.productId('');
-      s.accountForm.availableBalance(0);
-      s.accountForm.fundingAccountId('');
-      s.accountForm.payoutAccountId('');
-      s.account(null);
-      s.step(6);
     };
 
     s.resume = async () => {
@@ -551,12 +507,23 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
           if (savedNominee[key] !== undefined && savedNominee[key] !== null) s.nominee[key](savedNominee[key]);
         });
       }
-      if (addresses.length) {
-        const savedAddress = addresses[0];
-        s.addressRecord(savedAddress);
-        Object.keys(s.address).forEach((key) => {
-          if (savedAddress[key] !== undefined && savedAddress[key] !== null) s.address[key](savedAddress[key]);
-        });
+      const populateAddress = (form, savedAddress) => Object.keys(form).forEach((key) => {
+        if (savedAddress && savedAddress[key] !== undefined && savedAddress[key] !== null) form[key](savedAddress[key]);
+      });
+      const permanentAddress = addresses.find((address) => address.addressType === 'PERMANENT') || addresses[0];
+      const currentAddress = addresses.find((address) => address.addressType === 'CURRENT');
+      if (permanentAddress) {
+        s.permanentAddressRecord(permanentAddress);
+        populateAddress(s.address, permanentAddress);
+      }
+      if (currentAddress) {
+        s.currentAddressRecord(currentAddress);
+        populateAddress(s.currentAddress, currentAddress);
+        s.sameAsPermanentAddress(
+          ['line1', 'line2', 'city', 'state', 'country', 'pincode'].every((key) =>
+            String(permanentAddress?.[key] || '') === String(currentAddress[key] || ''),
+          ),
+        );
       }
       s.addressSaved(addresses.length > 0);
       s.uploadedDocuments(documents);
@@ -570,56 +537,6 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
       app.notify(`Resumed onboarding for ${existing.cifNo}.`);
     };
 
-    s.openAccount = async () => {
-      if (!s.kycRecord() || s.kycRecord().kycStatus !== 'VERIFIED' || s.customer().status !== 'ACTIVE') {
-        return s.setErrors({ productId: 'An account can be opened only after the customer is active and KYC is verified.' });
-      }
-      const e = {};
-      const product = s.products().find((item) => String(item.productId) === String(s.accountForm.productId()));
-      const requestedBalance = Number(s.accountForm.availableBalance());
-      const fixedDeposit = s.isFixedDeposit();
-      if (!product) e.productId = 'Select an active banking product.';
-      if (!Number.isFinite(requestedBalance) || requestedBalance < 0) e.availableBalance = 'Opening balance must be zero or a positive number.';
-      if (product && requestedBalance < Number(product.minimumBalance || 0)) {
-        e.availableBalance = `${fixedDeposit ? 'Principal' : 'Opening balance'} is below the product minimum.`;
-      }
-      if (fixedDeposit && !s.eligibleFundingAccounts().some((account) => String(account.accountId) === String(s.accountForm.fundingAccountId()))) {
-        e.fundingAccountId = 'Select an eligible customer account with enough balance.';
-      }
-      if (!s.setErrors(e)) return;
-      const payload = {
-        accountNumber: null,
-        customerId: String(s.customer().customerId),
-        productId: String(product.productId),
-        ownershipType: s.accountForm.ownershipType(),
-        status: 'ACTIVE',
-        currencyCode: product.currency,
-        availableBalance: 0,
-        closedAt: null,
-      };
-      const result = await s.run(
-        async () => {
-          const savedAccount = await app.services.accounts.create(payload);
-          if (!fixedDeposit) {
-            if (requestedBalance > 0) await s.postOpeningDeposit(savedAccount, requestedBalance);
-            return savedAccount;
-          }
-          const contract = await app.services.fixedDeposits.open({
-            fdAccountId: String(savedAccount.accountId),
-            fundingAccountId: String(s.accountForm.fundingAccountId()),
-            payoutAccountId: String(s.accountForm.fundingAccountId()),
-            principal: requestedBalance,
-          });
-          if (String(contract.status || '').toUpperCase() !== 'ACTIVE') {
-            throw new Error(`FD account ${savedAccount.accountNumber || savedAccount.accountId} was created, but its funding transaction failed.`);
-          }
-          return savedAccount;
-        },
-        fixedDeposit ? 'Fixed deposit opened and funded successfully.'
-          : 'Account opened and its opening deposit was posted successfully.',
-      );
-      if (result) s.account(result);
-    };
   }
 
   return VM;

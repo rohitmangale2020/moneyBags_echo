@@ -39,6 +39,9 @@ define([
     s.dateTo = ko.observable('');
     s.query = ko.observable('');
     s.sortBy = ko.observable('date-desc');
+    s.pageSize = ko.observable(10);
+    s.pageSizeOptions = [5, 10, 20];
+    s.currentPage = ko.observable(0);
     s.postingError = ko.observable('');
     s.postingBusy = ko.observable(false);
 
@@ -96,9 +99,16 @@ define([
     });
     s.resultSummary = ko.pureComputed(() => {
       const loaded = Array.isArray(s.entryState.data()) ? s.entryState.data().length : 0;
-      const shown = s.filteredEntries().length;
+      const shown = s.pagedEntries().length;
       return shown === loaded ? `${loaded} ledger ${loaded === 1 ? 'entry' : 'entries'}` : `${shown} of ${loaded} entries`;
     });
+    s.totalPages = ko.pureComputed(() => Math.max(1, Math.ceil(s.filteredEntries().length / Number(s.pageSize()))));
+    s.pagedEntries = ko.pureComputed(() => {
+      const safePage = Math.min(s.currentPage(), s.totalPages() - 1);
+      const start = safePage * Number(s.pageSize());
+      return s.filteredEntries().slice(start, start + Number(s.pageSize()));
+    });
+    s.pageSummary = ko.pureComputed(() => `Page ${s.currentPage() + 1} of ${s.totalPages()}`);
     s.totalDebits = ko.pureComputed(() => s.posting.items().filter((item) => item.entryType() === 'DEBIT')
       .reduce((total, item) => total + (Number(item.amount()) || 0), 0));
     s.totalCredits = ko.pureComputed(() => s.posting.items().filter((item) => item.entryType() === 'CREDIT')
@@ -119,6 +129,7 @@ define([
         s.entryState.error('Use either an account code or a transaction reference, not both.');
         return Promise.resolve();
       }
+      s.currentPage(0);
       return s.entryState.run(async () => normalizeEntries(await app.services.ledger.entries({ transactionRef, accountCode })))
         .catch(() => null);
     };
@@ -135,6 +146,17 @@ define([
       s.query('');
       s.sortBy('date-desc');
     };
+    s.previousPage = () => {
+      if (s.currentPage() > 0) s.currentPage(s.currentPage() - 1);
+    };
+    s.nextPage = () => {
+      if (s.currentPage() < s.totalPages() - 1) s.currentPage(s.currentPage() + 1);
+    };
+    [s.entryType, s.currency, s.dateFrom, s.dateTo, s.query, s.sortBy, s.pageSize]
+      .forEach((observable) => observable.subscribe(() => s.currentPage(0)));
+    s.filteredEntries.subscribe(() => {
+      if (s.currentPage() >= s.totalPages()) s.currentPage(Math.max(0, s.totalPages() - 1));
+    });
     s.openPost = () => {
       s.posting.transactionRef(u.ref());
       s.posting.postingDate(today());

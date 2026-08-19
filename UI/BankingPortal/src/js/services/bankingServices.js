@@ -4,7 +4,7 @@ define(['services/apiClient'], function (api) {
   return {
     auth: { login: (u, p) => api.post('/auth/login', { username: u, password: p }) },
     assistant: {
-      chat: (message, customerId, transactionId, accountId, module) => api.post('/oda/assistant/chat', {
+      chat: (message, customerId, transactionId, accountId, module) => api.postPublic('/auth/gpt-oss/chat', {
         message,
         customerId: customerId ? Number(customerId) : null,
         transactionId: transactionId || null,
@@ -57,6 +57,7 @@ define(['services/apiClient'], function (api) {
         b.append('data', new Blob([JSON.stringify(d)], { type: 'application/json' }));
         return api.putForm(`/api/customers/${e(id)}/documents/${e(docId)}`, b);
       },
+      deleteDocument: (id, docId) => api.delete(`/api/customers/${e(id)}/documents/${e(docId)}`),
       nominee: (id, d) => api.post(`/api/customers/${e(id)}/nominees`, d),
       nominees: (id) => api.get(`/api/customers/${e(id)}/nominees`),
       getNominee: (id, nomineeId) => api.get(`/api/customers/${e(id)}/nominees/${e(nomineeId)}`),
@@ -99,6 +100,8 @@ define(['services/apiClient'], function (api) {
       get: (id) => api.get(`/api/transactions/${e(id)}`),
       transfer: (d) => api.post('/api/transactions', d),
       update: (id, d) => api.put(`/api/transactions/${e(id)}`, d),
+      pendingApprovals: () => api.get('/api/transactions/pending-approvals'),
+      decideApproval: (id, d) => api.post(`/api/transactions/${e(id)}/approval`, d),
     },
     fixedDeposits: {
       open: (d) => api.post('/api/fixed-deposits', d),

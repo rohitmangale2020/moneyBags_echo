@@ -82,11 +82,15 @@ define([
         },
       },
       {
+        path: "risk-approvals",
+        detail: { label: "Risk approvals", iconClass: "mb-risk-approvals-icon", roles: ["ADMIN"] },
+      },
+      {
         path: "onboarding",
         detail: {
           label: "Onboard customer",
           iconClass: "oj-ux-ico-add-user",
-          roles: ["EMPLOYEE"],
+          roles: ["ADMIN", "EMPLOYEE"],
         },
       },
       {
@@ -112,6 +116,18 @@ define([
           iconClass: "oj-ux-ico-transfer",
           roles: ["ADMIN", "EMPLOYEE"],
         },
+      },
+      {
+        path: "edit-account",
+        detail: { hidden: true, roles: ["ADMIN", "EMPLOYEE"] },
+      },
+      {
+        path: "new-account",
+        detail: { hidden: true, roles: ["ADMIN", "EMPLOYEE"] },
+      },
+      {
+        path: "new-transaction",
+        detail: { hidden: true, roles: ["ADMIN", "EMPLOYEE"] },
       },
       {
         path: "statements",
@@ -280,6 +296,14 @@ define([
       sessionStorage.removeItem('moneybags.activeTransactionCustomerId');
     };
     self.openProfile = () => router.go({ path: "profile" });
+    self.isAdmin = ko.pureComputed(() => session.role() === "ADMIN");
+    self.pendingRiskApprovals = ko.observableArray([]);
+    self.pendingRiskApprovalCount = ko.pureComputed(() => self.pendingRiskApprovals().length);
+    self.refreshRiskApprovals = async () => {
+      if (!self.isAdmin()) { self.pendingRiskApprovals([]); return; }
+      try { self.pendingRiskApprovals(await services.transactions.pendingApprovals()); } catch (_) { /* non-blocking */ }
+    };
+    self.openRiskApprovals = () => router.go({ path: "risk-approvals" });
     self.profilePasswordRequest = ko.observable(false);
     self.openProfilePassword = () => {
       self.profilePasswordRequest(true);
@@ -297,18 +321,21 @@ define([
       } catch (_) {
         session.profile(null);
       }
+      await self.refreshRiskApprovals();
       await router.go({ path: session.passwordChangeRequired() ? "profile" : "dashboard" });
       self.isAppShellReady(true);
     };
     self.signOut = () => {
       self.isAppShellReady(false);
       session.clear();
+      self.pendingRiskApprovals([]);
       router.go({ path: "login" });
     };
     self.displayName = ko.pureComputed(() => {
       const p = session.profile() && session.profile().profile;
       return p ? `${p.firstName} ${p.lastName}` : session.username();
     });
+    window.setInterval(() => self.refreshRiskApprovals(), 30000);
     self.initials = ko.pureComputed(() =>
       self
         .displayName()

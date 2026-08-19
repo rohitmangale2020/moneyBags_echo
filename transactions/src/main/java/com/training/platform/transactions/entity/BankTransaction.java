@@ -43,6 +43,10 @@ public class BankTransaction {
     @Column(name = "interest_period_end") private LocalDate interestPeriodEnd;
     @Column(name = "failure_code", length = 50) private String failureCode;
     @Column(name = "failure_reason", length = 500) private String failureReason;
+    @Column(name = "risk_assessment_id", length = 36) private String riskAssessmentId;
+    @Column(name = "risk_level", length = 20) private String riskLevel;
+    @Column(name = "risk_score", precision = 19, scale = 4) private BigDecimal riskScore;
+    @Column(name = "risk_reasons", length = 2000) private String riskReasons;
     @OneToMany(mappedBy = "transaction", cascade = CascadeType.ALL, orphanRemoval = true) private List<TransactionApproval> approvals = new ArrayList<>();
     @OneToMany(mappedBy = "transaction", cascade = CascadeType.ALL, orphanRemoval = true) private List<AccountStatement> statements = new ArrayList<>();
 
@@ -67,6 +71,10 @@ public class BankTransaction {
     public LocalDate getInterestPeriodEnd() { return interestPeriodEnd; }
     public String getFailureCode() { return failureCode; }
     public String getFailureReason() { return failureReason; }
+    public String getRiskAssessmentId() { return riskAssessmentId; }
+    public String getRiskLevel() { return riskLevel; }
+    public BigDecimal getRiskScore() { return riskScore; }
+    public String getRiskReasons() { return riskReasons; }
 
     public void setTransactionRef(String transactionRef) { this.transactionRef = transactionRef; }
     public void setTransactionType(TransactionType transactionType) { this.transactionType = transactionType; }
@@ -84,4 +92,8 @@ public class BankTransaction {
     public void setInterestPeriodEnd(LocalDate interestPeriodEnd) { this.interestPeriodEnd = interestPeriodEnd; }
     public void setFailureCode(String failureCode) { this.failureCode = failureCode; }
     public void setFailureReason(String failureReason) { this.failureReason = failureReason; }
+    public void setRiskAssessmentId(String riskAssessmentId) { this.riskAssessmentId = riskAssessmentId; }
+    public void setRiskLevel(String riskLevel) { this.riskLevel = riskLevel; }
+    public void setRiskScore(BigDecimal riskScore) { this.riskScore = riskScore; }
+    public void setRiskReasons(String riskReasons) { this.riskReasons = riskReasons; }
 }

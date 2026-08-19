@@ -399,6 +399,7 @@ define([
     s.sortBy = ko.observable('created-desc');
     s.currentPage = ko.observable(0);
     s.pageSize = ko.observable(20);
+    s.pageSizeOptions = [5, 10, 20];
     s.selectedLog = ko.observable(null);
     s.selectedFields = ko.observableArray([]);
     s.selectedChanges = ko.observableArray([]);
@@ -417,9 +418,18 @@ define([
       const labels = selected.map((id) => categoryConfig(id).label);
       return labels.length <= 2 ? labels.join(' + ') : `${labels.length} services selected`;
     });
-    s.actions = ko.pureComputed(() => Array.from(new Set(
-      s.state.data().map((log) => log.action).filter(Boolean),
-    )).sort());
+    s.actions = ko.pureComputed(() => {
+      const selectedServices = s.activeCategory() === 'all'
+        ? s.serviceFilters()
+        : [s.activeCategory()];
+      if (!selectedServices.length) return [];
+      return Array.from(new Set(
+        s.state.data()
+          .filter((log) => selectedServices.includes(categoryFor(s.activeCategory(), log)))
+          .map((log) => log.action)
+          .filter(Boolean),
+      )).sort();
+    });
 
     s.activityTitle = activityTitle;
     s.activityCaption = activityCaption;
@@ -614,6 +624,11 @@ define([
 
     [s.query, s.outcomeFilter, s.serviceFilters, s.actionFilter, s.dateFrom, s.dateTo, s.sortBy, s.pageSize]
       .forEach((observable) => observable.subscribe(() => s.currentPage(0)));
+    s.serviceFilters.subscribe(() => {
+      if (s.actionFilter() !== 'ALL' && !s.actions().includes(s.actionFilter())) {
+        s.actionFilter('ALL');
+      }
+    });
     s.filteredLogs.subscribe(() => {
       if (s.currentPage() >= s.totalViewPages()) s.currentPage(Math.max(0, s.totalViewPages() - 1));
     });

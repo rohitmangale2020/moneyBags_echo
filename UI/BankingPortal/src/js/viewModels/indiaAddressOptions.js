@@ -2,6 +2,7 @@ define([], function () {
   'use strict';
 
   const DISTRICT_SOURCE = 'https://raw.githubusercontent.com/iaseth/data-for-india/master/data/readable/districts.json';
+  const POSTAL_DIRECTORY_SOURCE = 'js/data/india-postal-directory.json';
   const PIN_SOURCE = 'https://api.postalpincode.in/pincode/';
   const DISTRICT_CACHE_KEY = 'moneybags.india.districts.v1';
   const PIN_CACHE_KEY = 'moneybags.india.pins.v1.';
@@ -15,6 +16,7 @@ define([], function () {
   };
   const allStates = ['Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal', 'Andaman and Nicobar Islands', 'Chandigarh', 'Dadra and Nagar Haveli and Daman and Diu', 'Jammu and Kashmir', 'Ladakh', 'Lakshadweep', 'National Capital Territory of Delhi', 'Puducherry'];
   let districtData = fallback;
+  let postalData = {};
   let loadPromise;
 
   const normalize = (value) => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -42,18 +44,29 @@ define([], function () {
     }, {});
   }
 
+  function keyFor(data, value) {
+    return Object.keys(data).find((key) => same(key, value));
+  }
+
+  function localAreas(state, district) {
+    const stateKey = keyFor(postalData, state);
+    const districtKey = stateKey && keyFor(postalData[stateKey], district);
+    return stateKey && districtKey ? postalData[stateKey][districtKey] : [];
+  }
+
   function load() {
     if (loadPromise) return loadPromise;
     loadPromise = Promise.resolve().then(async () => {
       const saved = cache.get(DISTRICT_CACHE_KEY);
       if (saved && Object.keys(saved).length) {
         districtData = saved;
-        return districtData;
       }
-      const response = await fetch(DISTRICT_SOURCE);
-      if (!response.ok) throw new Error('District directory is unavailable.');
-      const json = await response.json();
-      districtData = grouped(json.districts || []);
+      const [districtResult, postalResult] = await Promise.allSettled([
+        fetch(DISTRICT_SOURCE).then((response) => response.ok ? response.json() : Promise.reject(new Error('District directory is unavailable.'))),
+        fetch(POSTAL_DIRECTORY_SOURCE).then((response) => response.ok ? response.json() : Promise.reject(new Error('Postal directory is unavailable.'))),
+      ]);
+      if (districtResult.status === 'fulfilled') districtData = grouped(districtResult.value.districts || []);
+      if (postalResult.status === 'fulfilled' && postalResult.value && postalResult.value.states) postalData = postalResult.value.states;
       cache.set(DISTRICT_CACHE_KEY, districtData);
       return districtData;
     }).catch(() => districtData);
@@ -63,6 +76,8 @@ define([], function () {
   async function validatePincode(state, district, pincode) {
     const pin = String(pincode || '').trim();
     if (!/^\d{6}$/.test(pin) || !state || !district) return false;
+    const local = localAreas(state, district);
+    if (local.length) return local.some((entry) => String(entry.pincode) === pin);
     const cacheKey = PIN_CACHE_KEY + pin;
     let offices = cache.get(cacheKey);
     if (!offices) {
@@ -78,8 +93,15 @@ define([], function () {
 
   return {
     load,
-    states: () => Array.from(new Set(allStates.concat(Object.keys(districtData)))).sort(),
-    districts: (state) => (districtData[state] || []).slice().sort(),
+    states: () => Array.from(new Set(allStates.concat(Object.keys(districtData), Object.keys(postalData)))).sort(),
+    districts: (state) => {
+      const stateKey = keyFor(postalData, state);
+      const postalDistricts = stateKey ? Object.keys(postalData[stateKey]) : [];
+      return Array.from(new Set((districtData[state] || []).concat(postalDistricts))).sort();
+    },
+    areas: (state, district) => Array.from(new Set(localAreas(state, district).map((entry) => entry.area))).sort(),
+    pincodes: (state, district, area) => Array.from(new Set(localAreas(state, district)
+      .filter((entry) => same(entry.area, area)).map((entry) => String(entry.pincode)))).sort(),
     validatePincode,
   };
 });

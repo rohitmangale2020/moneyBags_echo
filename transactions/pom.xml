@@ -63,12 +63,6 @@
             <artifactId>spring-boot-starter-web-services</artifactId>
         </dependency>
 
-        <!-- Spring Cloud Gateway -->
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-gateway-server-webmvc</artifactId>
-        </dependency>
-
         <!-- Circuit Breaker -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>

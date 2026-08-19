@@ -11,14 +11,21 @@
         <h1>Transactions</h1>
         <p>Review every posting, filter the transaction history, or submit a new transaction.</p>
       </div>
-      <oj-button class="mb-open-account" chroming="callToAction" on-oj-action="[[open]]">New transaction</oj-button>
+      <oj-button class="mb-open-account" chroming="callToAction" on-oj-action="[[openPage]]">New transaction</oj-button>
     </div>
   </div>
 
   <div class="mb-filter-panel mb-filter-panel-transactions">
-    <label class="mb-filter-search">Account number
-      <input type="search" inputmode="numeric" placeholder="Search by account number" data-bind="value:query,valueUpdate:'input'" />
+    <!-- ko if:hasActiveCustomer() -->
+    <label class="mb-filter-search">Customer account
+      <select data-bind="value:query,options:contextAccounts,optionsText:'accountNumber',optionsValue:'accountNumber',optionsCaption:'All customer accounts'"></select>
     </label>
+    <!-- /ko -->
+    <!-- ko ifnot:hasActiveCustomer() -->
+    <label class="mb-filter-search">Account number or description
+      <input type="search" placeholder="Search by account number or description" data-bind="value:query,valueUpdate:'input'" />
+    </label>
+    <!-- /ko -->
     <label>Type
       <select data-bind="value:typeFilter">
         <option value="ALL">All types</option><option>TRANSFER</option><option>DEPOSIT</option><option>WITHDRAWAL</option>
@@ -48,14 +55,13 @@
     </label>
     <div class="mb-filter-actions">
       <button type="button" class="mb-link" data-bind="click:clearFilters">Clear filters</button>
-      <oj-button on-oj-action="[[load.bind(null,0)]]" disabled="[[state.loading]]">Search</oj-button>
     </div>
   </div>
 
   <div class="mb-list-meta"><strong data-bind="text:resultSummary"></strong><span>Use Search to look up an account number</span></div>
   <div class="mb-error" data-bind="visible:state.error"><span data-bind="text:state.error"></span><button data-bind="click:load">Retry</button></div>
-  <div class="mb-account-page-loader mb-table-loader" data-bind="visible:state.loading" role="status" aria-live="polite">
-    <span class="mb-account-page-spinner" aria-hidden="true"></span>
+  <div class="mb-account-page-loader mb-table-loader mb-moneybags-loader" data-bind="visible:state.loading" role="status" aria-live="polite">
+    <svg class="mb-moneybags-loader-logo" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><rect width="36" height="36" rx="10" fill="white"/><text x="18" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="800" fill="#355eb8">M</text></svg>
     <strong>Loading transactions</strong>
     <small>Preparing transaction history...</small>
   </div>
@@ -66,7 +72,7 @@
           <th>Date</th>
           <th>Description</th>
           <th>Type</th>
-          <th>Amount</th>
+          <th class="mb-amount">Amount</th>
           <th>Status</th>
         </tr>
       </thead>
@@ -75,17 +81,18 @@
           <td data-bind="text:$parent.date(initiatedAt)"></td>
           <td data-bind="text:description || ''"></td>
           <td><strong data-bind="text:transactionType"></strong></td>
-          <td><strong data-bind="text:$parent.money(amount,currencyCode)"></strong></td>
+          <td class="mb-amount"><strong data-bind="text:$parent.money(amount,currencyCode)"></strong></td>
           <td><span class="mb-badge" data-bind="text:transactionStatus,css:$parent.statusClass(transactionStatus)"></span></td>
         </tr>
       </tbody>
     </table>
   </div>
 
-  <div class="mb-pagination" data-bind="visible:totalPages() > 1">
-    <oj-button on-oj-action="[[previousPage]]" disabled="[[state.loading() || currentPage() === 0]]">Previous</oj-button>
-    <span data-bind="text:`Page ${currentPage() + 1} of ${totalPages()}`"></span>
-    <oj-button on-oj-action="[[nextPage]]" disabled="[[state.loading() || currentPage() >= totalPages() - 1]]">Next</oj-button>
+  <div class="mb-pagination" role="navigation" aria-label="Transactions pagination" data-bind="visible:totalTransactions() > 0">
+    <label class="mb-page-size">Rows per page<select data-bind="value:pageSize,options:pageSizeOptions"></select></label>
+    <oj-button chroming="outlined" on-oj-action="[[previousPage]]" disabled="[[state.loading() || currentPage() === 0]]">Previous</oj-button>
+    <span class="mb-page-status" data-bind="text:`Page ${currentPage() + 1} of ${totalPages()}`"></span>
+    <oj-button chroming="outlined" on-oj-action="[[nextPage]]" disabled="[[state.loading() || currentPage() >= totalPages() - 1]]">Next</oj-button>
   </div>
 
   <div class="mb-empty" data-bind="visible:!filteredTransactions().length && !state.loading()">
@@ -97,8 +104,9 @@
       <div class="mb-transaction-submit-state" data-bind="visible:submissionState() !== 'idle',css:submissionState">
         <span class="mb-transaction-submit-spinner" data-bind="visible:submissionState() === 'submitting'" aria-hidden="true"></span>
         <span class="mb-transaction-submit-icon" data-bind="visible:submissionState() === 'success'" aria-hidden="true">✓</span>
+        <span class="mb-transaction-submit-icon" data-bind="visible:submissionState() === 'pending'" aria-hidden="true">!</span>
         <span class="mb-transaction-submit-icon" data-bind="visible:submissionState() === 'failure'" aria-hidden="true">!</span>
-        <strong data-bind="text:submissionState() === 'submitting' ? 'Processing transaction' : submissionState() === 'success' ? 'Transaction complete' : 'Transaction failed'"></strong>
+        <strong data-bind="text:submissionState() === 'submitting' ? 'Processing transaction' : submissionState() === 'success' ? 'Transaction complete' : submissionState() === 'pending' ? 'Awaiting approval' : 'Transaction failed'"></strong>
         <p data-bind="text:submissionMessage"></p>
       </div>
       <div class="mb-stack" data-bind="visible:submissionState() === 'idle'">
@@ -116,38 +124,76 @@
 
       <div class="mb-error" data-bind="visible:error,text:error"></div>
 
-      <div class="mb-search-panel">
-        <oj-input-text label-hint="Customer CIF" value="{{form.customerCif}}"></oj-input-text>
-        <span></span>
-        <oj-button on-oj-action="[[loadCustomerAccounts]]" disabled="[[loadingAccounts]]">Load accounts</oj-button>
+      <div class="mb-transaction-parties" data-bind="visible:isInternalTransfer">
+        <section class="mb-transaction-party" aria-labelledby="debitCustomerHeading">
+          <h3 id="debitCustomerHeading">Debit Customer</h3>
+          <div class="mb-transaction-cif-row">
+            <oj-input-text label-hint="Customer CIF or name" value="{{form.customerCif}}"></oj-input-text>
+            <oj-button on-oj-action="[[loadCustomerAccounts]]" disabled="[[loadingAccounts]]">Load accounts</oj-button>
+          </div>
+          <div class="mb-customer-match-list" data-bind="visible:customerMatches().length">
+            <small>Matching customers</small>
+            <!-- ko foreach: customerMatches -->
+            <button type="button" data-bind="text:$parent.customerLookupLabel($data),click:() => $parent.chooseCustomerMatch($data)"></button>
+            <!-- /ko -->
+          </div>
+          <div class="mb-form">
+            <label class="wide">Debit account
+              <select data-bind="value:form.debitAccountId,options:accounts,optionsText:accountLabel,optionsValue:'accountId',enable:hasCustomerAccounts"></select>
+            </label>
+          </div>
+        </section>
+
+        <section class="mb-transaction-party" aria-labelledby="recipientCustomerHeading">
+          <h3 id="recipientCustomerHeading">Recipient Customer</h3>
+          <div class="mb-transaction-cif-row">
+            <oj-input-text label-hint="Customer CIF or name" value="{{form.recipientCustomerCif}}"></oj-input-text>
+            <oj-button on-oj-action="[[loadRecipientAccounts]]" disabled="[[loadingRecipientAccounts]]">Load accounts</oj-button>
+          </div>
+          <div class="mb-customer-match-list" data-bind="visible:recipientMatches().length">
+            <small>Matching customers</small>
+            <!-- ko foreach: recipientMatches -->
+            <button type="button" data-bind="text:$parent.customerLookupLabel($data),click:() => $parent.chooseRecipientMatch($data)"></button>
+            <!-- /ko -->
+          </div>
+          <div class="mb-form">
+            <label class="wide">Recipient account
+              <select data-bind="value:form.creditAccountId,options:eligibleRecipientAccounts,optionsText:accountLabel,optionsValue:'accountId',enable:hasRecipientAccounts"></select>
+            </label>
+          </div>
+        </section>
       </div>
 
-      <div class="mb-form" data-bind="visible:isInternalTransfer">
-        <label class="wide" data-bind="visible:hasCustomerAccounts">Debit account
-          <select data-bind="value:form.debitAccountId,options:accounts,optionsText:accountLabel,optionsValue:'accountId'"></select>
-        </label>
-        <oj-input-text class="wide" label-hint="Recipient account number" value="{{form.creditAccountNumber}}"></oj-input-text>
+      <div class="mb-search-panel" data-bind="visible:!isInternalTransfer()">
+        <oj-input-text label-hint="Customer CIF or name" value="{{form.customerCif}}"></oj-input-text>
+        <div class="mb-customer-match-list" data-bind="visible:customerMatches().length">
+          <small>Matching customers</small>
+          <!-- ko foreach: customerMatches -->
+          <button type="button" data-bind="text:$parent.customerLookupLabel($data),click:() => $parent.chooseCustomerMatch($data)"></button>
+          <!-- /ko -->
+        </div>
+        <oj-button on-oj-action="[[loadCustomerAccounts]]" disabled="[[loadingAccounts]]">Load accounts</oj-button>
       </div>
 
       <div class="mb-form" data-bind="visible:isSingleAccount">
         <label class="wide" data-bind="visible:hasCustomerAccounts">Customer account
-          <select data-bind="value:form.accountId,options:accounts,optionsText:accountLabel,optionsValue:'accountId'"></select>
+          <select data-bind="value:form.accountId,options:eligibleAccounts,optionsText:accountLabel,optionsValue:'accountId'"></select>
         </label>
       </div>
 
       <div class="mb-stack" data-bind="visible:isSelfTransfer">
-        <div class="mb-form" data-bind="visible:accounts().length">
+        <div class="mb-form" data-bind="visible:eligibleAccounts().length">
           <label>From account
-            <select data-bind="value:form.fromAccountId,options:accounts,optionsText:accountLabel,optionsValue:'accountId'"></select>
+            <select data-bind="value:form.fromAccountId,options:eligibleAccounts,optionsText:accountLabel,optionsValue:'accountId'"></select>
           </label>
           <label>To account
-            <select data-bind="value:form.toAccountId,options:accounts,optionsText:accountLabel,optionsValue:'accountId'"></select>
+            <select data-bind="value:form.toAccountId,options:eligibleAccounts,optionsText:accountLabel,optionsValue:'accountId'"></select>
           </label>
         </div>
       </div>
 
       <div class="mb-info" data-bind="visible:hasActiveCustomer">
-        Load the customer CIF to choose from that customer's active accounts.
+        Load each CIF to choose from that customer's eligible active accounts.
       </div>
 
       <div class="mb-form">
@@ -155,9 +201,9 @@
         <oj-input-text label-hint="Currency" value="{{form.currencyCode}}"></oj-input-text>
       </div>
 
-      <div class="mb-info">
-        Every submission uses a hidden idempotency reference, so retrying the same request cannot post balances twice.
-      </div>
+<!--      <div class="mb-info">-->
+<!--        Every submission uses a hidden idempotency reference, so retrying the same request cannot post balances twice.-->
+<!--      </div>-->
       </div>
     </div>
     <div slot="footer" class="mb-dialog-actions" data-bind="visible:submissionState() === 'idle'">
