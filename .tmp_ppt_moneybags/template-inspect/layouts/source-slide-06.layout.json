@@ -1,0 +1,1684 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/x8f69ofe",
+    "id": "x8f69ofe",
+    "slide": 6,
+    "layoutId": "/ppt/slideLayouts/slideLayout64.xml",
+    "layoutName": "Dark - Title/Subtitle",
+    "masterLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+    "backgroundColor": "bg2",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "theme": {
+    "colorSchemeName": "Custom 151",
+    "colors": {
+      "accent1": "#04536F",
+      "accent2": "#6C3F49",
+      "accent3": "#C74634",
+      "accent4": "#F0CC71",
+      "accent5": "#89B2B0",
+      "accent6": "#86B596",
+      "dk1": "#2A2F2F",
+      "lt1": "#FFFFFF",
+      "dk2": "#2A2F2F",
+      "lt2": "#FBF9F8",
+      "hlink": "#00688C",
+      "folHlink": "#F0CC71"
+    },
+    "fontScheme": {
+      "name": "Oracle Pillars",
+      "majorFont": {
+        "latinTypeface": "Georgia"
+      },
+      "minorFont": {
+        "latinTypeface": "Oracle Sans Tab"
+      }
+    },
+    "typefaces": [
+      "Georgia",
+      "Oracle Sans Tab"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "/ppt/slideLayouts/slideLayout64.xml",
+      "name": "Dark - Title/Subtitle",
+      "parentLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+      "elements": [
+        {
+          "order": 1,
+          "kind": "shape",
+          "scope": "layout",
+          "aid": "template/layout//ppt/slideLayouts/slideLayout64.xml/4",
+          "id": "4",
+          "name": "Title 3",
+          "bbox": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "text": "Title",
+          "textPreview": "Title",
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "Title",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Title"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "kind": "shape",
+          "scope": "layout",
+          "aid": "template/layout//ppt/slideLayouts/slideLayout64.xml/6",
+          "id": "6",
+          "name": "Subtitle",
+          "bbox": [
+            80.5,
+            106.03,
+            1120.32,
+            34.7
+          ],
+          "geometry": "rect",
+          "text": "Subtitle",
+          "textPreview": "Subtitle",
+          "resolvedTextStyle": {
+            "autoFit": "none",
+            "insets": {
+              "left": 0
+            }
+          },
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "Subtitle",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Subtitle"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 3,
+          "kind": "shape",
+          "scope": "layout",
+          "aid": "template/layout//ppt/slideLayouts/slideLayout64.xml/2",
+          "id": "2",
+          "name": "Date Placeholder 1",
+          "bbox": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "text": "[Date]",
+          "textPreview": "[Date]",
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "[Date]",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "[Date]"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 4,
+          "kind": "shape",
+          "scope": "layout",
+          "aid": "template/layout//ppt/slideLayouts/slideLayout64.xml/3",
+          "id": "3",
+          "name": "Footer Placeholder 2",
+          "bbox": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted",
+          "textPreview": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted",
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 5,
+          "kind": "shape",
+          "scope": "layout",
+          "aid": "template/layout//ppt/slideLayouts/slideLayout64.xml/7",
+          "id": "7",
+          "name": "Slide Number Placeholder 6",
+          "bbox": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "text": "‹#›",
+          "textPreview": "‹#›",
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "‹#›",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "‹#›"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "scope": "master",
+      "id": "/ppt/slideMasters/slideMaster1.xml",
+      "type": "master",
+      "backgroundColor": "bg2",
+      "elements": [
+        {
+          "order": 1,
+          "kind": "shape",
+          "scope": "master",
+          "aid": "template/master//ppt/slideMasters/slideMaster1.xml/2",
+          "id": "2",
+          "name": "Title",
+          "bbox": [
+            80.72,
+            19.15,
+            1120.32,
+            86.4
+          ],
+          "geometry": "rect",
+          "text": "Title",
+          "textPreview": "Title",
+          "resolvedTextStyle": {
+            "anchor": 3,
+            "vertical": 1,
+            "verticalAlignment": "bottom",
+            "autoFit": "none",
+            "insets": {
+              "top": 0,
+              "right": 0,
+              "bottom": 0,
+              "left": 0
+            }
+          },
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "Title",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Title"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "kind": "shape",
+          "scope": "master",
+          "aid": "template/master//ppt/slideMasters/slideMaster1.xml/4",
+          "id": "4",
+          "name": "Text Field",
+          "bbox": [
+            80.72,
+            168,
+            1120.32,
+            474
+          ],
+          "geometry": "rect",
+          "text": "Click to edit Master text styles\nSecond level\nThird level\nFourth level\nFifth level",
+          "textPreview": "Click to edit Master text styles | Second level | Third level | Fourth level | Fifth level",
+          "resolvedTextStyle": {
+            "vertical": 1,
+            "autoFit": "none",
+            "insets": {
+              "top": 0,
+              "right": 0,
+              "bottom": 0,
+              "left": 0
+            }
+          },
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "Click to edit Master text styles",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Click to edit Master text styles"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "text": "Second level",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Second level"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "text": "Third level",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Third level"
+                }
+              ]
+            },
+            {
+              "index": 4,
+              "text": "Fourth level",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Fourth level"
+                }
+              ]
+            },
+            {
+              "index": 5,
+              "text": "Fifth level",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Fifth level"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 3,
+          "kind": "shape",
+          "scope": "master",
+          "aid": "template/master//ppt/slideMasters/slideMaster1.xml/17",
+          "id": "17",
+          "name": "Slide Number",
+          "bbox": [
+            80,
+            674.4,
+            38.4,
+            38.4
+          ],
+          "geometry": "rect",
+          "text": "‹#›",
+          "textPreview": "‹#›",
+          "resolvedTextStyle": {
+            "anchor": 2,
+            "vertical": 1,
+            "verticalAlignment": "middle",
+            "insets": {
+              "top": 0,
+              "right": 0,
+              "bottom": 0,
+              "left": 0
+            }
+          },
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "‹#›",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "‹#›"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 4,
+          "kind": "shape",
+          "scope": "master",
+          "aid": "template/master//ppt/slideMasters/slideMaster1.xml/18",
+          "id": "18",
+          "name": "Footer",
+          "bbox": [
+            118.4,
+            674.43,
+            921.6,
+            38.33
+          ],
+          "geometry": "rect",
+          "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted",
+          "textPreview": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted",
+          "resolvedTextStyle": {
+            "anchor": 2,
+            "vertical": 1,
+            "verticalAlignment": "middle",
+            "insets": {
+              "top": 0,
+              "right": 0,
+              "bottom": 0,
+              "left": 0
+            }
+          },
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 5,
+          "kind": "shape",
+          "scope": "master",
+          "aid": "template/master//ppt/slideMasters/slideMaster1.xml/20",
+          "id": "20",
+          "name": "Date",
+          "bbox": [
+            1051.19,
+            674.6,
+            138.14,
+            38.16
+          ],
+          "geometry": "rect",
+          "text": "[Date]",
+          "textPreview": "[Date]",
+          "resolvedTextStyle": {
+            "anchor": 2,
+            "vertical": 1,
+            "verticalAlignment": "middle",
+            "insets": {
+              "top": 0,
+              "right": 0,
+              "bottom": 0,
+              "left": 0
+            }
+          },
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "[Date]",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "[Date]"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 6,
+          "kind": "image",
+          "scope": "master",
+          "aid": "template/master//ppt/slideMasters/slideMaster1.xml/21",
+          "id": "21",
+          "name": "OTag",
+          "bbox": [
+            1197.44,
+            678.72,
+            41.28,
+            41.28
+          ],
+          "contentType": "image/x-emf",
+          "asset": {
+            "assetId": "/ppt/media/image1.emf",
+            "contentType": "image/x-emf",
+            "byteLength": 2940
+          },
+          "fillImage": {
+            "assetId": "/ppt/media/image1.emf",
+            "contentType": "image/x-emf",
+            "byteLength": 2940
+          }
+        }
+      ]
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/yhg7epsj",
+      "id": "2",
+      "name": "Title 1",
+      "bbox": [
+        80.72,
+        19.15,
+        1120.32,
+        86.4
+      ],
+      "text": "Presentation strategy update",
+      "textPreview": "Presentation strategy update",
+      "resolvedFontSize": 32,
+      "resolvedTextStyle": {
+        "anchor": 3,
+        "vertical": 1,
+        "fontSize": 32,
+        "typeface": "Oracle Sans Tab",
+        "color": "tx1",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "bottom",
+        "autoFit": "none",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Presentation strategy update"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Presentation strategy update",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Presentation strategy update"
+            }
+          ],
+          "bulletCharacter": "",
+          "lineSpacingPercent": 100000
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/pc76hkr2",
+      "id": "9",
+      "name": "Text Placeholder 8",
+      "bbox": [
+        80.5,
+        106.03,
+        1120.32,
+        34.7
+      ],
+      "text": "Cross template compatibility across all of Oracle",
+      "textPreview": "Cross template compatibility across all of Oracle",
+      "resolvedFontSize": 26.67,
+      "resolvedTextStyle": {
+        "vertical": 1,
+        "fontSize": 26.67,
+        "typeface": "Oracle Sans Tab",
+        "color": "tx1",
+        "alignment": "left",
+        "autoFit": "none",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Cross template compatibility across all of Oracle"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Cross template compatibility across all of Oracle",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Cross template compatibility across all of Oracle"
+            }
+          ],
+          "bulletCharacter": "",
+          "marginLeft": 0,
+          "indent": 0,
+          "lineSpacingPercent": 100000
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/zi98nu94",
+      "id": "3",
+      "name": "Slide Number Placeholder 2",
+      "bbox": [
+        80,
+        674.4,
+        38.4,
+        38.4
+      ],
+      "text": "6",
+      "textPreview": "6",
+      "resolvedFontSize": 10.67,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "vertical": 1,
+        "fontSize": 10.67,
+        "typeface": "Oracle Sans Tab",
+        "color": "#AEA8A2",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "6"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "6",
+          "runs": [
+            {
+              "index": 1,
+              "text": "6"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 4,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/87ipkzal",
+      "id": "4",
+      "name": "Footer Placeholder 3",
+      "bbox": [
+        118.4,
+        674.43,
+        603.19,
+        38.33
+      ],
+      "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted",
+      "textPreview": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted",
+      "resolvedFontSize": 10.67,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "vertical": 1,
+        "fontSize": 10.67,
+        "typeface": "Oracle Sans Tab",
+        "color": "#AEA8A2",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 5,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/w32twb6l",
+      "id": "11",
+      "name": "What pages will be themed",
+      "bbox": [
+        94.61,
+        234.41,
+        384,
+        269.81
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "text": "What pages will be themed?\nCover\nSection dividers\nSpeaker\nQuote\nImpact statements\nClosing/thank you\nExpect updates to these slides\nfor events like Oracle AI World",
+      "textPreview": "What pages will be themed? | Cover | Section dividers | Speaker | Quote | Impact statements | Closing/thank you | Expect updates to these...",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "tx1",
+        "alignment": "left",
+        "wrap": "square",
+        "autoFit": "resizeShapeToFitText",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 9,
+        "lines": [
+          {
+            "index": 1,
+            "text": "What pages will be themed?"
+          },
+          {
+            "index": 2,
+            "text": "•Cover"
+          },
+          {
+            "index": 3,
+            "text": "•Section dividers"
+          },
+          {
+            "index": 4,
+            "text": "•Speaker"
+          },
+          {
+            "index": 5,
+            "text": "•Quote"
+          },
+          {
+            "index": 6,
+            "text": "•Impact statements"
+          },
+          {
+            "index": 7,
+            "text": "•Closing/thank you"
+          },
+          {
+            "index": 8,
+            "text": "Expect updates to these slides"
+          },
+          {
+            "index": 9,
+            "text": "for events like Oracle AI World"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "What pages will be themed?",
+          "runs": [
+            {
+              "index": 1,
+              "text": "What pages will be themed?",
+              "fontSize": 18.67,
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 2,
+          "text": "Cover",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Cover",
+              "fontSize": 18.67
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 3,
+          "text": "Section dividers",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Section dividers",
+              "fontSize": 18.67
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 4,
+          "text": "Speaker",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Speaker",
+              "fontSize": 18.67
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 5,
+          "text": "Quote",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Quote",
+              "fontSize": 18.67
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 6,
+          "text": "Impact statements",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Impact statements",
+              "fontSize": 18.67
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 7,
+          "text": "Closing/thank you",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Closing/thank you",
+              "fontSize": 18.67
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 8,
+          "text": "Expect updates to these slides\nfor events like Oracle AI World",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Expect updates to these slides",
+              "fontSize": 18.67
+            },
+            {
+              "index": 2,
+              "text": "\n"
+            },
+            {
+              "index": 3,
+              "text": "for events like Oracle AI World",
+              "fontSize": 18.67
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 6,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/9gfeh4zy",
+      "id": "50",
+      "name": "Themed slides bar",
+      "bbox": [
+        94.61,
+        177.34,
+        384,
+        39.69
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "text": "Themed slides",
+      "textPreview": "Themed slides",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "lt1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Themed slides"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Themed slides",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Themed slides",
+              "fontSize": 18.67,
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "fillColor": "#759C6C",
+      "lineWidth": 0
+    },
+    {
+      "order": 7,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/h4bupgn6",
+      "id": "10",
+      "name": "Why are we doing this",
+      "bbox": [
+        580.11,
+        234.41,
+        576,
+        184.18
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "text": "Why are we doing this?\nContent focused\nInterior pages are blank allowing the content to be the primary focus of the slides\nCross-template compatibility \nA simplified interior means less work on translating decks between templates. ",
+      "textPreview": "Why are we doing this? | Content focused | Interior pages are blank allowing the content to be the primary focus of the slides | Cross-te...",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "tx1",
+        "alignment": "left",
+        "wrap": "square",
+        "autoFit": "resizeShapeToFitText",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 7,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Why are we doing this?"
+          },
+          {
+            "index": 2,
+            "text": "•Content focused"
+          },
+          {
+            "index": 3,
+            "text": "Interior pages are blank allowing the content to be the primary focus"
+          },
+          {
+            "index": 4,
+            "text": "of the slides"
+          },
+          {
+            "index": 5,
+            "text": "•Cross-template compatibility"
+          },
+          {
+            "index": 6,
+            "text": "A simplified interior means less work on translating decks between"
+          },
+          {
+            "index": 7,
+            "text": "templates."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Why are we doing this?",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Why are we doing this?",
+              "fontSize": 18.67,
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 2,
+          "text": "Content focused\nInterior pages are blank allowing the content to be the primary focus of the slides",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Content focused",
+              "fontSize": 18.67,
+              "bold": true
+            },
+            {
+              "index": 2,
+              "text": "\n"
+            },
+            {
+              "index": 3,
+              "text": "Interior pages are blank allowing the content to be the primary focus of the slides",
+              "fontSize": 18.67
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 3,
+          "text": "Cross-template compatibility \nA simplified interior means less work on translating decks between templates. ",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Cross-template compatibility ",
+              "fontSize": 18.67,
+              "bold": true
+            },
+            {
+              "index": 2,
+              "text": "\n"
+            },
+            {
+              "index": 3,
+              "text": "A simplified interior means less work on translating decks between templates. ",
+              "fontSize": 18.67
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 8,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/rm9sb6xg",
+      "id": "49",
+      "name": "Standard content bar box",
+      "bbox": [
+        580.11,
+        177.34,
+        576,
+        39.69
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "text": "Standard content slides",
+      "textPreview": "Standard content slides",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "lt1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Standard content slides"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Standard content slides",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Standard content slides",
+              "fontSize": 18.67,
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "fillColor": "#AE562C",
+      "lineWidth": 0
+    },
+    {
+      "order": 9,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/u907axkf",
+      "id": "35",
+      "name": "Rounded Rectangle 34",
+      "bbox": [
+        96.89,
+        511.45,
+        1071.1,
+        155.75
+      ],
+      "rotation": 0,
+      "geometry": "roundRect",
+      "text": "Example Presentation",
+      "textPreview": "Example Presentation",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "lt1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Example Presentation"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Example Presentation",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Example Presentation",
+              "fontSize": 16,
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "fillColor": "#464F4F",
+      "lineColor": "#A2AAB6",
+      "lineWidth": 1.33
+    },
+    {
+      "order": 10,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/vmh8r6hs",
+      "id": "51",
+      "name": "Picture 26",
+      "bbox": [
+        106.14,
+        546.46,
+        167.04,
+        93.96
+      ],
+      "rotation": 0,
+      "contentType": "image/jpeg",
+      "asset": {
+        "assetId": "/ppt/media/image48.jpeg",
+        "contentType": "image/jpeg",
+        "byteLength": 3977
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image48.jpeg",
+        "contentType": "image/jpeg",
+        "byteLength": 3977
+      }
+    },
+    {
+      "order": 11,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/wbipc72l",
+      "id": "37",
+      "name": "Themed bar",
+      "bbox": [
+        106.14,
+        640.36,
+        167.04,
+        5.76
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "lt1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": ""
+          }
+        ]
+      },
+      "fillColor": "#759C6C",
+      "lineWidth": 0
+    },
+    {
+      "order": 12,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/gnq90bid",
+      "id": "52",
+      "name": "Picture 28",
+      "bbox": [
+        283.14,
+        546.46,
+        167.25,
+        94.08
+      ],
+      "rotation": 0,
+      "contentType": "image/jpeg",
+      "imageCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "asset": {
+        "assetId": "/ppt/media/image49.jpeg",
+        "contentType": "image/jpeg",
+        "byteLength": 3970
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image49.jpeg",
+        "contentType": "image/jpeg",
+        "byteLength": 3970
+      }
+    },
+    {
+      "order": 13,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/7698f214",
+      "id": "38",
+      "name": "Standard content bar",
+      "bbox": [
+        283.25,
+        640.36,
+        167.04,
+        5.76
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "lt1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": ""
+          }
+        ]
+      },
+      "fillColor": "#AE562C",
+      "lineWidth": 0
+    },
+    {
+      "order": 14,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/hozqtgzy",
+      "id": "53",
+      "name": "Picture 29",
+      "bbox": [
+        460.35,
+        546.46,
+        167.25,
+        94.08
+      ],
+      "rotation": 0,
+      "contentType": "image/jpeg",
+      "asset": {
+        "assetId": "/ppt/media/image50.jpeg",
+        "contentType": "image/jpeg",
+        "byteLength": 3205
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image50.jpeg",
+        "contentType": "image/jpeg",
+        "byteLength": 3205
+      }
+    },
+    {
+      "order": 15,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/m5076xkj",
+      "id": "39",
+      "name": "Standard content bar",
+      "bbox": [
+        460.46,
+        640.36,
+        167.04,
+        5.76
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "lt1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": ""
+          }
+        ]
+      },
+      "fillColor": "#AE562C",
+      "lineWidth": 0
+    },
+    {
+      "order": 16,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/ip8r2l0j",
+      "id": "54",
+      "name": "Picture 31",
+      "bbox": [
+        637.57,
+        546.46,
+        167.22,
+        94.06
+      ],
+      "rotation": 0,
+      "contentType": "image/jpeg",
+      "imageCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "asset": {
+        "assetId": "/ppt/media/image51.jpeg",
+        "contentType": "image/jpeg",
+        "byteLength": 3444
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image51.jpeg",
+        "contentType": "image/jpeg",
+        "byteLength": 3444
+      }
+    },
+    {
+      "order": 17,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/2dkbalg3",
+      "id": "40",
+      "name": "Themed bar",
+      "bbox": [
+        637.66,
+        640.36,
+        167.04,
+        5.76
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "lt1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": ""
+          }
+        ]
+      },
+      "fillColor": "#759C6C",
+      "lineWidth": 0
+    },
+    {
+      "order": 18,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/3q18vqh4",
+      "id": "55",
+      "name": "Standard content bar",
+      "bbox": [
+        814.75,
+        546.46,
+        167.22,
+        94.06
+      ],
+      "rotation": 0,
+      "contentType": "image/jpeg",
+      "imageCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "asset": {
+        "assetId": "/ppt/media/image52.jpeg",
+        "contentType": "image/jpeg",
+        "byteLength": 4728
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image52.jpeg",
+        "contentType": "image/jpeg",
+        "byteLength": 4728
+      }
+    },
+    {
+      "order": 19,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/netcjqxo",
+      "id": "41",
+      "name": "Standard content chart",
+      "bbox": [
+        814.84,
+        640.36,
+        167.04,
+        5.76
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "lt1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": ""
+          }
+        ]
+      },
+      "fillColor": "#AE562C",
+      "lineWidth": 0
+    },
+    {
+      "order": 20,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/4ra94vi9",
+      "id": "56",
+      "name": "Thank you slide",
+      "bbox": [
+        991.93,
+        546.46,
+        167.22,
+        94.08
+      ],
+      "rotation": 0,
+      "contentType": "image/jpeg",
+      "imageCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "asset": {
+        "assetId": "/ppt/media/image53.jpeg",
+        "contentType": "image/jpeg",
+        "byteLength": 2571
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image53.jpeg",
+        "contentType": "image/jpeg",
+        "byteLength": 2571
+      }
+    },
+    {
+      "order": 21,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/of2tcvy9",
+      "id": "42",
+      "name": "Themed bar",
+      "bbox": [
+        992.02,
+        640.36,
+        167.04,
+        5.76
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "lt1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": ""
+          }
+        ]
+      },
+      "fillColor": "#759C6C",
+      "lineWidth": 0
+    },
+    {
+      "order": 22,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ml07i9sv",
+      "id": "6",
+      "name": "Delete this box",
+      "bbox": [
+        827.59,
+        0,
+        452.41,
+        44.14
+      ],
+      "geometry": "rect",
+      "text": "Note: Delete this slide when your deck is completed",
+      "textPreview": "Note: Delete this slide when your deck is completed",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "lt1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Note: Delete this slide when your deck is completed"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Note: Delete this slide when your deck is completed",
+          "resolvedTextStyle": {
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Note: Delete this slide when your deck is completed",
+              "fontSize": 16,
+              "typeface": "Oracle Sans Tab",
+              "color": "#FFFFFF",
+              "bold": true,
+              "textTransform": "none"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "fillColor": "#C74634",
+      "lineWidth": 0
+    }
+  ],
+  "composeRuns": []
+}

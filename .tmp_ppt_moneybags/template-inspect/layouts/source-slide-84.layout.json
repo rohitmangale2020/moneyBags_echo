@@ -1,0 +1,2420 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/tgfydgrm",
+    "id": "tgfydgrm",
+    "slide": 84,
+    "layoutId": "/ppt/slideLayouts/slideLayout105.xml",
+    "layoutName": "Dark - Left middle title and sub ",
+    "masterLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "theme": {
+    "colorSchemeName": "Custom 151",
+    "colors": {
+      "accent1": "#04536F",
+      "accent2": "#6C3F49",
+      "accent3": "#C74634",
+      "accent4": "#F0CC71",
+      "accent5": "#89B2B0",
+      "accent6": "#86B596",
+      "dk1": "#2A2F2F",
+      "lt1": "#FFFFFF",
+      "dk2": "#2A2F2F",
+      "lt2": "#FBF9F8",
+      "hlink": "#00688C",
+      "folHlink": "#F0CC71"
+    },
+    "fontScheme": {
+      "name": "Oracle Pillars",
+      "majorFont": {
+        "latinTypeface": "Georgia"
+      },
+      "minorFont": {
+        "latinTypeface": "Oracle Sans Tab"
+      }
+    },
+    "typefaces": [
+      "Georgia",
+      "Oracle Sans",
+      "Oracle Sans Tab"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "/ppt/slideLayouts/slideLayout105.xml",
+      "name": "Dark - Left middle title and sub ",
+      "parentLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+      "elements": [
+        {
+          "order": 1,
+          "kind": "shape",
+          "scope": "layout",
+          "aid": "template/layout//ppt/slideLayouts/slideLayout105.xml/3",
+          "id": "3",
+          "name": "Title 2",
+          "bbox": [
+            80,
+            259.43,
+            508.8,
+            86.4
+          ],
+          "text": "Left aligned middle title. \nAdd graphic to the right",
+          "textPreview": "Left aligned middle title.  | Add graphic to the right",
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "Left aligned middle title. \nAdd graphic to the right",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Left aligned middle title. "
+                },
+                {
+                  "index": 2,
+                  "text": "\n"
+                },
+                {
+                  "index": 3,
+                  "text": "Add graphic to the right"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "kind": "shape",
+          "scope": "layout",
+          "aid": "template/layout//ppt/slideLayouts/slideLayout105.xml/10",
+          "id": "10",
+          "name": "Text Placeholder 21",
+          "bbox": [
+            80,
+            374.17,
+            508.8,
+            128.94
+          ],
+          "geometry": "rect",
+          "text": "Left aligned middle subhead. \nBody copy goes here. To the right, add in custom graphics, technical diagrams or custom artwork. ",
+          "textPreview": "Left aligned middle subhead.  | Body copy goes here. To the right, add in custom graphics, technical diagrams or custom artwork.",
+          "resolvedTextStyle": {
+            "insets": {
+              "top": 0,
+              "right": 0,
+              "bottom": 0,
+              "left": 0
+            }
+          },
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "Left aligned middle subhead. \nBody copy goes here. To the right, add in custom graphics, technical diagrams or custom artwork. ",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Left aligned middle subhead. "
+                },
+                {
+                  "index": 2,
+                  "text": "\n"
+                },
+                {
+                  "index": 3,
+                  "text": "Body copy goes here. To the right, add in custom graphics, technical diagrams or custom artwork. "
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 3,
+          "kind": "shape",
+          "scope": "layout",
+          "aid": "template/layout//ppt/slideLayouts/slideLayout105.xml/2",
+          "id": "2",
+          "name": "Date Placeholder 1",
+          "bbox": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "text": "[Date]",
+          "textPreview": "[Date]",
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "[Date]",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "[Date]"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 4,
+          "kind": "shape",
+          "scope": "layout",
+          "aid": "template/layout//ppt/slideLayouts/slideLayout105.xml/4",
+          "id": "4",
+          "name": "Footer Placeholder 3",
+          "bbox": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted",
+          "textPreview": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted",
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 5,
+          "kind": "shape",
+          "scope": "layout",
+          "aid": "template/layout//ppt/slideLayouts/slideLayout105.xml/5",
+          "id": "5",
+          "name": "Slide Number Placeholder 4",
+          "bbox": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "text": "‹#›",
+          "textPreview": "‹#›",
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "‹#›",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "‹#›"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "scope": "master",
+      "id": "/ppt/slideMasters/slideMaster1.xml",
+      "type": "master",
+      "backgroundColor": "bg2",
+      "elements": [
+        {
+          "order": 1,
+          "kind": "shape",
+          "scope": "master",
+          "aid": "template/master//ppt/slideMasters/slideMaster1.xml/2",
+          "id": "2",
+          "name": "Title",
+          "bbox": [
+            80.72,
+            19.15,
+            1120.32,
+            86.4
+          ],
+          "geometry": "rect",
+          "text": "Title",
+          "textPreview": "Title",
+          "resolvedTextStyle": {
+            "anchor": 3,
+            "vertical": 1,
+            "verticalAlignment": "bottom",
+            "autoFit": "none",
+            "insets": {
+              "top": 0,
+              "right": 0,
+              "bottom": 0,
+              "left": 0
+            }
+          },
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "Title",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Title"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "kind": "shape",
+          "scope": "master",
+          "aid": "template/master//ppt/slideMasters/slideMaster1.xml/4",
+          "id": "4",
+          "name": "Text Field",
+          "bbox": [
+            80.72,
+            168,
+            1120.32,
+            474
+          ],
+          "geometry": "rect",
+          "text": "Click to edit Master text styles\nSecond level\nThird level\nFourth level\nFifth level",
+          "textPreview": "Click to edit Master text styles | Second level | Third level | Fourth level | Fifth level",
+          "resolvedTextStyle": {
+            "vertical": 1,
+            "autoFit": "none",
+            "insets": {
+              "top": 0,
+              "right": 0,
+              "bottom": 0,
+              "left": 0
+            }
+          },
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "Click to edit Master text styles",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Click to edit Master text styles"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "text": "Second level",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Second level"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "text": "Third level",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Third level"
+                }
+              ]
+            },
+            {
+              "index": 4,
+              "text": "Fourth level",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Fourth level"
+                }
+              ]
+            },
+            {
+              "index": 5,
+              "text": "Fifth level",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Fifth level"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 3,
+          "kind": "shape",
+          "scope": "master",
+          "aid": "template/master//ppt/slideMasters/slideMaster1.xml/17",
+          "id": "17",
+          "name": "Slide Number",
+          "bbox": [
+            80,
+            674.4,
+            38.4,
+            38.4
+          ],
+          "geometry": "rect",
+          "text": "‹#›",
+          "textPreview": "‹#›",
+          "resolvedTextStyle": {
+            "anchor": 2,
+            "vertical": 1,
+            "verticalAlignment": "middle",
+            "insets": {
+              "top": 0,
+              "right": 0,
+              "bottom": 0,
+              "left": 0
+            }
+          },
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "‹#›",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "‹#›"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 4,
+          "kind": "shape",
+          "scope": "master",
+          "aid": "template/master//ppt/slideMasters/slideMaster1.xml/18",
+          "id": "18",
+          "name": "Footer",
+          "bbox": [
+            118.4,
+            674.43,
+            921.6,
+            38.33
+          ],
+          "geometry": "rect",
+          "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted",
+          "textPreview": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted",
+          "resolvedTextStyle": {
+            "anchor": 2,
+            "vertical": 1,
+            "verticalAlignment": "middle",
+            "insets": {
+              "top": 0,
+              "right": 0,
+              "bottom": 0,
+              "left": 0
+            }
+          },
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 5,
+          "kind": "shape",
+          "scope": "master",
+          "aid": "template/master//ppt/slideMasters/slideMaster1.xml/20",
+          "id": "20",
+          "name": "Date",
+          "bbox": [
+            1051.19,
+            674.6,
+            138.14,
+            38.16
+          ],
+          "geometry": "rect",
+          "text": "[Date]",
+          "textPreview": "[Date]",
+          "resolvedTextStyle": {
+            "anchor": 2,
+            "vertical": 1,
+            "verticalAlignment": "middle",
+            "insets": {
+              "top": 0,
+              "right": 0,
+              "bottom": 0,
+              "left": 0
+            }
+          },
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "[Date]",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "[Date]"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 6,
+          "kind": "image",
+          "scope": "master",
+          "aid": "template/master//ppt/slideMasters/slideMaster1.xml/21",
+          "id": "21",
+          "name": "OTag",
+          "bbox": [
+            1197.44,
+            678.72,
+            41.28,
+            41.28
+          ],
+          "contentType": "image/x-emf",
+          "asset": {
+            "assetId": "/ppt/media/image1.emf",
+            "contentType": "image/x-emf",
+            "byteLength": 2940
+          },
+          "fillImage": {
+            "assetId": "/ppt/media/image1.emf",
+            "contentType": "image/x-emf",
+            "byteLength": 2940
+          }
+        }
+      ]
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/hw32hkve",
+      "id": "2",
+      "name": "Title 1",
+      "bbox": [
+        80,
+        259.43,
+        508.8,
+        86.4
+      ],
+      "text": "Left title on dark. Graphics on the right.",
+      "textPreview": "Left title on dark. Graphics on the right.",
+      "resolvedFontSize": 42.67,
+      "resolvedTextStyle": {
+        "anchor": 3,
+        "vertical": 1,
+        "fontSize": 42.67,
+        "typeface": "Oracle Sans Tab",
+        "color": "tx1",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "bottom",
+        "autoFit": "none",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Left title on dark. Graphics"
+          },
+          {
+            "index": 2,
+            "text": "on the right."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Left title on dark. Graphics on the right.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Left title on dark. Graphics on the right."
+            }
+          ],
+          "bulletCharacter": "",
+          "lineSpacingPercent": 95000
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/wvul8fut",
+      "id": "3",
+      "name": "Text Placeholder 2",
+      "bbox": [
+        80,
+        374.17,
+        508.8,
+        128.94
+      ],
+      "text": "Left aligned subhead. \nTo the right, add in custom graphics, technical diagrams or custom artwork. ",
+      "textPreview": "Left aligned subhead.  | To the right, add in custom graphics, technical diagrams or custom artwork.",
+      "resolvedFontSize": 26.67,
+      "resolvedTextStyle": {
+        "vertical": 1,
+        "fontSize": 26.67,
+        "typeface": "Oracle Sans",
+        "color": "tx1",
+        "alignment": "left",
+        "autoFit": "none",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 3,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Left aligned subhead."
+          },
+          {
+            "index": 2,
+            "text": "To the right, add in custom graphics, technical"
+          },
+          {
+            "index": 3,
+            "text": "diagrams or custom artwork."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Left aligned subhead. \nTo the right, add in custom graphics, technical diagrams or custom artwork. ",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Left aligned subhead. "
+            },
+            {
+              "index": 2,
+              "text": "\n"
+            },
+            {
+              "index": 3,
+              "text": "To the right, add in custom graphics, technical diagrams or custom artwork. "
+            }
+          ],
+          "bulletCharacter": "",
+          "marginLeft": 0,
+          "indent": 0,
+          "lineSpacingPercent": 100000
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ixc3apcj",
+      "id": "5",
+      "name": "Footer Placeholder 4",
+      "bbox": [
+        118.4,
+        674.43,
+        921.6,
+        38.33
+      ],
+      "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted",
+      "textPreview": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted",
+      "resolvedFontSize": 10.67,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "vertical": 1,
+        "fontSize": 10.67,
+        "typeface": "Oracle Sans Tab",
+        "color": "#AEA8A2",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted",
+              "color": "#AEA8A2"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 4,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/jylkjud4",
+      "id": "4",
+      "name": "Slide Number Placeholder 3",
+      "bbox": [
+        80,
+        674.4,
+        38.4,
+        38.4
+      ],
+      "text": "84",
+      "textPreview": "84",
+      "resolvedFontSize": 10.67,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "vertical": 1,
+        "fontSize": 10.67,
+        "typeface": "Oracle Sans Tab",
+        "color": "#AEA8A2",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "84"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "84",
+          "runs": [
+            {
+              "index": 1,
+              "text": "84",
+              "color": "#AEA8A2"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 5,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/u5oba9gz",
+      "id": "85",
+      "name": "Rounded Rectangle 84",
+      "bbox": [
+        1017.39,
+        86.25,
+        163.18,
+        163.18
+      ],
+      "rotation": 0,
+      "geometry": "roundRect",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": ""
+          }
+        ]
+      },
+      "lineWidth": 0.33
+    },
+    {
+      "order": 6,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/h8ful4za",
+      "id": "86",
+      "name": "Rounded Rectangle 85",
+      "bbox": [
+        1033.39,
+        263.43,
+        163.18,
+        163.18
+      ],
+      "rotation": 0,
+      "geometry": "roundRect",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": " "
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "resolvedTextStyle": {
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": " ",
+              "fontSize": 32,
+              "typeface": "Oracle Sans",
+              "color": "bg1"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0.33
+    },
+    {
+      "order": 7,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/g76tczy5",
+      "id": "87",
+      "name": "Rounded Rectangle 86",
+      "bbox": [
+        1033.39,
+        440.6,
+        163.18,
+        163.18
+      ],
+      "rotation": 0,
+      "geometry": "roundRect",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": ""
+          }
+        ]
+      },
+      "lineWidth": 0.33
+    },
+    {
+      "order": 8,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/72xcfuh8",
+      "id": "88",
+      "name": "Rounded Rectangle 87",
+      "bbox": [
+        645.85,
+        86.25,
+        163.18,
+        163.18
+      ],
+      "rotation": 0,
+      "geometry": "roundRect",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": ""
+          }
+        ]
+      },
+      "lineWidth": 0.33
+    },
+    {
+      "order": 9,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/61ob6p0n",
+      "id": "89",
+      "name": "Rounded Rectangle 88",
+      "bbox": [
+        831.66,
+        86.25,
+        163.18,
+        163.18
+      ],
+      "rotation": 0,
+      "geometry": "roundRect",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": ""
+          }
+        ]
+      },
+      "lineWidth": 0.33
+    },
+    {
+      "order": 10,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/wbi10ra9",
+      "id": "90",
+      "name": "Rounded Rectangle 89",
+      "bbox": [
+        831.66,
+        263.43,
+        163.18,
+        163.18
+      ],
+      "rotation": 0,
+      "geometry": "roundRect",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": " "
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "resolvedTextStyle": {
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": " ",
+              "fontSize": 32,
+              "typeface": "Oracle Sans",
+              "color": "bg1"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0.33
+    },
+    {
+      "order": 11,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/xwbitwbu",
+      "id": "91",
+      "name": "Rounded Rectangle 90",
+      "bbox": [
+        645.85,
+        263.43,
+        163.18,
+        163.18
+      ],
+      "rotation": 0,
+      "geometry": "roundRect",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": ""
+          }
+        ]
+      },
+      "lineWidth": 0.33
+    },
+    {
+      "order": 12,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/a90jy1sj",
+      "id": "92",
+      "name": "Rounded Rectangle 91",
+      "bbox": [
+        645.85,
+        440.6,
+        163.18,
+        163.18
+      ],
+      "rotation": 0,
+      "geometry": "roundRect",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": ""
+          }
+        ]
+      },
+      "lineWidth": 0.33
+    },
+    {
+      "order": 13,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ba90r6t4",
+      "id": "93",
+      "name": "Rounded Rectangle 92",
+      "bbox": [
+        831.66,
+        440.6,
+        163.18,
+        163.18
+      ],
+      "rotation": 0,
+      "geometry": "roundRect",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": ""
+          }
+        ]
+      },
+      "lineWidth": 0.33
+    },
+    {
+      "order": 14,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/kz214bal",
+      "id": "94",
+      "name": "TextBox 93",
+      "bbox": [
+        841.39,
+        190.25,
+        158.38,
+        54.93
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "text": "Agent Team Orchestration",
+      "textPreview": "Agent Team Orchestration",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "tx1",
+        "alignment": "left",
+        "wrap": "square",
+        "autoFit": "resizeShapeToFitText",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Agent Team"
+          },
+          {
+            "index": 2,
+            "text": "Orchestration"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Agent Team Orchestration",
+          "resolvedTextStyle": {
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Agent Team Orchestration",
+              "fontSize": 18.67,
+              "typeface": "Oracle Sans"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 15,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/l0bixgb6",
+      "id": "95",
+      "name": "TextBox 94",
+      "bbox": [
+        636.57,
+        366.25,
+        158.38,
+        54.93
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "text": "Human in \nthe Loop",
+      "textPreview": "Human in  | the Loop",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "tx1",
+        "alignment": "left",
+        "wrap": "square",
+        "autoFit": "resizeShapeToFitText",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Human in"
+          },
+          {
+            "index": 2,
+            "text": "the Loop"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Human in ",
+          "resolvedTextStyle": {
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Human in ",
+              "fontSize": 18.67,
+              "typeface": "Oracle Sans"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 2,
+          "text": "the Loop",
+          "resolvedTextStyle": {
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "the Loop",
+              "fontSize": 18.67,
+              "typeface": "Oracle Sans"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 16,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/yxkj21sf",
+      "id": "96",
+      "name": "TextBox 95",
+      "bbox": [
+        636.57,
+        190.25,
+        158.38,
+        54.93
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "text": "Pre-Built Templates ",
+      "textPreview": "Pre-Built Templates",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "tx1",
+        "alignment": "left",
+        "wrap": "square",
+        "autoFit": "resizeShapeToFitText",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Pre-Built"
+          },
+          {
+            "index": 2,
+            "text": "Templates"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Pre-Built Templates ",
+          "resolvedTextStyle": {
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Pre-Built Templates ",
+              "fontSize": 18.67,
+              "typeface": "Oracle Sans"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 17,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/jyt0v6t0",
+      "id": "97",
+      "name": "TextBox 96",
+      "bbox": [
+        1036.3,
+        366.25,
+        158.38,
+        54.93
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "text": "External  Services/APIs",
+      "textPreview": "External  Services/APIs",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "tx1",
+        "alignment": "left",
+        "wrap": "square",
+        "autoFit": "resizeShapeToFitText",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "External"
+          },
+          {
+            "index": 2,
+            "text": "Services/APIs"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "External  Services/APIs",
+          "resolvedTextStyle": {
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "External  Services/APIs",
+              "fontSize": 18.67,
+              "typeface": "Oracle Sans"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 18,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/03yhs7u1",
+      "id": "98",
+      "name": "TextBox 97",
+      "bbox": [
+        1041.08,
+        542.25,
+        148.81,
+        54.93
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "text": "Security \nand Trust",
+      "textPreview": "Security  | and Trust",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "tx1",
+        "alignment": "left",
+        "wrap": "square",
+        "autoFit": "resizeShapeToFitText",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Security"
+          },
+          {
+            "index": 2,
+            "text": "and Trust"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Security ",
+          "resolvedTextStyle": {
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Security ",
+              "fontSize": 18.67,
+              "typeface": "Oracle Sans"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 2,
+          "text": "and Trust",
+          "resolvedTextStyle": {
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "and Trust",
+              "fontSize": 18.67,
+              "typeface": "Oracle Sans"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 19,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/147i1cbm",
+      "id": "99",
+      "name": "TextBox 98",
+      "bbox": [
+        841.39,
+        366.25,
+        158.38,
+        54.93
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "text": "Fusion \nNative",
+      "textPreview": "Fusion  | Native",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "tx1",
+        "alignment": "left",
+        "wrap": "square",
+        "autoFit": "resizeShapeToFitText",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Fusion"
+          },
+          {
+            "index": 2,
+            "text": "Native"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Fusion ",
+          "resolvedTextStyle": {
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Fusion ",
+              "fontSize": 18.67,
+              "typeface": "Oracle Sans"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 2,
+          "text": "Native",
+          "resolvedTextStyle": {
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Native",
+              "fontSize": 18.67,
+              "typeface": "Oracle Sans"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 20,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/adsvap83",
+      "id": "100",
+      "name": "TextBox 99",
+      "bbox": [
+        841.39,
+        542.25,
+        158.38,
+        54.93
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "text": "Testing and Monitoring",
+      "textPreview": "Testing and Monitoring",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "tx1",
+        "alignment": "left",
+        "wrap": "square",
+        "autoFit": "resizeShapeToFitText",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Testing and"
+          },
+          {
+            "index": 2,
+            "text": "Monitoring"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Testing and Monitoring",
+          "resolvedTextStyle": {
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Testing and Monitoring",
+              "fontSize": 18.67,
+              "typeface": "Oracle Sans"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 21,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/be1wjupo",
+      "id": "101",
+      "name": "TextBox 100",
+      "bbox": [
+        1036.3,
+        190.25,
+        158.38,
+        32.31
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "text": "LLMs",
+      "textPreview": "LLMs",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "tx1",
+        "alignment": "left",
+        "wrap": "square",
+        "autoFit": "resizeShapeToFitText",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "LLMs"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "LLMs",
+          "resolvedTextStyle": {
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "LLMs",
+              "fontSize": 18.67,
+              "typeface": "Oracle Sans"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 22,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/m1cr6x4v",
+      "id": "123",
+      "name": "Picture Placeholder 124",
+      "bbox": [
+        1071.56,
+        457.46,
+        87.87,
+        87.87
+      ],
+      "rotation": 0,
+      "contentType": "image/svg+xml",
+      "imageCrop": {
+        "left": 0,
+        "top": 0.00085,
+        "right": 0,
+        "bottom": 0.00085
+      },
+      "asset": {
+        "assetId": "/ppt/media/image148.svg",
+        "contentType": "image/svg+xml",
+        "byteLength": 1524
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image148.svg",
+        "contentType": "image/svg+xml",
+        "byteLength": 1524
+      }
+    },
+    {
+      "order": 23,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/l03qdsna",
+      "id": "124",
+      "name": "Picture Placeholder 30",
+      "bbox": [
+        1064.68,
+        96.62,
+        101.63,
+        101.63
+      ],
+      "rotation": 0,
+      "contentType": "image/svg+xml",
+      "imageCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "asset": {
+        "assetId": "/ppt/media/image149.svg",
+        "contentType": "image/svg+xml",
+        "byteLength": 5210
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image149.svg",
+        "contentType": "image/svg+xml",
+        "byteLength": 5210
+      }
+    },
+    {
+      "order": 24,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/kzu94nmp",
+      "id": "125",
+      "name": "Picture Placeholder 78",
+      "bbox": [
+        879.21,
+        106.06,
+        82.75,
+        82.75
+      ],
+      "rotation": 0,
+      "contentType": "image/svg+xml",
+      "imageCrop": {
+        "left": 0.00085,
+        "top": 0,
+        "right": 0.00085,
+        "bottom": 0
+      },
+      "asset": {
+        "assetId": "/ppt/media/image150.svg",
+        "contentType": "image/svg+xml",
+        "byteLength": 4263
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image150.svg",
+        "contentType": "image/svg+xml",
+        "byteLength": 4263
+      }
+    },
+    {
+      "order": 25,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/zel8bi54",
+      "id": "126",
+      "name": "Picture Placeholder 98",
+      "bbox": [
+        878.74,
+        279.8,
+        83.67,
+        83.67
+      ],
+      "rotation": 0,
+      "contentType": "image/svg+xml",
+      "imageCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "asset": {
+        "assetId": "/ppt/media/image151.svg",
+        "contentType": "image/svg+xml",
+        "byteLength": 2937
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image151.svg",
+        "contentType": "image/svg+xml",
+        "byteLength": 2937
+      }
+    },
+    {
+      "order": 26,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/ydc72d4j",
+      "id": "127",
+      "name": "Picture Placeholder 106",
+      "bbox": [
+        883.19,
+        464,
+        74.79,
+        74.78
+      ],
+      "rotation": 0,
+      "contentType": "image/svg+xml",
+      "imageCrop": {
+        "left": 0.00085,
+        "top": 0,
+        "right": 0.00085,
+        "bottom": 0
+      },
+      "asset": {
+        "assetId": "/ppt/media/image152.svg",
+        "contentType": "image/svg+xml",
+        "byteLength": 1683
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image152.svg",
+        "contentType": "image/svg+xml",
+        "byteLength": 1683
+      }
+    },
+    {
+      "order": 27,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/5w7apc3e",
+      "id": "128",
+      "name": "Picture Placeholder 14",
+      "bbox": [
+        674.04,
+        279.92,
+        83.43,
+        83.43
+      ],
+      "rotation": 0,
+      "contentType": "image/svg+xml",
+      "imageCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "asset": {
+        "assetId": "/ppt/media/image153.svg",
+        "contentType": "image/svg+xml",
+        "byteLength": 4352
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image153.svg",
+        "contentType": "image/svg+xml",
+        "byteLength": 4352
+      }
+    },
+    {
+      "order": 28,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/4vy9g7mt",
+      "id": "129",
+      "name": "Picture Placeholder 92",
+      "bbox": [
+        674.16,
+        105.84,
+        83.2,
+        83.2
+      ],
+      "rotation": 0,
+      "contentType": "image/svg+xml",
+      "imageCrop": {
+        "left": 0,
+        "top": 0.00085,
+        "right": 0,
+        "bottom": 0.00085
+      },
+      "asset": {
+        "assetId": "/ppt/media/image154.svg",
+        "contentType": "image/svg+xml",
+        "byteLength": 2685
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image154.svg",
+        "contentType": "image/svg+xml",
+        "byteLength": 2685
+      }
+    },
+    {
+      "order": 29,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/2h8na9kb",
+      "id": "130",
+      "name": "Picture Placeholder 57",
+      "bbox": [
+        1069.9,
+        275.07,
+        91.19,
+        91.19
+      ],
+      "rotation": 0,
+      "contentType": "image/svg+xml",
+      "imageCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "asset": {
+        "assetId": "/ppt/media/image155.svg",
+        "contentType": "image/svg+xml",
+        "byteLength": 6209
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image155.svg",
+        "contentType": "image/svg+xml",
+        "byteLength": 6209
+      }
+    },
+    {
+      "order": 30,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/3ihojelw",
+      "id": "131",
+      "name": "Picture Placeholder 74",
+      "bbox": [
+        666.95,
+        452.64,
+        97.62,
+        97.62
+      ],
+      "rotation": 0,
+      "contentType": "image/svg+xml",
+      "imageCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "asset": {
+        "assetId": "/ppt/media/image156.svg",
+        "contentType": "image/svg+xml",
+        "byteLength": 7205
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image156.svg",
+        "contentType": "image/svg+xml",
+        "byteLength": 7205
+      }
+    },
+    {
+      "order": 31,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/gzyhonat",
+      "id": "111",
+      "name": "TextBox 110",
+      "bbox": [
+        669.8,
+        542.25,
+        91.91,
+        54.93
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "text": "Custom AI",
+      "textPreview": "Custom AI",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "tx1",
+        "alignment": "left",
+        "wrap": "square",
+        "autoFit": "resizeShapeToFitText",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Custom"
+          },
+          {
+            "index": 2,
+            "text": "AI"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Custom AI",
+          "resolvedTextStyle": {
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Custom AI",
+              "fontSize": 18.67,
+              "typeface": "Oracle Sans"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 32,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ve5gfi98",
+      "id": "112",
+      "name": "Rounded Rectangle 111",
+      "bbox": [
+        755.63,
+        459.74,
+        38.4,
+        19.2
+      ],
+      "rotation": 0,
+      "geometry": "roundRect",
+      "text": "NEW",
+      "textPreview": "NEW",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "lt1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 0,
+          "bottom": 4.8,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "NEW"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "NEW",
+          "resolvedTextStyle": {
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "NEW",
+              "fontSize": 13.33,
+              "color": "bg1",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "fillColor": "accent4",
+      "lineWidth": 0
+    },
+    {
+      "order": 33,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/43yhsnap",
+      "id": "115",
+      "name": "Straight Connector 114",
+      "bbox": [
+        919.77,
+        -33.67,
+        0,
+        585.6
+      ],
+      "rotation": 90,
+      "geometry": "line",
+      "lineColor": "rgba(139, 133, 128, 0.5)",
+      "lineWidth": 1.33
+    },
+    {
+      "order": 34,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/32pgji94",
+      "id": "116",
+      "name": "Straight Connector 115",
+      "bbox": [
+        919.77,
+        143.34,
+        0,
+        585.6
+      ],
+      "rotation": 90,
+      "geometry": "line",
+      "lineColor": "rgba(139, 133, 128, 0.5)",
+      "lineWidth": 1.33
+    },
+    {
+      "order": 35,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/i1gzqdsj",
+      "id": "117",
+      "name": "Straight Connector 116",
+      "bbox": [
+        822.1,
+        112.62,
+        0,
+        498.61
+      ],
+      "rotation": 0,
+      "geometry": "line",
+      "lineColor": "rgba(139, 133, 128, 0.5)",
+      "lineWidth": 1.33
+    },
+    {
+      "order": 36,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/l8ny9or6",
+      "id": "118",
+      "name": "Straight Connector 117",
+      "bbox": [
+        1018.08,
+        112.62,
+        0,
+        498.61
+      ],
+      "rotation": 0,
+      "geometry": "line",
+      "lineColor": "rgba(139, 133, 128, 0.5)",
+      "lineWidth": 1.33
+    },
+    {
+      "order": 37,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/k7exg3al",
+      "id": "119",
+      "name": "Diamond 118",
+      "bbox": [
+        807.53,
+        244.73,
+        29.13,
+        28.8
+      ],
+      "rotation": 0,
+      "geometry": "diamond",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "lt1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": ""
+          }
+        ]
+      },
+      "fillColor": "#3C4545",
+      "lineWidth": 0
+    },
+    {
+      "order": 38,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/w3ipcnmd",
+      "id": "120",
+      "name": "Diamond 119",
+      "bbox": [
+        1003.52,
+        244.73,
+        29.13,
+        28.8
+      ],
+      "rotation": 0,
+      "geometry": "diamond",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "lt1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": ""
+          }
+        ]
+      },
+      "fillColor": "#3C4545",
+      "lineWidth": 0
+    },
+    {
+      "order": 39,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/x4rqls3y",
+      "id": "121",
+      "name": "Diamond 120",
+      "bbox": [
+        807.53,
+        421.74,
+        29.13,
+        28.8
+      ],
+      "rotation": 0,
+      "geometry": "diamond",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "lt1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": ""
+          }
+        ]
+      },
+      "fillColor": "#3C4545",
+      "lineWidth": 0
+    },
+    {
+      "order": 40,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/a107ax4n",
+      "id": "122",
+      "name": "Diamond 121",
+      "bbox": [
+        1003.52,
+        421.74,
+        29.13,
+        28.8
+      ],
+      "rotation": 0,
+      "geometry": "diamond",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "lt1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": ""
+          }
+        ]
+      },
+      "fillColor": "#3C4545",
+      "lineWidth": 0
+    },
+    {
+      "order": 41,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/547ylsra",
+      "id": "114",
+      "name": "Rounded Rectangle 113",
+      "bbox": [
+        597.62,
+        64.34,
+        645.93,
+        562.96
+      ],
+      "rotation": 0,
+      "geometry": "roundRect",
+      "text": "Example graphic of what can go on the right",
+      "textPreview": "Example graphic of what can go on the right",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "lt1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Example graphic of what can go on the right"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Example graphic of what can go on the right",
+          "resolvedTextStyle": {
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Example graphic of what can go on the right",
+              "color": "tx1"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineColor": "#F1B13F",
+      "lineWidth": 4
+    }
+  ],
+  "composeRuns": []
+}

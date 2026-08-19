@@ -59,9 +59,11 @@ define([
     s.pageSize = 10;
     s.directoryRequest = 0;
     s.detailState = u.state({ addresses: [], documents: [], nominees: [], accounts: [], kyc: null });
-    s.showDetailPage = ko.observable(false);
+    const hasPendingCustomerWorkspace = Boolean(app.customerToManage && app.customerToManage());
+    s.showDetailPage = ko.observable(hasPendingCustomerWorkspace);
+    s.workspaceLoading = ko.observable(hasPendingCustomerWorkspace);
     s.query = ko.observable('');
-    s.searchMode = ko.observable('local');
+    s.searchMode = ko.observable('firstName');
     s.statusFilter = ko.observable('');
     s.selected = ko.observable(null);
     s.form = ko.observable(customerBlank());
@@ -276,12 +278,12 @@ define([
     s.nextPage = () => { if (!s.state.loading() && s.currentPage() < s.totalPages() - 1) s.load(s.currentPage() + 1); };
     s.statusFilter.subscribe(() => {
       s.query('');
-      s.searchMode('local');
+      s.searchMode('firstName');
       s.load(0);
     });
     s.backendSearch = () => {
       const q = s.query().trim();
-      if (!q || s.searchMode() === 'local') return s.load(0);
+      if (!q) return s.load(0);
       const calls = {
         cif: app.services.customers.byCif,
         email: app.services.customers.byEmail,
@@ -324,7 +326,10 @@ define([
     };
     s.openDetail = async (customer) => {
       s.error('');
-      try { await s.loadDetail(customer); s.showDetailPage(true); } catch (e) { s.error(e.message); }
+      s.showDetailPage(true);
+      s.workspaceLoading(true);
+      try { await s.loadDetail(customer); } catch (e) { s.error(e.message); }
+      finally { s.workspaceLoading(false); }
     };
     s.backToDirectory = () => { s.error(''); s.showDetailPage(false); };
     s.editCustomer = () => {
@@ -603,17 +608,34 @@ define([
       }
     };
     s.close = (id) => document.getElementById(id).close();
-    s.load().then(async () => {
-      const customerId = app.customerToManage && app.customerToManage();
+    const openRequestedCustomer = async (customerId) => {
       if (!customerId) return;
-      app.customerToManage(null);
-      setTimeout(async () => {
-        try {
-          await s.openDetail({ customerId });
-        } catch (e) {
-          app.notify(e.message || 'Unable to open the selected customer.', 'error');
+      try {
+        await s.openDetail({ customerId: String(customerId) });
+      } catch (e) {
+        app.notify(e.message || 'Unable to open the selected customer.', 'error');
+      }
+    };
+    const consumeRequestedCustomer = () => {
+      const customerId = typeof app.consumeCustomerToManage === 'function'
+        ? app.consumeCustomerToManage()
+        : app.customerToManage && app.customerToManage();
+      if (customerId) {
+        s.showDetailPage(true);
+        s.workspaceLoading(true);
+        openRequestedCustomer(customerId);
+      }
+    };
+    if (app.customerToManage && typeof app.customerToManage.subscribe === 'function') {
+      app.customerToManage.subscribe((customerId) => {
+        if (customerId && app.selection && app.selection.path() === 'customers') {
+          setTimeout(consumeRequestedCustomer, 0);
         }
-      }, 0);
+      });
+    }
+    s.connected = () => setTimeout(consumeRequestedCustomer, 0);
+    s.load().then(() => {
+      if (app.selection && app.selection.path() === 'customers') consumeRequestedCustomer();
     });
   }
   return VM;

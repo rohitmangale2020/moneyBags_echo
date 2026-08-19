@@ -305,10 +305,25 @@ define([
       self.profilePasswordRequest(true);
       return router.go({ path: "profile" });
     };
-    self.customerToManage = ko.observable(null);
+    const pendingCustomerWorkspaceKey = 'moneybags.customerToManage';
+    self.customerToManage = ko.observable(sessionStorage.getItem(pendingCustomerWorkspaceKey));
     self.openCustomer = (customerId) => {
-      self.customerToManage(String(customerId));
+      const id = String(customerId);
+      sessionStorage.setItem(pendingCustomerWorkspaceKey, id);
+      self.customerToManage(id);
       return router.go({ path: "customers" });
+    };
+    self.consumeCustomerToManage = () => {
+      const customerId = self.customerToManage() || sessionStorage.getItem(pendingCustomerWorkspaceKey);
+      self.customerToManage(null);
+      sessionStorage.removeItem(pendingCustomerWorkspaceKey);
+      return customerId;
+    };
+    self.openActiveCustomer = () => {
+      const customer = self.activeCustomer();
+      return customer && customer.customerId
+        ? self.openCustomer(customer.customerId)
+        : router.go({ path: "customers" });
     };
     self.completeLogin = async () => {
       self.isAppShellReady(false);

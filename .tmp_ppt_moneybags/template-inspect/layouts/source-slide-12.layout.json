@@ -1,0 +1,1487 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/8f2psfyx",
+    "id": "8f2psfyx",
+    "slide": 12,
+    "layoutId": "/ppt/slideLayouts/slideLayout61.xml",
+    "layoutName": "Light - Title",
+    "masterLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "theme": {
+    "colorSchemeName": "Custom 151",
+    "colors": {
+      "accent1": "#04536F",
+      "accent2": "#6C3F49",
+      "accent3": "#C74634",
+      "accent4": "#F0CC71",
+      "accent5": "#89B2B0",
+      "accent6": "#86B596",
+      "dk1": "#2A2F2F",
+      "lt1": "#FFFFFF",
+      "dk2": "#2A2F2F",
+      "lt2": "#FBF9F8",
+      "hlink": "#00688C",
+      "folHlink": "#F0CC71"
+    },
+    "fontScheme": {
+      "name": "Oracle Pillars",
+      "majorFont": {
+        "latinTypeface": "Georgia"
+      },
+      "minorFont": {
+        "latinTypeface": "Oracle Sans Tab"
+      }
+    },
+    "typefaces": [
+      "Georgia",
+      "Oracle Sans Tab"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "/ppt/slideLayouts/slideLayout61.xml",
+      "name": "Light - Title",
+      "parentLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+      "elements": [
+        {
+          "order": 1,
+          "kind": "shape",
+          "scope": "layout",
+          "aid": "template/layout//ppt/slideLayouts/slideLayout61.xml/8",
+          "id": "8",
+          "name": "Title 3",
+          "bbox": [
+            80.72,
+            19.15,
+            1120.32,
+            86.4
+          ],
+          "text": "Title",
+          "textPreview": "Title",
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "Title",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Title"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "kind": "shape",
+          "scope": "layout",
+          "aid": "template/layout//ppt/slideLayouts/slideLayout61.xml/3",
+          "id": "3",
+          "name": "Date Placeholder 2",
+          "bbox": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "text": "[Date]",
+          "textPreview": "[Date]",
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "[Date]",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "[Date]"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 3,
+          "kind": "shape",
+          "scope": "layout",
+          "aid": "template/layout//ppt/slideLayouts/slideLayout61.xml/4",
+          "id": "4",
+          "name": "Footer Placeholder 3",
+          "bbox": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted",
+          "textPreview": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted",
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 4,
+          "kind": "shape",
+          "scope": "layout",
+          "aid": "template/layout//ppt/slideLayouts/slideLayout61.xml/5",
+          "id": "5",
+          "name": "Slide Number Placeholder 4",
+          "bbox": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "text": "‹#›",
+          "textPreview": "‹#›",
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "‹#›",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "‹#›"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "scope": "master",
+      "id": "/ppt/slideMasters/slideMaster1.xml",
+      "type": "master",
+      "backgroundColor": "bg2",
+      "elements": [
+        {
+          "order": 1,
+          "kind": "shape",
+          "scope": "master",
+          "aid": "template/master//ppt/slideMasters/slideMaster1.xml/2",
+          "id": "2",
+          "name": "Title",
+          "bbox": [
+            80.72,
+            19.15,
+            1120.32,
+            86.4
+          ],
+          "geometry": "rect",
+          "text": "Title",
+          "textPreview": "Title",
+          "resolvedTextStyle": {
+            "anchor": 3,
+            "vertical": 1,
+            "verticalAlignment": "bottom",
+            "autoFit": "none",
+            "insets": {
+              "top": 0,
+              "right": 0,
+              "bottom": 0,
+              "left": 0
+            }
+          },
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "Title",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Title"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "kind": "shape",
+          "scope": "master",
+          "aid": "template/master//ppt/slideMasters/slideMaster1.xml/4",
+          "id": "4",
+          "name": "Text Field",
+          "bbox": [
+            80.72,
+            168,
+            1120.32,
+            474
+          ],
+          "geometry": "rect",
+          "text": "Click to edit Master text styles\nSecond level\nThird level\nFourth level\nFifth level",
+          "textPreview": "Click to edit Master text styles | Second level | Third level | Fourth level | Fifth level",
+          "resolvedTextStyle": {
+            "vertical": 1,
+            "autoFit": "none",
+            "insets": {
+              "top": 0,
+              "right": 0,
+              "bottom": 0,
+              "left": 0
+            }
+          },
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "Click to edit Master text styles",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Click to edit Master text styles"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "text": "Second level",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Second level"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "text": "Third level",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Third level"
+                }
+              ]
+            },
+            {
+              "index": 4,
+              "text": "Fourth level",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Fourth level"
+                }
+              ]
+            },
+            {
+              "index": 5,
+              "text": "Fifth level",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Fifth level"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 3,
+          "kind": "shape",
+          "scope": "master",
+          "aid": "template/master//ppt/slideMasters/slideMaster1.xml/17",
+          "id": "17",
+          "name": "Slide Number",
+          "bbox": [
+            80,
+            674.4,
+            38.4,
+            38.4
+          ],
+          "geometry": "rect",
+          "text": "‹#›",
+          "textPreview": "‹#›",
+          "resolvedTextStyle": {
+            "anchor": 2,
+            "vertical": 1,
+            "verticalAlignment": "middle",
+            "insets": {
+              "top": 0,
+              "right": 0,
+              "bottom": 0,
+              "left": 0
+            }
+          },
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "‹#›",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "‹#›"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 4,
+          "kind": "shape",
+          "scope": "master",
+          "aid": "template/master//ppt/slideMasters/slideMaster1.xml/18",
+          "id": "18",
+          "name": "Footer",
+          "bbox": [
+            118.4,
+            674.43,
+            921.6,
+            38.33
+          ],
+          "geometry": "rect",
+          "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted",
+          "textPreview": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted",
+          "resolvedTextStyle": {
+            "anchor": 2,
+            "vertical": 1,
+            "verticalAlignment": "middle",
+            "insets": {
+              "top": 0,
+              "right": 0,
+              "bottom": 0,
+              "left": 0
+            }
+          },
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 5,
+          "kind": "shape",
+          "scope": "master",
+          "aid": "template/master//ppt/slideMasters/slideMaster1.xml/20",
+          "id": "20",
+          "name": "Date",
+          "bbox": [
+            1051.19,
+            674.6,
+            138.14,
+            38.16
+          ],
+          "geometry": "rect",
+          "text": "[Date]",
+          "textPreview": "[Date]",
+          "resolvedTextStyle": {
+            "anchor": 2,
+            "vertical": 1,
+            "verticalAlignment": "middle",
+            "insets": {
+              "top": 0,
+              "right": 0,
+              "bottom": 0,
+              "left": 0
+            }
+          },
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "[Date]",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "[Date]"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 6,
+          "kind": "image",
+          "scope": "master",
+          "aid": "template/master//ppt/slideMasters/slideMaster1.xml/21",
+          "id": "21",
+          "name": "OTag",
+          "bbox": [
+            1197.44,
+            678.72,
+            41.28,
+            41.28
+          ],
+          "contentType": "image/x-emf",
+          "asset": {
+            "assetId": "/ppt/media/image1.emf",
+            "contentType": "image/x-emf",
+            "byteLength": 2940
+          },
+          "fillImage": {
+            "assetId": "/ppt/media/image1.emf",
+            "contentType": "image/x-emf",
+            "byteLength": 2940
+          }
+        }
+      ]
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/1gbm9s3a",
+      "id": "2",
+      "name": "Title 1",
+      "bbox": [
+        80.72,
+        19.15,
+        1120.32,
+        86.4
+      ],
+      "text": "How to use this deck: Footer",
+      "textPreview": "How to use this deck: Footer",
+      "resolvedFontSize": 32,
+      "resolvedTextStyle": {
+        "anchor": 3,
+        "vertical": 1,
+        "fontSize": 32,
+        "typeface": "Oracle Sans Tab",
+        "color": "tx1",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "bottom",
+        "autoFit": "none",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "How to use this deck: Footer"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "How to use this deck: Footer",
+          "runs": [
+            {
+              "index": 1,
+              "text": "How to use this deck: Footer"
+            }
+          ],
+          "bulletCharacter": "",
+          "lineSpacingPercent": 100000
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/wvupgz6t",
+      "id": "10",
+      "name": "Rectangle 9",
+      "bbox": [
+        489.6,
+        180.18,
+        448.56,
+        38.77
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "lt1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": ""
+          }
+        ]
+      },
+      "fillColor": {
+        "type": "theme",
+        "value": "tx1",
+        "transform": {
+          "lighten": 0.75
+        }
+      },
+      "lineWidth": 3
+    },
+    {
+      "order": 3,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/xw3q94ne",
+      "id": "11",
+      "name": "TextBox 10",
+      "bbox": [
+        606.04,
+        252.88,
+        207.75,
+        29.08
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "text": "Confidential portion",
+      "textPreview": "Confidential portion",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "tx1",
+        "alignment": "left",
+        "wrap": "square",
+        "autoFit": "resizeShapeToFitText",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Confidential portion"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Confidential portion",
+          "lineSpacingPercent": 100000,
+          "resolvedTextStyle": {
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Confidential portion",
+              "fontSize": 16,
+              "typeface": "Oracle Sans Tab",
+              "bold": true,
+              "textTransform": "none"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 4,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/atc7epon",
+      "id": "12",
+      "name": "Rectangle 11",
+      "bbox": [
+        80,
+        180.18,
+        393.05,
+        38.77
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "lt1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": ""
+          }
+        ]
+      },
+      "fillColor": {
+        "type": "theme",
+        "value": "tx1",
+        "transform": {
+          "opacity": 0.3,
+          "lighten": 0.75
+        }
+      },
+      "lineWidth": 3
+    },
+    {
+      "order": 5,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/bulo7u58",
+      "id": "13",
+      "name": "TextBox 12",
+      "bbox": [
+        202.32,
+        252.88,
+        181.04,
+        29.08
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "text": "Copyright portion",
+      "textPreview": "Copyright portion",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "tx1",
+        "alignment": "left",
+        "wrap": "square",
+        "autoFit": "resizeShapeToFitText",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Copyright portion"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Copyright portion",
+          "lineSpacingPercent": 100000,
+          "resolvedTextStyle": {
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Copyright portion",
+              "fontSize": 16,
+              "typeface": "Oracle Sans Tab",
+              "bold": true,
+              "textTransform": "none"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 6,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/orapcf6h",
+      "id": "14",
+      "name": "TextBox 13",
+      "bbox": [
+        80,
+        183.65,
+        858.16,
+        32.31
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "text": "Copyright © 2026, Oracle and/or its affiliates  |  Confidential: Internal/Restricted/Highly Restricted",
+      "textPreview": "Copyright © 2026, Oracle and/or its affiliates  |  Confidential: Internal/Restricted/Highly Restricted",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "tx1",
+        "alignment": "left",
+        "wrap": "square",
+        "autoFit": "resizeShapeToFitText",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Copyright © 2026, Oracle and/or its affiliates  |  Confidential: Internal/Restricted/Highly Restricted"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Copyright © 2026, Oracle and/or its affiliates  |  Confidential: Internal/Restricted/Highly Restricted",
+          "lineSpacingPercent": 100000,
+          "resolvedTextStyle": {
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Copyright © 2026, Oracle and/or its affiliates  |  Confidential: Internal/Restricted/Highly Restricted",
+              "fontSize": 18.67,
+              "typeface": "Oracle Sans Tab",
+              "textTransform": "none"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 7,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/9sj65kn2",
+      "id": "15",
+      "name": "Straight Connector 14",
+      "bbox": [
+        292.84,
+        231.34,
+        0,
+        21.54
+      ],
+      "rotation": 0,
+      "verticalFlip": true,
+      "geometry": "line",
+      "lineColor": "#8B8580",
+      "lineWidth": 2
+    },
+    {
+      "order": 8,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/mps7a5or",
+      "id": "16",
+      "name": "Straight Connector 15",
+      "bbox": [
+        712.44,
+        231.34,
+        0,
+        21.54
+      ],
+      "rotation": 0,
+      "verticalFlip": true,
+      "geometry": "line",
+      "lineColor": "#8B8580",
+      "lineWidth": 2
+    },
+    {
+      "order": 9,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/dcbm583y",
+      "id": "6",
+      "name": "Hot to use the footer",
+      "bbox": [
+        70.79,
+        330.24,
+        475.29,
+        231.09
+      ],
+      "geometry": "rect",
+      "text": "How to use the footer\nThe copyright is shown at the bottom of each slide in the same position, excluding the title slide and closing slide.\nThe text color of this information can be either:\nNeutral 140 (#514C47): Light slides\nNeutral 70 (#AEA8A2): Dark slides\nThe copyright portion of the footer should only be altered to reflect the current year—make sure you always show that.",
+      "textPreview": "How to use the footer | The copyright is shown at the bottom of each slide in the same position, excluding the title slide and closing sl...",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "tx1",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 13,
+        "lines": [
+          {
+            "index": 1,
+            "text": "How to use the footer"
+          },
+          {
+            "index": 2,
+            "text": ""
+          },
+          {
+            "index": 3,
+            "text": "•The copyright is shown at the bottom of each slide in the same"
+          },
+          {
+            "index": 4,
+            "text": "position, excluding the title slide and closing slide."
+          },
+          {
+            "index": 5,
+            "text": ""
+          },
+          {
+            "index": 6,
+            "text": "•The text color of this information can be either:"
+          },
+          {
+            "index": 7,
+            "text": ""
+          },
+          {
+            "index": 8,
+            "text": "•Neutral 140 (#514C47): Light slides"
+          },
+          {
+            "index": 9,
+            "text": ""
+          },
+          {
+            "index": 10,
+            "text": "•Neutral 70 (#AEA8A2): Dark slides"
+          },
+          {
+            "index": 11,
+            "text": ""
+          },
+          {
+            "index": 12,
+            "text": "•The copyright portion of the footer should only be altered to reflect"
+          },
+          {
+            "index": 13,
+            "text": "the current year—make sure you always show that."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "How to use the footer",
+          "lineSpacingPercent": 100000,
+          "resolvedTextStyle": {
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "How to use the footer",
+              "fontSize": 16,
+              "typeface": "Oracle Sans Tab",
+              "bold": true,
+              "textTransform": "none"
+            }
+          ],
+          "bulletCharacter": "•",
+          "marginLeft": 365760,
+          "indent": -182880
+        },
+        {
+          "index": 2,
+          "text": "The copyright is shown at the bottom of each slide in the same position, excluding the title slide and closing slide.",
+          "lineSpacingPercent": 100000,
+          "runs": [
+            {
+              "index": 1,
+              "text": "The copyright is shown at the bottom of each slide in the same position, excluding the title slide and closing slide.",
+              "fontSize": 16,
+              "typeface": "Oracle Sans Tab",
+              "textTransform": "none"
+            }
+          ],
+          "bulletCharacter": "•",
+          "marginLeft": 365760,
+          "indent": -182880
+        },
+        {
+          "index": 3,
+          "text": "The text color of this information can be either:",
+          "lineSpacingPercent": 100000,
+          "runs": [
+            {
+              "index": 1,
+              "text": "The text color of this information can be either:",
+              "fontSize": 16,
+              "typeface": "Oracle Sans Tab",
+              "textTransform": "none"
+            }
+          ],
+          "bulletCharacter": "•",
+          "marginLeft": 365760,
+          "indent": -182880
+        },
+        {
+          "index": 4,
+          "text": "Neutral 140 (#514C47): Light slides",
+          "lineSpacingPercent": 100000,
+          "resolvedTextStyle": {
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Neutral 140 (#514C47): Light slides",
+              "fontSize": 16,
+              "typeface": "Oracle Sans Tab",
+              "textTransform": "none"
+            }
+          ],
+          "bulletCharacter": "•",
+          "marginLeft": 1097280,
+          "indent": -182880
+        },
+        {
+          "index": 5,
+          "text": "Neutral 70 (#AEA8A2): Dark slides",
+          "lineSpacingPercent": 100000,
+          "resolvedTextStyle": {
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Neutral 70 (#AEA8A2): Dark slides",
+              "fontSize": 16,
+              "typeface": "Oracle Sans Tab",
+              "textTransform": "none"
+            }
+          ],
+          "bulletCharacter": "•",
+          "marginLeft": 1097280,
+          "indent": -182880
+        },
+        {
+          "index": 6,
+          "text": "The copyright portion of the footer should only be altered to reflect the current year—make sure you always show that.",
+          "lineSpacingPercent": 100000,
+          "resolvedTextStyle": {
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "The copyright portion of the footer should only be altered to reflect the current year—make sure you always show that.",
+              "fontSize": 16,
+              "typeface": "Oracle Sans Tab",
+              "textTransform": "none"
+            }
+          ],
+          "bulletCharacter": "•",
+          "marginLeft": 365760,
+          "indent": -182880
+        }
+      ]
+    },
+    {
+      "order": 10,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/sb2lcnmd",
+      "id": "7",
+      "name": "Straight Connector 6",
+      "bbox": [
+        572.53,
+        330.24,
+        0,
+        218.47
+      ],
+      "geometry": "line",
+      "lineColor": {
+        "type": "theme",
+        "value": "tx1",
+        "transform": {
+          "lighten": 0.75
+        }
+      },
+      "lineWidth": 1
+    },
+    {
+      "order": 11,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/b6d4f2lc",
+      "id": "8",
+      "name": "Customizing the footer",
+      "bbox": [
+        620.26,
+        334.54,
+        490.65,
+        279.11
+      ],
+      "geometry": "rect",
+      "text": "Customizing the footer\nThe confidentiality portion of the footer can be altered in a few ways (not all scenarios are covered).\nIf a presentation is delivered at a public event—you can remove the “pipe” |  and everything to the right of it.\nFor example, Copyright © 2026, Oracle and/or its affiliates\nIf the presentation is confidential—the confidentiality portion stays and is customized as appropriate to the circumstances. Delete the designations (Internal, Restricted, or Highly Restricted) that do not apply. For example, Copyright © 2026, Oracle and/or its affiliates | Confidential: Highly Restricted\nQuestions about confidential levels? \nVisit the “Oracle Information Protection Policy”\n",
+      "textPreview": "Customizing the footer | The confidentiality portion of the footer can be altered in a few ways (not all scenarios are covered). | If a p...",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "vertical": 1,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "tx1",
+        "alignment": "left",
+        "autoFit": "none",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 19,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Customizing the footer"
+          },
+          {
+            "index": 2,
+            "text": ""
+          },
+          {
+            "index": 3,
+            "text": "The confidentiality portion of the footer can be altered in a few ways (not"
+          },
+          {
+            "index": 4,
+            "text": "all scenarios are covered)."
+          },
+          {
+            "index": 5,
+            "text": ""
+          },
+          {
+            "index": 6,
+            "text": "•If a presentation is delivered at a public event—you can remove the"
+          },
+          {
+            "index": 7,
+            "text": "“pipe” |  and everything to the right of it."
+          },
+          {
+            "index": 8,
+            "text": "For example, Copyright © 2026, Oracle and/or its affiliates"
+          },
+          {
+            "index": 9,
+            "text": ""
+          },
+          {
+            "index": 10,
+            "text": "•If the presentation is confidential—the confidentiality portion stays and"
+          },
+          {
+            "index": 11,
+            "text": "is customized as appropriate to the circumstances. Delete the"
+          },
+          {
+            "index": 12,
+            "text": "designations (Internal, Restricted, or Highly Restricted) that do not apply."
+          },
+          {
+            "index": 13,
+            "text": "For example, Copyright © 2026, Oracle and/or its affiliates |"
+          },
+          {
+            "index": 14,
+            "text": "Confidential: Highly Restricted"
+          },
+          {
+            "index": 15,
+            "text": ""
+          },
+          {
+            "index": 16,
+            "text": "•Questions about confidential levels?"
+          },
+          {
+            "index": 17,
+            "text": "Visit the “Oracle Information Protection Policy”"
+          },
+          {
+            "index": 18,
+            "text": ""
+          },
+          {
+            "index": 19,
+            "text": ""
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Customizing the footer",
+          "lineSpacingPercent": 100000,
+          "resolvedTextStyle": {
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Customizing the footer",
+              "fontSize": 16,
+              "typeface": "Oracle Sans Tab",
+              "bold": true,
+              "textTransform": "none"
+            }
+          ],
+          "marginLeft": 365125,
+          "indent": -365125
+        },
+        {
+          "index": 2,
+          "text": "The confidentiality portion of the footer can be altered in a few ways (not all scenarios are covered).",
+          "lineSpacingPercent": 100000,
+          "resolvedTextStyle": {
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "The confidentiality portion of the footer can be altered in a few ways (not all scenarios are covered).",
+              "fontSize": 16,
+              "typeface": "Oracle Sans Tab",
+              "textTransform": "none"
+            }
+          ],
+          "marginLeft": 365125,
+          "indent": -365125
+        },
+        {
+          "index": 3,
+          "text": "If a presentation is delivered at a public event—you can remove the “pipe” |  and everything to the right of it.\nFor example, Copyright © 2026, Oracle and/or its affiliates",
+          "lineSpacingPercent": 100000,
+          "resolvedTextStyle": {
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "If a presentation is delivered at a public event—",
+              "fontSize": 16,
+              "typeface": "Oracle Sans Tab",
+              "bold": true,
+              "textTransform": "none"
+            },
+            {
+              "index": 2,
+              "text": "you can remove the “pipe” |  and everything to the right of it.",
+              "fontSize": 16,
+              "typeface": "Oracle Sans Tab",
+              "textTransform": "none"
+            },
+            {
+              "index": 3,
+              "text": "\n",
+              "alignment": "left"
+            },
+            {
+              "index": 4,
+              "text": "For example, Copyright © 2026, Oracle and/or its affiliates",
+              "fontSize": 16,
+              "typeface": "Oracle Sans Tab",
+              "textTransform": "none"
+            }
+          ],
+          "marginLeft": 365125,
+          "indent": -365125
+        },
+        {
+          "index": 4,
+          "text": "If the presentation is confidential—the confidentiality portion stays and is customized as appropriate to the circumstances. Delete the designations (Internal, Restricted, or Highly Restricted) that do not apply. For example, Copyright © 2026, Oracle and/or its affiliates | Confidential: Highly Restricted",
+          "lineSpacingPercent": 100000,
+          "resolvedTextStyle": {
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "If the presentation is confidential—",
+              "fontSize": 16,
+              "typeface": "Oracle Sans Tab",
+              "bold": true,
+              "textTransform": "none"
+            },
+            {
+              "index": 2,
+              "text": "the confidentiality portion stays and is customized as appropriate to the circumstances. Delete the designations (Internal, Restricted, or Highly Restricted) that do not apply. For example, Copyright © 2026, Oracle and/or its affiliates | Confidential: Highly Restricted",
+              "fontSize": 16,
+              "typeface": "Oracle Sans Tab",
+              "textTransform": "none"
+            }
+          ],
+          "marginLeft": 365125,
+          "indent": -365125
+        },
+        {
+          "index": 5,
+          "text": "Questions about confidential levels? \nVisit the “Oracle Information Protection Policy”",
+          "lineSpacingPercent": 100000,
+          "resolvedTextStyle": {
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Questions about confidential levels? ",
+              "fontSize": 16,
+              "typeface": "Oracle Sans Tab",
+              "bold": true
+            },
+            {
+              "index": 2,
+              "text": "\n",
+              "alignment": "left"
+            },
+            {
+              "index": 3,
+              "text": "Visit the “",
+              "fontSize": 16,
+              "typeface": "Oracle Sans Tab"
+            },
+            {
+              "index": 4,
+              "text": "Oracle Information Protection Policy",
+              "fontSize": 16,
+              "typeface": "Oracle Sans Tab"
+            },
+            {
+              "index": 5,
+              "text": "”",
+              "fontSize": 16,
+              "typeface": "Oracle Sans Tab"
+            }
+          ],
+          "marginLeft": 365125,
+          "indent": -365125
+        }
+      ]
+    },
+    {
+      "order": 12,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/nq1o3a5w",
+      "id": "17",
+      "name": "Delete this box",
+      "bbox": [
+        827.59,
+        0,
+        452.41,
+        44.14
+      ],
+      "geometry": "rect",
+      "text": "Note: Delete this slide when your deck is completed",
+      "textPreview": "Note: Delete this slide when your deck is completed",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "lt1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Note: Delete this slide when your deck is completed"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Note: Delete this slide when your deck is completed",
+          "resolvedTextStyle": {
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Note: Delete this slide when your deck is completed",
+              "fontSize": 16,
+              "typeface": "Oracle Sans Tab",
+              "color": "#FFFFFF",
+              "bold": true,
+              "textTransform": "none"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "fillColor": "#C74634",
+      "lineWidth": 0
+    },
+    {
+      "order": 13,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/0f2lgnmp",
+      "id": "3",
+      "name": "Slide Number Placeholder 2",
+      "bbox": [
+        80,
+        674.4,
+        38.4,
+        38.4
+      ],
+      "text": "12",
+      "textPreview": "12",
+      "resolvedFontSize": 10.67,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "vertical": 1,
+        "fontSize": 10.67,
+        "typeface": "Oracle Sans Tab",
+        "color": "#514C47",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "12"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "12",
+          "runs": [
+            {
+              "index": 1,
+              "text": "12"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 14,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ra943il8",
+      "id": "4",
+      "name": "Footer Placeholder 3",
+      "bbox": [
+        118.4,
+        674.43,
+        603.19,
+        38.33
+      ],
+      "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted",
+      "textPreview": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted",
+      "resolvedFontSize": 10.67,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "vertical": 1,
+        "fontSize": 10.67,
+        "typeface": "Oracle Sans Tab",
+        "color": "#514C47",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    }
+  ],
+  "composeRuns": []
+}

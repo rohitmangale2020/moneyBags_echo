@@ -1,0 +1,2192 @@
+{
+  "sourcePptx": "C:\\Users\\Pugazh U\\Documents\\sample ppt.pptx",
+  "workspace": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags",
+  "outDir": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect",
+  "generatedAt": "2026-08-19T09:13:44.125Z",
+  "slideCount": 142,
+  "slideArtifacts": [
+    {
+      "slide": 1,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-01.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-01.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-01.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-01.layout.json"
+    },
+    {
+      "slide": 2,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-02.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-02.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-02.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-02.layout.json"
+    },
+    {
+      "slide": 3,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-03.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-03.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-03.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-03.layout.json"
+    },
+    {
+      "slide": 4,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-04.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-04.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-04.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-04.layout.json"
+    },
+    {
+      "slide": 5,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-05.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-05.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-05.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-05.layout.json"
+    },
+    {
+      "slide": 6,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-06.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-06.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-06.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-06.layout.json"
+    },
+    {
+      "slide": 7,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-07.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-07.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-07.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-07.layout.json"
+    },
+    {
+      "slide": 8,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-08.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-08.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-08.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-08.layout.json"
+    },
+    {
+      "slide": 9,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-09.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-09.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-09.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-09.layout.json"
+    },
+    {
+      "slide": 10,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-10.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-10.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-10.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-10.layout.json"
+    },
+    {
+      "slide": 11,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-11.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-11.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-11.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-11.layout.json"
+    },
+    {
+      "slide": 12,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-12.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-12.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-12.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-12.layout.json"
+    },
+    {
+      "slide": 13,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-13.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-13.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-13.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-13.layout.json"
+    },
+    {
+      "slide": 14,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-14.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-14.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-14.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-14.layout.json"
+    },
+    {
+      "slide": 15,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-15.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-15.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-15.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-15.layout.json"
+    },
+    {
+      "slide": 16,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-16.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-16.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-16.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-16.layout.json"
+    },
+    {
+      "slide": 17,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-17.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-17.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-17.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-17.layout.json"
+    },
+    {
+      "slide": 18,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-18.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-18.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-18.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-18.layout.json"
+    },
+    {
+      "slide": 19,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-19.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-19.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-19.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-19.layout.json"
+    },
+    {
+      "slide": 20,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-20.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-20.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-20.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-20.layout.json"
+    },
+    {
+      "slide": 21,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-21.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-21.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-21.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-21.layout.json"
+    },
+    {
+      "slide": 22,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-22.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-22.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-22.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-22.layout.json"
+    },
+    {
+      "slide": 23,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-23.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-23.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-23.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-23.layout.json"
+    },
+    {
+      "slide": 24,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-24.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-24.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-24.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-24.layout.json"
+    },
+    {
+      "slide": 25,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-25.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-25.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-25.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-25.layout.json"
+    },
+    {
+      "slide": 26,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-26.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-26.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-26.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-26.layout.json"
+    },
+    {
+      "slide": 27,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-27.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-27.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-27.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-27.layout.json"
+    },
+    {
+      "slide": 28,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-28.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-28.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-28.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-28.layout.json"
+    },
+    {
+      "slide": 29,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-29.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-29.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-29.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-29.layout.json"
+    },
+    {
+      "slide": 30,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-30.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-30.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-30.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-30.layout.json"
+    },
+    {
+      "slide": 31,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-31.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-31.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-31.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-31.layout.json"
+    },
+    {
+      "slide": 32,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-32.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-32.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-32.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-32.layout.json"
+    },
+    {
+      "slide": 33,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-33.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-33.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-33.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-33.layout.json"
+    },
+    {
+      "slide": 34,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-34.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-34.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-34.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-34.layout.json"
+    },
+    {
+      "slide": 35,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-35.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-35.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-35.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-35.layout.json"
+    },
+    {
+      "slide": 36,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-36.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-36.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-36.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-36.layout.json"
+    },
+    {
+      "slide": 37,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-37.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-37.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-37.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-37.layout.json"
+    },
+    {
+      "slide": 38,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-38.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-38.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-38.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-38.layout.json"
+    },
+    {
+      "slide": 39,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-39.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-39.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-39.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-39.layout.json"
+    },
+    {
+      "slide": 40,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-40.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-40.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-40.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-40.layout.json"
+    },
+    {
+      "slide": 41,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-41.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-41.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-41.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-41.layout.json"
+    },
+    {
+      "slide": 42,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-42.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-42.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-42.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-42.layout.json"
+    },
+    {
+      "slide": 43,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-43.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-43.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-43.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-43.layout.json"
+    },
+    {
+      "slide": 44,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-44.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-44.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-44.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-44.layout.json"
+    },
+    {
+      "slide": 45,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-45.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-45.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-45.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-45.layout.json"
+    },
+    {
+      "slide": 46,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-46.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-46.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-46.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-46.layout.json"
+    },
+    {
+      "slide": 47,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-47.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-47.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-47.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-47.layout.json"
+    },
+    {
+      "slide": 48,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-48.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-48.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-48.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-48.layout.json"
+    },
+    {
+      "slide": 49,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-49.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-49.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-49.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-49.layout.json"
+    },
+    {
+      "slide": 50,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-50.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-50.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-50.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-50.layout.json"
+    },
+    {
+      "slide": 51,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-51.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-51.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-51.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-51.layout.json"
+    },
+    {
+      "slide": 52,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-52.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-52.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-52.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-52.layout.json"
+    },
+    {
+      "slide": 53,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-53.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-53.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-53.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-53.layout.json"
+    },
+    {
+      "slide": 54,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-54.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-54.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-54.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-54.layout.json"
+    },
+    {
+      "slide": 55,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-55.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-55.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-55.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-55.layout.json"
+    },
+    {
+      "slide": 56,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-56.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-56.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-56.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-56.layout.json"
+    },
+    {
+      "slide": 57,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-57.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-57.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-57.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-57.layout.json"
+    },
+    {
+      "slide": 58,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-58.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-58.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-58.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-58.layout.json"
+    },
+    {
+      "slide": 59,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-59.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-59.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-59.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-59.layout.json"
+    },
+    {
+      "slide": 60,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-60.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-60.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-60.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-60.layout.json"
+    },
+    {
+      "slide": 61,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-61.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-61.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-61.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-61.layout.json"
+    },
+    {
+      "slide": 62,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-62.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-62.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-62.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-62.layout.json"
+    },
+    {
+      "slide": 63,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-63.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-63.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-63.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-63.layout.json"
+    },
+    {
+      "slide": 64,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-64.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-64.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-64.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-64.layout.json"
+    },
+    {
+      "slide": 65,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-65.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-65.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-65.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-65.layout.json"
+    },
+    {
+      "slide": 66,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-66.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-66.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-66.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-66.layout.json"
+    },
+    {
+      "slide": 67,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-67.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-67.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-67.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-67.layout.json"
+    },
+    {
+      "slide": 68,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-68.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-68.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-68.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-68.layout.json"
+    },
+    {
+      "slide": 69,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-69.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-69.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-69.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-69.layout.json"
+    },
+    {
+      "slide": 70,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-70.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-70.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-70.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-70.layout.json"
+    },
+    {
+      "slide": 71,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-71.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-71.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-71.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-71.layout.json"
+    },
+    {
+      "slide": 72,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-72.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-72.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-72.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-72.layout.json"
+    },
+    {
+      "slide": 73,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-73.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-73.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-73.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-73.layout.json"
+    },
+    {
+      "slide": 74,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-74.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-74.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-74.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-74.layout.json"
+    },
+    {
+      "slide": 75,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-75.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-75.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-75.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-75.layout.json"
+    },
+    {
+      "slide": 76,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-76.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-76.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-76.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-76.layout.json"
+    },
+    {
+      "slide": 77,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-77.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-77.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-77.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-77.layout.json"
+    },
+    {
+      "slide": 78,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-78.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-78.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-78.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-78.layout.json"
+    },
+    {
+      "slide": 79,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-79.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-79.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-79.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-79.layout.json"
+    },
+    {
+      "slide": 80,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-80.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-80.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-80.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-80.layout.json"
+    },
+    {
+      "slide": 81,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-81.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-81.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-81.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-81.layout.json"
+    },
+    {
+      "slide": 82,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-82.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-82.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-82.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-82.layout.json"
+    },
+    {
+      "slide": 83,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-83.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-83.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-83.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-83.layout.json"
+    },
+    {
+      "slide": 84,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-84.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-84.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-84.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-84.layout.json"
+    },
+    {
+      "slide": 85,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-85.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-85.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-85.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-85.layout.json"
+    },
+    {
+      "slide": 86,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-86.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-86.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-86.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-86.layout.json"
+    },
+    {
+      "slide": 87,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-87.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-87.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-87.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-87.layout.json"
+    },
+    {
+      "slide": 88,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-88.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-88.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-88.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-88.layout.json"
+    },
+    {
+      "slide": 89,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-89.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-89.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-89.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-89.layout.json"
+    },
+    {
+      "slide": 90,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-90.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-90.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-90.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-90.layout.json"
+    },
+    {
+      "slide": 91,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-91.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-91.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-91.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-91.layout.json"
+    },
+    {
+      "slide": 92,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-92.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-92.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-92.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-92.layout.json"
+    },
+    {
+      "slide": 93,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-93.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-93.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-93.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-93.layout.json"
+    },
+    {
+      "slide": 94,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-94.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-94.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-94.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-94.layout.json"
+    },
+    {
+      "slide": 95,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-95.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-95.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-95.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-95.layout.json"
+    },
+    {
+      "slide": 96,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-96.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-96.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-96.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-96.layout.json"
+    },
+    {
+      "slide": 97,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-97.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-97.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-97.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-97.layout.json"
+    },
+    {
+      "slide": 98,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-98.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-98.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-98.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-98.layout.json"
+    },
+    {
+      "slide": 99,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-99.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-99.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-99.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-99.layout.json"
+    },
+    {
+      "slide": 100,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-100.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-100.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-100.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-100.layout.json"
+    },
+    {
+      "slide": 101,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-101.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-101.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-101.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-101.layout.json"
+    },
+    {
+      "slide": 102,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-102.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-102.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-102.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-102.layout.json"
+    },
+    {
+      "slide": 103,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-103.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-103.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-103.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-103.layout.json"
+    },
+    {
+      "slide": 104,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-104.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-104.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-104.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-104.layout.json"
+    },
+    {
+      "slide": 105,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-105.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-105.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-105.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-105.layout.json"
+    },
+    {
+      "slide": 106,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-106.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-106.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-106.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-106.layout.json"
+    },
+    {
+      "slide": 107,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-107.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-107.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-107.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-107.layout.json"
+    },
+    {
+      "slide": 108,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-108.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-108.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-108.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-108.layout.json"
+    },
+    {
+      "slide": 109,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-109.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-109.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-109.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-109.layout.json"
+    },
+    {
+      "slide": 110,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-110.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-110.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-110.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-110.layout.json"
+    },
+    {
+      "slide": 111,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-111.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-111.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-111.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-111.layout.json"
+    },
+    {
+      "slide": 112,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-112.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-112.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-112.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-112.layout.json"
+    },
+    {
+      "slide": 113,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-113.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-113.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-113.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-113.layout.json"
+    },
+    {
+      "slide": 114,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-114.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-114.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-114.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-114.layout.json"
+    },
+    {
+      "slide": 115,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-115.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-115.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-115.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-115.layout.json"
+    },
+    {
+      "slide": 116,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-116.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-116.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-116.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-116.layout.json"
+    },
+    {
+      "slide": 117,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-117.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-117.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-117.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-117.layout.json"
+    },
+    {
+      "slide": 118,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-118.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-118.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-118.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-118.layout.json"
+    },
+    {
+      "slide": 119,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-119.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-119.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-119.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-119.layout.json"
+    },
+    {
+      "slide": 120,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-120.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-120.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-120.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-120.layout.json"
+    },
+    {
+      "slide": 121,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-121.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-121.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-121.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-121.layout.json"
+    },
+    {
+      "slide": 122,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-122.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-122.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-122.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-122.layout.json"
+    },
+    {
+      "slide": 123,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-123.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-123.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-123.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-123.layout.json"
+    },
+    {
+      "slide": 124,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-124.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-124.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-124.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-124.layout.json"
+    },
+    {
+      "slide": 125,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-125.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-125.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-125.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-125.layout.json"
+    },
+    {
+      "slide": 126,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-126.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-126.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-126.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-126.layout.json"
+    },
+    {
+      "slide": 127,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-127.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-127.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-127.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-127.layout.json"
+    },
+    {
+      "slide": 128,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-128.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-128.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-128.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-128.layout.json"
+    },
+    {
+      "slide": 129,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-129.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-129.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-129.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-129.layout.json"
+    },
+    {
+      "slide": 130,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-130.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-130.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-130.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-130.layout.json"
+    },
+    {
+      "slide": 131,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-131.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-131.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-131.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-131.layout.json"
+    },
+    {
+      "slide": 132,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-132.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-132.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-132.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-132.layout.json"
+    },
+    {
+      "slide": 133,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-133.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-133.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-133.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-133.layout.json"
+    },
+    {
+      "slide": 134,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-134.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-134.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-134.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-134.layout.json"
+    },
+    {
+      "slide": 135,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-135.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-135.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-135.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-135.layout.json"
+    },
+    {
+      "slide": 136,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-136.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-136.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-136.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-136.layout.json"
+    },
+    {
+      "slide": 137,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-137.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-137.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-137.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-137.layout.json"
+    },
+    {
+      "slide": 138,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-138.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-138.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-138.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-138.layout.json"
+    },
+    {
+      "slide": 139,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-139.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-139.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-139.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-139.layout.json"
+    },
+    {
+      "slide": 140,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-140.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-140.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-140.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-140.layout.json"
+    },
+    {
+      "slide": 141,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-141.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-141.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-141.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-141.layout.json"
+    },
+    {
+      "slide": 142,
+      "previewPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\source-slides\\source-slide-142.png",
+      "previewRelativePath": "template-inspect/source-slides/source-slide-142.png",
+      "layoutPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\layouts\\source-slide-142.layout.json",
+      "layoutRelativePath": "template-inspect/layouts/source-slide-142.layout.json"
+    }
+  ],
+  "inspectPath": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\template-inspect.ndjson",
+  "inspectRelativePath": "template-inspect/template-inspect.ndjson",
+  "inspectTruncated": true,
+  "inspectMetadata": {
+    "revision": "4oaa76",
+    "target": {
+      "id": "pr/l9hyu9"
+    },
+    "kind": {
+      "requested": "slide,textbox,shape,image,table,chart",
+      "tokens": [
+        "slide",
+        "textbox",
+        "shape",
+        "image",
+        "table",
+        "chart"
+      ]
+    },
+    "include": {
+      "tokens": []
+    },
+    "exclude": {
+      "tokens": []
+    },
+    "notices": []
+  },
+  "extractedMedia": [
+    {
+      "entry": "ppt/media/image17.jpg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image17.jpg",
+      "relativePath": "template-inspect/assets/ppt/media/image17.jpg",
+      "bytes": 103460
+    },
+    {
+      "entry": "ppt/media/image163.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image163.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image163.jpeg",
+      "bytes": 47909
+    },
+    {
+      "entry": "ppt/media/image142.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image142.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image142.jpeg",
+      "bytes": 38617
+    },
+    {
+      "entry": "ppt/media/image164.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image164.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image164.jpeg",
+      "bytes": 25012
+    },
+    {
+      "entry": "ppt/media/image165.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image165.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image165.jpeg",
+      "bytes": 38338
+    },
+    {
+      "entry": "ppt/media/image166.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image166.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image166.jpeg",
+      "bytes": 46836
+    },
+    {
+      "entry": "ppt/media/image1.emf",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image1.emf",
+      "relativePath": "template-inspect/assets/ppt/media/image1.emf",
+      "bytes": 2940
+    },
+    {
+      "entry": "ppt/media/image2.jpg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image2.jpg",
+      "relativePath": "template-inspect/assets/ppt/media/image2.jpg",
+      "bytes": 126665
+    },
+    {
+      "entry": "ppt/media/image3.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image3.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image3.svg",
+      "bytes": 1814
+    },
+    {
+      "entry": "ppt/media/image4.jpg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image4.jpg",
+      "relativePath": "template-inspect/assets/ppt/media/image4.jpg",
+      "bytes": 131285
+    },
+    {
+      "entry": "ppt/media/image5.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image5.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image5.svg",
+      "bytes": 1824
+    },
+    {
+      "entry": "ppt/media/image6.jpg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image6.jpg",
+      "relativePath": "template-inspect/assets/ppt/media/image6.jpg",
+      "bytes": 107029
+    },
+    {
+      "entry": "ppt/media/image7.jpg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image7.jpg",
+      "relativePath": "template-inspect/assets/ppt/media/image7.jpg",
+      "bytes": 116220
+    },
+    {
+      "entry": "ppt/media/image8.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image8.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image8.jpeg",
+      "bytes": 64733
+    },
+    {
+      "entry": "ppt/media/image9.jpg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image9.jpg",
+      "relativePath": "template-inspect/assets/ppt/media/image9.jpg",
+      "bytes": 120092
+    },
+    {
+      "entry": "ppt/media/image10.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image10.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image10.jpeg",
+      "bytes": 54337
+    },
+    {
+      "entry": "ppt/media/image11.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image11.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image11.jpeg",
+      "bytes": 52383
+    },
+    {
+      "entry": "ppt/media/image12.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image12.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image12.jpeg",
+      "bytes": 50400
+    },
+    {
+      "entry": "ppt/media/image13.jpg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image13.jpg",
+      "relativePath": "template-inspect/assets/ppt/media/image13.jpg",
+      "bytes": 109244
+    },
+    {
+      "entry": "ppt/media/image14.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image14.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image14.jpeg",
+      "bytes": 84027
+    },
+    {
+      "entry": "ppt/media/image15.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image15.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image15.jpeg",
+      "bytes": 33233
+    },
+    {
+      "entry": "ppt/media/image16.jpg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image16.jpg",
+      "relativePath": "template-inspect/assets/ppt/media/image16.jpg",
+      "bytes": 108215
+    },
+    {
+      "entry": "ppt/media/image44.png",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image44.png",
+      "relativePath": "template-inspect/assets/ppt/media/image44.png",
+      "bytes": 51245
+    },
+    {
+      "entry": "ppt/media/image18.jpg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image18.jpg",
+      "relativePath": "template-inspect/assets/ppt/media/image18.jpg",
+      "bytes": 106781
+    },
+    {
+      "entry": "ppt/media/image19.jpg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image19.jpg",
+      "relativePath": "template-inspect/assets/ppt/media/image19.jpg",
+      "bytes": 103113
+    },
+    {
+      "entry": "ppt/media/image20.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image20.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image20.jpeg",
+      "bytes": 49103
+    },
+    {
+      "entry": "ppt/media/image21.jpg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image21.jpg",
+      "relativePath": "template-inspect/assets/ppt/media/image21.jpg",
+      "bytes": 124426
+    },
+    {
+      "entry": "ppt/media/image22.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image22.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image22.jpeg",
+      "bytes": 35258
+    },
+    {
+      "entry": "ppt/media/image23.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image23.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image23.jpeg",
+      "bytes": 29107
+    },
+    {
+      "entry": "ppt/media/image24.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image24.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image24.jpeg",
+      "bytes": 38526
+    },
+    {
+      "entry": "ppt/media/image25.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image25.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image25.jpeg",
+      "bytes": 39458
+    },
+    {
+      "entry": "ppt/media/image26.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image26.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image26.jpeg",
+      "bytes": 58805
+    },
+    {
+      "entry": "ppt/media/image27.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image27.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image27.jpeg",
+      "bytes": 37546
+    },
+    {
+      "entry": "ppt/media/image28.png",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image28.png",
+      "relativePath": "template-inspect/assets/ppt/media/image28.png",
+      "bytes": 148486
+    },
+    {
+      "entry": "ppt/media/image29.png",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image29.png",
+      "relativePath": "template-inspect/assets/ppt/media/image29.png",
+      "bytes": 149062
+    },
+    {
+      "entry": "ppt/media/image30.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image30.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image30.svg",
+      "bytes": 441478
+    },
+    {
+      "entry": "ppt/media/image31.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image31.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image31.svg",
+      "bytes": 204647
+    },
+    {
+      "entry": "ppt/media/image32.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image32.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image32.svg",
+      "bytes": 204647
+    },
+    {
+      "entry": "ppt/media/image33.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image33.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image33.svg",
+      "bytes": 470224
+    },
+    {
+      "entry": "ppt/media/image34.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image34.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image34.svg",
+      "bytes": 470224
+    },
+    {
+      "entry": "ppt/media/image35.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image35.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image35.svg",
+      "bytes": 441478
+    },
+    {
+      "entry": "ppt/media/image36.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image36.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image36.svg",
+      "bytes": 766228
+    },
+    {
+      "entry": "ppt/media/image37.png",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image37.png",
+      "relativePath": "template-inspect/assets/ppt/media/image37.png",
+      "bytes": 1910
+    },
+    {
+      "entry": "ppt/media/image38.jpg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image38.jpg",
+      "relativePath": "template-inspect/assets/ppt/media/image38.jpg",
+      "bytes": 88117
+    },
+    {
+      "entry": "ppt/media/image39.jpg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image39.jpg",
+      "relativePath": "template-inspect/assets/ppt/media/image39.jpg",
+      "bytes": 98534
+    },
+    {
+      "entry": "ppt/media/image40.jpg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image40.jpg",
+      "relativePath": "template-inspect/assets/ppt/media/image40.jpg",
+      "bytes": 95433
+    },
+    {
+      "entry": "ppt/media/image41.jpg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image41.jpg",
+      "relativePath": "template-inspect/assets/ppt/media/image41.jpg",
+      "bytes": 103279
+    },
+    {
+      "entry": "ppt/media/image42.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image42.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image42.svg",
+      "bytes": 1713
+    },
+    {
+      "entry": "ppt/media/image43.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image43.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image43.svg",
+      "bytes": 1597
+    },
+    {
+      "entry": "ppt/media/image45.png",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image45.png",
+      "relativePath": "template-inspect/assets/ppt/media/image45.png",
+      "bytes": 38589
+    },
+    {
+      "entry": "ppt/media/image46.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image46.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image46.jpeg",
+      "bytes": 4976
+    },
+    {
+      "entry": "ppt/media/image47.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image47.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image47.jpeg",
+      "bytes": 9379
+    },
+    {
+      "entry": "ppt/media/image48.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image48.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image48.jpeg",
+      "bytes": 3977
+    },
+    {
+      "entry": "ppt/media/image49.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image49.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image49.jpeg",
+      "bytes": 3970
+    },
+    {
+      "entry": "ppt/media/image50.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image50.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image50.jpeg",
+      "bytes": 3205
+    },
+    {
+      "entry": "ppt/media/image51.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image51.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image51.jpeg",
+      "bytes": 3444
+    },
+    {
+      "entry": "ppt/media/image52.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image52.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image52.jpeg",
+      "bytes": 4728
+    },
+    {
+      "entry": "ppt/media/image53.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image53.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image53.jpeg",
+      "bytes": 2571
+    },
+    {
+      "entry": "ppt/media/image54.png",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image54.png",
+      "relativePath": "template-inspect/assets/ppt/media/image54.png",
+      "bytes": 11589
+    },
+    {
+      "entry": "ppt/media/image55.png",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image55.png",
+      "relativePath": "template-inspect/assets/ppt/media/image55.png",
+      "bytes": 9386
+    },
+    {
+      "entry": "ppt/media/image56.png",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image56.png",
+      "relativePath": "template-inspect/assets/ppt/media/image56.png",
+      "bytes": 11604
+    },
+    {
+      "entry": "ppt/media/image57.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image57.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image57.jpeg",
+      "bytes": 4031
+    },
+    {
+      "entry": "ppt/media/image58.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image58.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image58.jpeg",
+      "bytes": 4132
+    },
+    {
+      "entry": "ppt/media/image59.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image59.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image59.jpeg",
+      "bytes": 4379
+    },
+    {
+      "entry": "ppt/media/image60.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image60.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image60.jpeg",
+      "bytes": 3223
+    },
+    {
+      "entry": "ppt/media/image61.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image61.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image61.jpeg",
+      "bytes": 3646
+    },
+    {
+      "entry": "ppt/media/image62.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image62.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image62.jpeg",
+      "bytes": 6981
+    },
+    {
+      "entry": "ppt/media/image63.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image63.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image63.jpeg",
+      "bytes": 4360
+    },
+    {
+      "entry": "ppt/media/image64.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image64.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image64.jpeg",
+      "bytes": 6979
+    },
+    {
+      "entry": "ppt/media/image65.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image65.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image65.jpeg",
+      "bytes": 5347
+    },
+    {
+      "entry": "ppt/media/image66.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image66.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image66.jpeg",
+      "bytes": 5383
+    },
+    {
+      "entry": "ppt/media/image67.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image67.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image67.jpeg",
+      "bytes": 4358
+    },
+    {
+      "entry": "ppt/media/image68.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image68.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image68.jpeg",
+      "bytes": 7122
+    },
+    {
+      "entry": "ppt/media/image69.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image69.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image69.jpeg",
+      "bytes": 3380
+    },
+    {
+      "entry": "ppt/media/image70.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image70.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image70.jpeg",
+      "bytes": 7122
+    },
+    {
+      "entry": "ppt/media/image71.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image71.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image71.jpeg",
+      "bytes": 5033
+    },
+    {
+      "entry": "ppt/media/image72.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image72.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image72.jpeg",
+      "bytes": 7172
+    },
+    {
+      "entry": "ppt/media/image73.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image73.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image73.jpeg",
+      "bytes": 7326
+    },
+    {
+      "entry": "ppt/media/image74.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image74.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image74.jpeg",
+      "bytes": 4298
+    },
+    {
+      "entry": "ppt/media/image75.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image75.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image75.jpeg",
+      "bytes": 5063
+    },
+    {
+      "entry": "ppt/media/image76.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image76.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image76.jpeg",
+      "bytes": 5471
+    },
+    {
+      "entry": "ppt/media/image77.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image77.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image77.jpeg",
+      "bytes": 3640
+    },
+    {
+      "entry": "ppt/media/image78.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image78.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image78.jpeg",
+      "bytes": 7223
+    },
+    {
+      "entry": "ppt/media/image79.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image79.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image79.jpeg",
+      "bytes": 4912
+    },
+    {
+      "entry": "ppt/media/image80.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image80.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image80.jpeg",
+      "bytes": 2385
+    },
+    {
+      "entry": "ppt/media/image81.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image81.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image81.jpeg",
+      "bytes": 5202
+    },
+    {
+      "entry": "ppt/media/image82.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image82.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image82.jpeg",
+      "bytes": 4345
+    },
+    {
+      "entry": "ppt/media/image83.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image83.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image83.jpeg",
+      "bytes": 3912
+    },
+    {
+      "entry": "ppt/media/image84.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image84.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image84.jpeg",
+      "bytes": 5218
+    },
+    {
+      "entry": "ppt/media/image85.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image85.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image85.jpeg",
+      "bytes": 3725
+    },
+    {
+      "entry": "ppt/media/image86.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image86.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image86.jpeg",
+      "bytes": 7399
+    },
+    {
+      "entry": "ppt/media/image87.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image87.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image87.jpeg",
+      "bytes": 4952
+    },
+    {
+      "entry": "ppt/media/image88.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image88.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image88.jpeg",
+      "bytes": 4114
+    },
+    {
+      "entry": "ppt/media/image89.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image89.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image89.jpeg",
+      "bytes": 3127
+    },
+    {
+      "entry": "ppt/media/image90.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image90.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image90.jpeg",
+      "bytes": 4386
+    },
+    {
+      "entry": "ppt/media/image91.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image91.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image91.jpeg",
+      "bytes": 5237
+    },
+    {
+      "entry": "ppt/media/image92.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image92.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image92.jpeg",
+      "bytes": 3024
+    },
+    {
+      "entry": "ppt/media/image93.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image93.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image93.jpeg",
+      "bytes": 2533
+    },
+    {
+      "entry": "ppt/media/image94.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image94.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image94.jpeg",
+      "bytes": 15537
+    },
+    {
+      "entry": "ppt/media/image95.jpg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image95.jpg",
+      "relativePath": "template-inspect/assets/ppt/media/image95.jpg",
+      "bytes": 55560
+    },
+    {
+      "entry": "ppt/media/image96.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image96.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image96.jpeg",
+      "bytes": 36586
+    },
+    {
+      "entry": "ppt/media/image97.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image97.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image97.jpeg",
+      "bytes": 37627
+    },
+    {
+      "entry": "ppt/media/image98.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image98.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image98.jpeg",
+      "bytes": 35944
+    },
+    {
+      "entry": "ppt/media/image99.jpg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image99.jpg",
+      "relativePath": "template-inspect/assets/ppt/media/image99.jpg",
+      "bytes": 208784
+    },
+    {
+      "entry": "ppt/media/image100.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image100.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image100.jpeg",
+      "bytes": 38934
+    },
+    {
+      "entry": "ppt/media/image101.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image101.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image101.jpeg",
+      "bytes": 157292
+    },
+    {
+      "entry": "ppt/media/image102.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image102.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image102.jpeg",
+      "bytes": 36025
+    },
+    {
+      "entry": "ppt/media/image103.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image103.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image103.jpeg",
+      "bytes": 22072
+    },
+    {
+      "entry": "ppt/media/image104.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image104.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image104.jpeg",
+      "bytes": 3788
+    },
+    {
+      "entry": "ppt/media/image105.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image105.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image105.jpeg",
+      "bytes": 28092
+    },
+    {
+      "entry": "ppt/media/image106.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image106.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image106.jpeg",
+      "bytes": 16099
+    },
+    {
+      "entry": "ppt/media/image107.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image107.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image107.jpeg",
+      "bytes": 8657
+    },
+    {
+      "entry": "ppt/media/image108.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image108.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image108.jpeg",
+      "bytes": 22603
+    },
+    {
+      "entry": "ppt/media/image139.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image139.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image139.svg",
+      "bytes": 4241
+    },
+    {
+      "entry": "ppt/media/image168.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image168.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image168.jpeg",
+      "bytes": 66445
+    },
+    {
+      "entry": "ppt/media/image169.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image169.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image169.jpeg",
+      "bytes": 240597
+    },
+    {
+      "entry": "ppt/media/image170.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image170.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image170.svg",
+      "bytes": 15258
+    },
+    {
+      "entry": "ppt/media/image171.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image171.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image171.jpeg",
+      "bytes": 80773
+    },
+    {
+      "entry": "ppt/media/image172.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image172.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image172.svg",
+      "bytes": 1524
+    },
+    {
+      "entry": "ppt/media/image173.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image173.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image173.svg",
+      "bytes": 5210
+    },
+    {
+      "entry": "ppt/media/image174.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image174.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image174.svg",
+      "bytes": 4263
+    },
+    {
+      "entry": "ppt/media/image175.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image175.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image175.svg",
+      "bytes": 2937
+    },
+    {
+      "entry": "ppt/media/image176.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image176.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image176.svg",
+      "bytes": 1683
+    },
+    {
+      "entry": "ppt/media/image177.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image177.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image177.svg",
+      "bytes": 4352
+    },
+    {
+      "entry": "ppt/media/image178.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image178.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image178.svg",
+      "bytes": 2685
+    },
+    {
+      "entry": "ppt/media/image179.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image179.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image179.svg",
+      "bytes": 6209
+    },
+    {
+      "entry": "ppt/media/image180.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image180.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image180.svg",
+      "bytes": 7253
+    },
+    {
+      "entry": "ppt/media/image110.jpg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image110.jpg",
+      "relativePath": "template-inspect/assets/ppt/media/image110.jpg",
+      "bytes": 719528
+    },
+    {
+      "entry": "ppt/media/image141.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image141.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image141.jpeg",
+      "bytes": 55393
+    },
+    {
+      "entry": "ppt/media/image181.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image181.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image181.svg",
+      "bytes": 2456
+    },
+    {
+      "entry": "ppt/media/image182.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image182.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image182.svg",
+      "bytes": 2912
+    },
+    {
+      "entry": "ppt/media/image183.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image183.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image183.svg",
+      "bytes": 1588
+    },
+    {
+      "entry": "ppt/media/image143.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image143.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image143.jpeg",
+      "bytes": 20152
+    },
+    {
+      "entry": "ppt/media/image184.png",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image184.png",
+      "relativePath": "template-inspect/assets/ppt/media/image184.png",
+      "bytes": 77480
+    },
+    {
+      "entry": "ppt/media/image185.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image185.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image185.svg",
+      "bytes": 15258
+    },
+    {
+      "entry": "ppt/media/image186.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image186.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image186.jpeg",
+      "bytes": 71185
+    },
+    {
+      "entry": "ppt/media/image109.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image109.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image109.jpeg",
+      "bytes": 10884
+    },
+    {
+      "entry": "ppt/media/image187.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image187.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image187.svg",
+      "bytes": 13170
+    },
+    {
+      "entry": "ppt/media/image188.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image188.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image188.svg",
+      "bytes": 13170
+    },
+    {
+      "entry": "ppt/media/image189.png",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image189.png",
+      "relativePath": "template-inspect/assets/ppt/media/image189.png",
+      "bytes": 234466
+    },
+    {
+      "entry": "ppt/media/image144.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image144.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image144.jpeg",
+      "bytes": 30661
+    },
+    {
+      "entry": "ppt/media/image140.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image140.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image140.svg",
+      "bytes": 3773
+    },
+    {
+      "entry": "ppt/media/image145.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image145.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image145.jpeg",
+      "bytes": 37442
+    },
+    {
+      "entry": "ppt/media/image136.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image136.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image136.jpeg",
+      "bytes": 175182
+    },
+    {
+      "entry": "ppt/media/image146.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image146.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image146.jpeg",
+      "bytes": 31363
+    },
+    {
+      "entry": "ppt/media/image111.png",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image111.png",
+      "relativePath": "template-inspect/assets/ppt/media/image111.png",
+      "bytes": 198696
+    },
+    {
+      "entry": "ppt/media/image112.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image112.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image112.svg",
+      "bytes": 1764
+    },
+    {
+      "entry": "ppt/media/image113.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image113.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image113.svg",
+      "bytes": 1962
+    },
+    {
+      "entry": "ppt/media/image114.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image114.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image114.svg",
+      "bytes": 1116
+    },
+    {
+      "entry": "ppt/media/image115.png",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image115.png",
+      "relativePath": "template-inspect/assets/ppt/media/image115.png",
+      "bytes": 144557
+    },
+    {
+      "entry": "ppt/media/image116.png",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image116.png",
+      "relativePath": "template-inspect/assets/ppt/media/image116.png",
+      "bytes": 143893
+    },
+    {
+      "entry": "ppt/media/image117.png",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image117.png",
+      "relativePath": "template-inspect/assets/ppt/media/image117.png",
+      "bytes": 84841
+    },
+    {
+      "entry": "ppt/media/image118.png",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image118.png",
+      "relativePath": "template-inspect/assets/ppt/media/image118.png",
+      "bytes": 84258
+    },
+    {
+      "entry": "ppt/media/image119.png",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image119.png",
+      "relativePath": "template-inspect/assets/ppt/media/image119.png",
+      "bytes": 76417
+    },
+    {
+      "entry": "ppt/media/image120.png",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image120.png",
+      "relativePath": "template-inspect/assets/ppt/media/image120.png",
+      "bytes": 52497
+    },
+    {
+      "entry": "ppt/media/image121.png",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image121.png",
+      "relativePath": "template-inspect/assets/ppt/media/image121.png",
+      "bytes": 51590
+    },
+    {
+      "entry": "ppt/media/image122.png",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image122.png",
+      "relativePath": "template-inspect/assets/ppt/media/image122.png",
+      "bytes": 48478
+    },
+    {
+      "entry": "ppt/media/image123.png",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image123.png",
+      "relativePath": "template-inspect/assets/ppt/media/image123.png",
+      "bytes": 49111
+    },
+    {
+      "entry": "ppt/media/image124.png",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image124.png",
+      "relativePath": "template-inspect/assets/ppt/media/image124.png",
+      "bytes": 41718
+    },
+    {
+      "entry": "ppt/media/image125.png",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image125.png",
+      "relativePath": "template-inspect/assets/ppt/media/image125.png",
+      "bytes": 39683
+    },
+    {
+      "entry": "ppt/media/image126.png",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image126.png",
+      "relativePath": "template-inspect/assets/ppt/media/image126.png",
+      "bytes": 41544
+    },
+    {
+      "entry": "ppt/media/image127.png",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image127.png",
+      "relativePath": "template-inspect/assets/ppt/media/image127.png",
+      "bytes": 39210
+    },
+    {
+      "entry": "ppt/media/image128.png",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image128.png",
+      "relativePath": "template-inspect/assets/ppt/media/image128.png",
+      "bytes": 28266
+    },
+    {
+      "entry": "ppt/media/image129.png",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image129.png",
+      "relativePath": "template-inspect/assets/ppt/media/image129.png",
+      "bytes": 27862
+    },
+    {
+      "entry": "ppt/media/image130.png",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image130.png",
+      "relativePath": "template-inspect/assets/ppt/media/image130.png",
+      "bytes": 26683
+    },
+    {
+      "entry": "ppt/media/image131.png",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image131.png",
+      "relativePath": "template-inspect/assets/ppt/media/image131.png",
+      "bytes": 26938
+    },
+    {
+      "entry": "ppt/media/image132.png",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image132.png",
+      "relativePath": "template-inspect/assets/ppt/media/image132.png",
+      "bytes": 561859
+    },
+    {
+      "entry": "ppt/media/image147.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image147.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image147.jpeg",
+      "bytes": 49690
+    },
+    {
+      "entry": "ppt/media/image133.png",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image133.png",
+      "relativePath": "template-inspect/assets/ppt/media/image133.png",
+      "bytes": 731096
+    },
+    {
+      "entry": "ppt/media/image134.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image134.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image134.jpeg",
+      "bytes": 81621
+    },
+    {
+      "entry": "ppt/media/image135.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image135.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image135.jpeg",
+      "bytes": 102342
+    },
+    {
+      "entry": "ppt/media/image167.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image167.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image167.jpeg",
+      "bytes": 39383
+    },
+    {
+      "entry": "ppt/media/image137.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image137.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image137.svg",
+      "bytes": 3909
+    },
+    {
+      "entry": "ppt/media/image138.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image138.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image138.svg",
+      "bytes": 2501
+    },
+    {
+      "entry": "ppt/media/image148.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image148.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image148.svg",
+      "bytes": 1524
+    },
+    {
+      "entry": "ppt/media/image149.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image149.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image149.svg",
+      "bytes": 5210
+    },
+    {
+      "entry": "ppt/media/image150.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image150.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image150.svg",
+      "bytes": 4263
+    },
+    {
+      "entry": "ppt/media/image151.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image151.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image151.svg",
+      "bytes": 2937
+    },
+    {
+      "entry": "ppt/media/image152.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image152.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image152.svg",
+      "bytes": 1683
+    },
+    {
+      "entry": "ppt/media/image153.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image153.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image153.svg",
+      "bytes": 4352
+    },
+    {
+      "entry": "ppt/media/image154.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image154.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image154.svg",
+      "bytes": 2685
+    },
+    {
+      "entry": "ppt/media/image155.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image155.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image155.svg",
+      "bytes": 6209
+    },
+    {
+      "entry": "ppt/media/image156.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image156.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image156.svg",
+      "bytes": 7205
+    },
+    {
+      "entry": "ppt/media/image157.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image157.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image157.jpeg",
+      "bytes": 110192
+    },
+    {
+      "entry": "ppt/media/image158.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image158.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image158.jpeg",
+      "bytes": 138862
+    },
+    {
+      "entry": "ppt/media/image159.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image159.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image159.svg",
+      "bytes": 4140
+    },
+    {
+      "entry": "ppt/media/image160.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image160.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image160.svg",
+      "bytes": 2732
+    },
+    {
+      "entry": "ppt/media/image161.svg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image161.svg",
+      "relativePath": "template-inspect/assets/ppt/media/image161.svg",
+      "bytes": 4472
+    },
+    {
+      "entry": "ppt/media/image162.jpeg",
+      "path": "C:\\Users\\Pugazh U\\IdeaProjects\\moneyBags_echo\\.tmp_ppt_moneybags\\template-inspect\\assets\\ppt\\media\\image162.jpeg",
+      "relativePath": "template-inspect/assets/ppt/media/image162.jpeg",
+      "bytes": 69571
+    }
+  ],
+  "fonts": [
+    "+mj-cs",
+    "+mj-ea",
+    "+mj-lt",
+    "+mn-cs",
+    "+mn-ea",
+    "+mn-lt",
+    "Arial",
+    "Georgia",
+    "Lato Light",
+    "League Spartan",
+    "Oracle Sans",
+    "Oracle Sans Bold",
+    "Oracle Sans Light",
+    "Oracle Sans Tab",
+    "Oracle Sans Tab Extra Bold",
+    "Oracle Sans Tab Light",
+    "Oracle Sans Tab Semi Bold",
+    "System Font Regular"
+  ],
+  "packageParts": {
+    "mediaCount": 189,
+    "slideXmlCount": 142,
+    "chartCount": 4,
+    "tableSlideCount": 8
+  }
+}

@@ -1,0 +1,2010 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/14bup87q",
+    "id": "14bup87q",
+    "slide": 17,
+    "layoutId": "/ppt/slideLayouts/slideLayout63.xml",
+    "layoutName": "Light - Title/Subtitle",
+    "masterLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "theme": {
+    "colorSchemeName": "Custom 151",
+    "colors": {
+      "accent1": "#04536F",
+      "accent2": "#6C3F49",
+      "accent3": "#C74634",
+      "accent4": "#F0CC71",
+      "accent5": "#89B2B0",
+      "accent6": "#86B596",
+      "dk1": "#2A2F2F",
+      "lt1": "#FFFFFF",
+      "dk2": "#2A2F2F",
+      "lt2": "#FBF9F8",
+      "hlink": "#00688C",
+      "folHlink": "#F0CC71"
+    },
+    "fontScheme": {
+      "name": "Oracle Pillars",
+      "majorFont": {
+        "latinTypeface": "Georgia"
+      },
+      "minorFont": {
+        "latinTypeface": "Oracle Sans Tab"
+      }
+    },
+    "typefaces": [
+      "Georgia",
+      "Oracle Sans Tab"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "/ppt/slideLayouts/slideLayout63.xml",
+      "name": "Light - Title/Subtitle",
+      "parentLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+      "elements": [
+        {
+          "order": 1,
+          "kind": "shape",
+          "scope": "layout",
+          "aid": "template/layout//ppt/slideLayouts/slideLayout63.xml/4",
+          "id": "4",
+          "name": "Title 3",
+          "bbox": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "text": "Title",
+          "textPreview": "Title",
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "Title",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Title"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "kind": "shape",
+          "scope": "layout",
+          "aid": "template/layout//ppt/slideLayouts/slideLayout63.xml/3",
+          "id": "3",
+          "name": "Subtitle",
+          "bbox": [
+            80.5,
+            106.03,
+            1120.32,
+            34.7
+          ],
+          "geometry": "rect",
+          "text": "Subtitle",
+          "textPreview": "Subtitle",
+          "resolvedTextStyle": {
+            "autoFit": "none",
+            "insets": {
+              "left": 0
+            }
+          },
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "Subtitle",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Subtitle"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 3,
+          "kind": "shape",
+          "scope": "layout",
+          "aid": "template/layout//ppt/slideLayouts/slideLayout63.xml/2",
+          "id": "2",
+          "name": "Date Placeholder 1",
+          "bbox": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "text": "[Date]",
+          "textPreview": "[Date]",
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "[Date]",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "[Date]"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 4,
+          "kind": "shape",
+          "scope": "layout",
+          "aid": "template/layout//ppt/slideLayouts/slideLayout63.xml/7",
+          "id": "7",
+          "name": "Footer Placeholder 6",
+          "bbox": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted",
+          "textPreview": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted",
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 5,
+          "kind": "shape",
+          "scope": "layout",
+          "aid": "template/layout//ppt/slideLayouts/slideLayout63.xml/8",
+          "id": "8",
+          "name": "Slide Number Placeholder 7",
+          "bbox": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "text": "‹#›",
+          "textPreview": "‹#›",
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "‹#›",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "‹#›"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "scope": "master",
+      "id": "/ppt/slideMasters/slideMaster1.xml",
+      "type": "master",
+      "backgroundColor": "bg2",
+      "elements": [
+        {
+          "order": 1,
+          "kind": "shape",
+          "scope": "master",
+          "aid": "template/master//ppt/slideMasters/slideMaster1.xml/2",
+          "id": "2",
+          "name": "Title",
+          "bbox": [
+            80.72,
+            19.15,
+            1120.32,
+            86.4
+          ],
+          "geometry": "rect",
+          "text": "Title",
+          "textPreview": "Title",
+          "resolvedTextStyle": {
+            "anchor": 3,
+            "vertical": 1,
+            "verticalAlignment": "bottom",
+            "autoFit": "none",
+            "insets": {
+              "top": 0,
+              "right": 0,
+              "bottom": 0,
+              "left": 0
+            }
+          },
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "Title",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Title"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "kind": "shape",
+          "scope": "master",
+          "aid": "template/master//ppt/slideMasters/slideMaster1.xml/4",
+          "id": "4",
+          "name": "Text Field",
+          "bbox": [
+            80.72,
+            168,
+            1120.32,
+            474
+          ],
+          "geometry": "rect",
+          "text": "Click to edit Master text styles\nSecond level\nThird level\nFourth level\nFifth level",
+          "textPreview": "Click to edit Master text styles | Second level | Third level | Fourth level | Fifth level",
+          "resolvedTextStyle": {
+            "vertical": 1,
+            "autoFit": "none",
+            "insets": {
+              "top": 0,
+              "right": 0,
+              "bottom": 0,
+              "left": 0
+            }
+          },
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "Click to edit Master text styles",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Click to edit Master text styles"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "text": "Second level",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Second level"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "text": "Third level",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Third level"
+                }
+              ]
+            },
+            {
+              "index": 4,
+              "text": "Fourth level",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Fourth level"
+                }
+              ]
+            },
+            {
+              "index": 5,
+              "text": "Fifth level",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Fifth level"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 3,
+          "kind": "shape",
+          "scope": "master",
+          "aid": "template/master//ppt/slideMasters/slideMaster1.xml/17",
+          "id": "17",
+          "name": "Slide Number",
+          "bbox": [
+            80,
+            674.4,
+            38.4,
+            38.4
+          ],
+          "geometry": "rect",
+          "text": "‹#›",
+          "textPreview": "‹#›",
+          "resolvedTextStyle": {
+            "anchor": 2,
+            "vertical": 1,
+            "verticalAlignment": "middle",
+            "insets": {
+              "top": 0,
+              "right": 0,
+              "bottom": 0,
+              "left": 0
+            }
+          },
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "‹#›",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "‹#›"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 4,
+          "kind": "shape",
+          "scope": "master",
+          "aid": "template/master//ppt/slideMasters/slideMaster1.xml/18",
+          "id": "18",
+          "name": "Footer",
+          "bbox": [
+            118.4,
+            674.43,
+            921.6,
+            38.33
+          ],
+          "geometry": "rect",
+          "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted",
+          "textPreview": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted",
+          "resolvedTextStyle": {
+            "anchor": 2,
+            "vertical": 1,
+            "verticalAlignment": "middle",
+            "insets": {
+              "top": 0,
+              "right": 0,
+              "bottom": 0,
+              "left": 0
+            }
+          },
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 5,
+          "kind": "shape",
+          "scope": "master",
+          "aid": "template/master//ppt/slideMasters/slideMaster1.xml/20",
+          "id": "20",
+          "name": "Date",
+          "bbox": [
+            1051.19,
+            674.6,
+            138.14,
+            38.16
+          ],
+          "geometry": "rect",
+          "text": "[Date]",
+          "textPreview": "[Date]",
+          "resolvedTextStyle": {
+            "anchor": 2,
+            "vertical": 1,
+            "verticalAlignment": "middle",
+            "insets": {
+              "top": 0,
+              "right": 0,
+              "bottom": 0,
+              "left": 0
+            }
+          },
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "[Date]",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "[Date]"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 6,
+          "kind": "image",
+          "scope": "master",
+          "aid": "template/master//ppt/slideMasters/slideMaster1.xml/21",
+          "id": "21",
+          "name": "OTag",
+          "bbox": [
+            1197.44,
+            678.72,
+            41.28,
+            41.28
+          ],
+          "contentType": "image/x-emf",
+          "asset": {
+            "assetId": "/ppt/media/image1.emf",
+            "contentType": "image/x-emf",
+            "byteLength": 2940
+          },
+          "fillImage": {
+            "assetId": "/ppt/media/image1.emf",
+            "contentType": "image/x-emf",
+            "byteLength": 2940
+          }
+        }
+      ]
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/1c7e50ni",
+      "id": "2",
+      "name": "Title 1",
+      "bbox": [
+        80.72,
+        19.15,
+        1120.32,
+        86.4
+      ],
+      "text": "General do’s and don’t",
+      "textPreview": "General do’s and don’t",
+      "resolvedFontSize": 32,
+      "resolvedTextStyle": {
+        "anchor": 3,
+        "vertical": 1,
+        "fontSize": 32,
+        "typeface": "Oracle Sans Tab",
+        "color": "tx1",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "bottom",
+        "autoFit": "none",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "General do’s and don’t"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "General do’s and don’t",
+          "runs": [
+            {
+              "index": 1,
+              "text": "General do’s and don’t"
+            }
+          ],
+          "bulletCharacter": "",
+          "lineSpacingPercent": 100000
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/pc7qhwn6",
+      "id": "11",
+      "name": "Text Placeholder 10",
+      "bbox": [
+        80.5,
+        106.03,
+        1120.32,
+        34.7
+      ],
+      "text": "View our full photography guidelines here and out AI image/video guidelines here",
+      "textPreview": "View our full photography guidelines here and out AI image/video guidelines here",
+      "resolvedFontSize": 26.67,
+      "resolvedTextStyle": {
+        "vertical": 1,
+        "fontSize": 26.67,
+        "typeface": "Oracle Sans Tab",
+        "color": "tx1",
+        "alignment": "left",
+        "autoFit": "none",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "View our full photography guidelines here and out AI image/video guidelines here"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "View our full photography guidelines here and out AI image/video guidelines here",
+          "runs": [
+            {
+              "index": 1,
+              "text": "View our full photography guidelines "
+            },
+            {
+              "index": 2,
+              "text": "here",
+              "color": "#04536F"
+            },
+            {
+              "index": 3,
+              "text": " ",
+              "color": "#04536F"
+            },
+            {
+              "index": 4,
+              "text": "and out "
+            },
+            {
+              "index": 5,
+              "text": "AI image/video guidelines here",
+              "color": "#04536F"
+            }
+          ],
+          "bulletCharacter": "",
+          "marginLeft": 0,
+          "indent": 0,
+          "lineSpacingPercent": 100000
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/rm5czq50",
+      "id": "4",
+      "name": "Footer Placeholder 3",
+      "bbox": [
+        118.4,
+        674.43,
+        921.6,
+        38.33
+      ],
+      "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted",
+      "textPreview": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted",
+      "resolvedFontSize": 10.67,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "vertical": 1,
+        "fontSize": 10.67,
+        "typeface": "Oracle Sans Tab",
+        "color": "#514C47",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Copyright © 2026, Oracle and/or its affiliates |  Confidential: Internal/Restricted/Highly Restricted"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 4,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/gbedwfmx",
+      "id": "3",
+      "name": "Slide Number Placeholder 2",
+      "bbox": [
+        80,
+        674.4,
+        38.4,
+        38.4
+      ],
+      "text": "17",
+      "textPreview": "17",
+      "resolvedFontSize": 10.67,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "vertical": 1,
+        "fontSize": 10.67,
+        "typeface": "Oracle Sans Tab",
+        "color": "#514C47",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "17"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "17",
+          "runs": [
+            {
+              "index": 1,
+              "text": "17"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 5,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/t8ne10n6",
+      "id": "6",
+      "name": "Rectangle 5",
+      "bbox": [
+        374.75,
+        292.65,
+        249.6,
+        76.8
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "text": "Do use photography that reflect the world we live in",
+      "textPreview": "Do use photography that reflect the world we live in",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "lt1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Do use photography that"
+          },
+          {
+            "index": 2,
+            "text": "reflect the world we live in"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Do use photography that reflect the world we live in",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Do",
+              "fontSize": 21.33,
+              "typeface": "Oracle Sans Tab",
+              "color": "#3F6B4B",
+              "bold": true
+            },
+            {
+              "index": 2,
+              "text": " ",
+              "fontSize": 21.33,
+              "typeface": "Oracle Sans Tab",
+              "color": "tx1",
+              "bold": true
+            },
+            {
+              "index": 3,
+              "text": "use photography that reflect the world we live in",
+              "fontSize": 21.33,
+              "typeface": "Oracle Sans Tab",
+              "color": "tx1"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 6,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/9sru1s3u",
+      "id": "49",
+      "name": "Picture 57",
+      "bbox": [
+        374.73,
+        409.37,
+        249.6,
+        140.4
+      ],
+      "rotation": 0,
+      "contentType": "image/jpeg",
+      "imageCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "asset": {
+        "assetId": "/ppt/media/image102.jpeg",
+        "contentType": "image/jpeg",
+        "byteLength": 36025
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image102.jpeg",
+        "contentType": "image/jpeg",
+        "byteLength": 36025
+      }
+    },
+    {
+      "order": 7,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ny5876xc",
+      "id": "22",
+      "name": "Rectangle 21",
+      "bbox": [
+        374.75,
+        547.28,
+        249.6,
+        76.8
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "text": "Don’t use photography with superimposed graphics or fictional UX",
+      "textPreview": "Don’t use photography with superimposed graphics or fictional UX",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "lt1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 3,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Don’t use photography"
+          },
+          {
+            "index": 2,
+            "text": "with superimposed"
+          },
+          {
+            "index": 3,
+            "text": "graphics or fictional UX"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Don’t use photography with superimposed graphics or fictional UX",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Don’t ",
+              "fontSize": 21.33,
+              "typeface": "Oracle Sans Tab",
+              "color": "#C74634",
+              "bold": true
+            },
+            {
+              "index": 2,
+              "text": "use photography with superimposed graphics or fictional UX",
+              "fontSize": 21.33,
+              "typeface": "Oracle Sans Tab",
+              "color": "tx1"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 8,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/lwnq5gf6",
+      "id": "24",
+      "name": "Straight Connector 23",
+      "bbox": [
+        374.75,
+        408.91,
+        249.59,
+        137.02
+      ],
+      "rotation": 0,
+      "verticalFlip": true,
+      "geometry": "line",
+      "lineColor": "#C74634",
+      "lineWidth": 1.33
+    },
+    {
+      "order": 9,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/bih8nu98",
+      "id": "50",
+      "name": "Picture 55",
+      "bbox": [
+        374.73,
+        149.82,
+        249.63,
+        140.41
+      ],
+      "rotation": 0,
+      "contentType": "image/jpeg",
+      "imageCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "asset": {
+        "assetId": "/ppt/media/image103.jpeg",
+        "contentType": "image/jpeg",
+        "byteLength": 22072
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image103.jpeg",
+        "contentType": "image/jpeg",
+        "byteLength": 22072
+      }
+    },
+    {
+      "order": 10,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/6lwvql4v",
+      "id": "5",
+      "name": "Rectangle 4",
+      "bbox": [
+        79,
+        292.97,
+        249.6,
+        76.8
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "text": "Do use licensed images from approved sources",
+      "textPreview": "Do use licensed images from approved sources",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "lt1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Do use licensed images"
+          },
+          {
+            "index": 2,
+            "text": "from approved sources"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Do use licensed images from approved sources",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Do",
+              "fontSize": 21.33,
+              "typeface": "Oracle Sans Tab",
+              "color": "#3F6B4B",
+              "bold": true
+            },
+            {
+              "index": 2,
+              "text": " ",
+              "fontSize": 21.33,
+              "typeface": "Oracle Sans Tab",
+              "color": "tx1",
+              "bold": true
+            },
+            {
+              "index": 3,
+              "text": "use licensed images from approved sources",
+              "fontSize": 21.33,
+              "typeface": "Oracle Sans Tab",
+              "color": "tx1"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 11,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/ah87upsn",
+      "id": "51",
+      "name": "Picture 6",
+      "bbox": [
+        79,
+        149.87,
+        249.6,
+        140.4
+      ],
+      "rotation": 0,
+      "contentType": "image/jpeg",
+      "asset": {
+        "assetId": "/ppt/media/image104.jpeg",
+        "contentType": "image/jpeg",
+        "byteLength": 3788
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image104.jpeg",
+        "contentType": "image/jpeg",
+        "byteLength": 3788
+      }
+    },
+    {
+      "order": 12,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/xkjqpkre",
+      "id": "52",
+      "name": "Picture 18",
+      "bbox": [
+        78.99,
+        149.87,
+        249.6,
+        140.4
+      ],
+      "rotation": 0,
+      "contentType": "image/jpeg",
+      "imageCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "asset": {
+        "assetId": "/ppt/media/image105.jpeg",
+        "contentType": "image/jpeg",
+        "byteLength": 28092
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image105.jpeg",
+        "contentType": "image/jpeg",
+        "byteLength": 28092
+      }
+    },
+    {
+      "order": 13,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ytc7a1gv",
+      "id": "27",
+      "name": "Rectangle 26",
+      "bbox": [
+        78.99,
+        409.51,
+        249.6,
+        140.42
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "lt1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": ""
+          }
+        ]
+      },
+      "fillColor": "#F1EFED",
+      "lineColor": "tx1",
+      "lineWidth": 1.33
+    },
+    {
+      "order": 14,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/jilcvq54",
+      "id": "8",
+      "name": "Rectangle 7",
+      "bbox": [
+        79,
+        550.36,
+        261.27,
+        76.8
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "text": "Don’t use images without verifying licensing or permissions",
+      "textPreview": "Don’t use images without verifying licensing or permissions",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "lt1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 3,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Don’t use images without"
+          },
+          {
+            "index": 2,
+            "text": "verifying licensing or"
+          },
+          {
+            "index": 3,
+            "text": "permissions"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Don’t use images without verifying licensing or permissions",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Don’t",
+              "fontSize": 21.33,
+              "typeface": "Oracle Sans Tab",
+              "color": "#C74634",
+              "bold": true
+            },
+            {
+              "index": 2,
+              "text": " ",
+              "fontSize": 21.33,
+              "typeface": "Oracle Sans Tab",
+              "color": "tx1",
+              "bold": true
+            },
+            {
+              "index": 3,
+              "text": "use images without verifying licensing or permissions",
+              "fontSize": 21.33,
+              "typeface": "Oracle Sans Tab",
+              "color": "tx1"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 15,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/3e1ob2d8",
+      "id": "31",
+      "name": "Round Same Side Corner Rectangle 30",
+      "bbox": [
+        229.79,
+        403.08,
+        37.35,
+        160.25
+      ],
+      "rotation": 270,
+      "geometry": "round2SameRect",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "lt1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": ""
+          }
+        ]
+      },
+      "fillColor": "#53575F",
+      "lineWidth": 0
+    },
+    {
+      "order": 16,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/oza547ed",
+      "id": "32",
+      "name": "TextBox 31",
+      "bbox": [
+        180.47,
+        469.1,
+        142,
+        27.47
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "text": "Images for tech",
+      "textPreview": "Images for tech",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "tx1",
+        "alignment": "left",
+        "wrap": "square",
+        "autoFit": "resizeShapeToFitText",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Images for tech"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Images for tech",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Images for tech",
+              "fontSize": 14.67,
+              "color": "bg1"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 17,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/p0j6dcvy",
+      "id": "33",
+      "name": "Rectangle 32",
+      "bbox": [
+        78.98,
+        469.07,
+        105.33,
+        27.33
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "text": "Generic Search",
+      "textPreview": "Generic Search",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "lt1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Generic"
+          },
+          {
+            "index": 2,
+            "text": "Search"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Generic Search",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Generic Search",
+              "fontSize": 14.67,
+              "color": "#000000",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 18,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/8ze9gbyx",
+      "id": "21",
+      "name": "Straight Connector 20",
+      "bbox": [
+        79,
+        409.53,
+        249.6,
+        140.42
+      ],
+      "rotation": 0,
+      "verticalFlip": true,
+      "geometry": "line",
+      "lineColor": "#C74634",
+      "lineWidth": 1.33
+    },
+    {
+      "order": 19,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/wjqpwzat",
+      "id": "53",
+      "name": "Picture 38",
+      "bbox": [
+        667.73,
+        406.95,
+        250.97,
+        141.17
+      ],
+      "rotation": 0,
+      "contentType": "image/jpeg",
+      "imageCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "asset": {
+        "assetId": "/ppt/media/image106.jpeg",
+        "contentType": "image/jpeg",
+        "byteLength": 16099
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image106.jpeg",
+        "contentType": "image/jpeg",
+        "byteLength": 16099
+      }
+    },
+    {
+      "order": 20,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/fah47idw",
+      "id": "35",
+      "name": "Rectangle 34",
+      "bbox": [
+        667.74,
+        293.12,
+        260.96,
+        76.8
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "text": "Do use approved AI tools for creating images based on guidelines ",
+      "textPreview": "Do use approved AI tools for creating images based on guidelines",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "lt1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 3,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Do use approved AI tools"
+          },
+          {
+            "index": 2,
+            "text": "for creating images based"
+          },
+          {
+            "index": 3,
+            "text": "on guidelines"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Do use approved AI tools for creating images based on guidelines ",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Do",
+              "fontSize": 21.33,
+              "typeface": "Oracle Sans Tab",
+              "color": "#3F6B4B",
+              "bold": true
+            },
+            {
+              "index": 2,
+              "text": " ",
+              "fontSize": 21.33,
+              "typeface": "Oracle Sans Tab",
+              "color": "accent6",
+              "bold": true
+            },
+            {
+              "index": 3,
+              "text": "use ",
+              "fontSize": 21.33,
+              "typeface": "Oracle Sans Tab",
+              "color": "tx1"
+            },
+            {
+              "index": 4,
+              "text": "approved AI tools",
+              "fontSize": 21.33,
+              "typeface": "Oracle Sans Tab",
+              "color": "#04536F"
+            },
+            {
+              "index": 5,
+              "text": " ",
+              "fontSize": 21.33,
+              "typeface": "Oracle Sans Tab",
+              "color": "#F0CC72"
+            },
+            {
+              "index": 6,
+              "text": "for creating images based on guidelines ",
+              "fontSize": 21.33,
+              "typeface": "Oracle Sans Tab",
+              "color": "tx1"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 21,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/jy1kfehg",
+      "id": "40",
+      "name": "Rectangle 39",
+      "bbox": [
+        667.74,
+        548.27,
+        270.61,
+        96
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "text": "Don’t generate \noff-brand photography \n(Example: Don’t generate an obviously staged scenario) ",
+      "textPreview": "Don’t generate  | off-brand photography  | (Example: Don’t generate an obviously staged scenario)",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "lt1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 4,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Don’t generate"
+          },
+          {
+            "index": 2,
+            "text": "off-brand photography"
+          },
+          {
+            "index": 3,
+            "text": "(Example: Don’t generate an obviously"
+          },
+          {
+            "index": 4,
+            "text": "staged scenario)"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Don’t generate \noff-brand photography \n(Example: Don’t generate an obviously staged scenario) ",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Don’t",
+              "fontSize": 21.33,
+              "typeface": "Oracle Sans Tab",
+              "color": "#C74634",
+              "bold": true
+            },
+            {
+              "index": 2,
+              "text": " ",
+              "fontSize": 21.33,
+              "typeface": "Oracle Sans Tab",
+              "color": "tx1",
+              "bold": true
+            },
+            {
+              "index": 3,
+              "text": "generate ",
+              "fontSize": 21.33,
+              "typeface": "Oracle Sans Tab",
+              "color": "tx1"
+            },
+            {
+              "index": 4,
+              "text": "\n"
+            },
+            {
+              "index": 5,
+              "text": "off-brand photography ",
+              "fontSize": 21.33,
+              "typeface": "Oracle Sans Tab",
+              "color": "tx1"
+            },
+            {
+              "index": 6,
+              "text": "\n"
+            },
+            {
+              "index": 7,
+              "text": "(Example: Don’t generate an obviously staged scenario) ",
+              "fontSize": 16,
+              "typeface": "Oracle Sans Tab",
+              "color": "tx1",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 22,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/n6h07uh8",
+      "id": "48",
+      "name": "Straight Connector 47",
+      "bbox": [
+        667.74,
+        406.99,
+        249.6,
+        140.42
+      ],
+      "rotation": 0,
+      "verticalFlip": true,
+      "geometry": "line",
+      "lineColor": "#C74634",
+      "lineWidth": 1.33
+    },
+    {
+      "order": 23,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/nuh8ja9c",
+      "id": "54",
+      "name": "Picture 37",
+      "bbox": [
+        667.73,
+        149.01,
+        252.64,
+        142.11
+      ],
+      "rotation": 0,
+      "contentType": "image/jpeg",
+      "imageCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "asset": {
+        "assetId": "/ppt/media/image107.jpeg",
+        "contentType": "image/jpeg",
+        "byteLength": 8657
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image107.jpeg",
+        "contentType": "image/jpeg",
+        "byteLength": 8657
+      }
+    },
+    {
+      "order": 24,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/mt87q5sr",
+      "id": "55",
+      "name": "Picture 12",
+      "bbox": [
+        962.09,
+        408.91,
+        249.6,
+        140.4
+      ],
+      "contentType": "image/jpeg",
+      "imageCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "asset": {
+        "assetId": "/ppt/media/image108.jpeg",
+        "contentType": "image/jpeg",
+        "byteLength": 22603
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image108.jpeg",
+        "contentType": "image/jpeg",
+        "byteLength": 22603
+      }
+    },
+    {
+      "order": 25,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/gnepkr69",
+      "id": "14",
+      "name": "Rectangle 13",
+      "bbox": [
+        962.12,
+        289.79,
+        308.68,
+        109.38
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "text": "Do create on-brand\ngraphics that follow \nour style guide",
+      "textPreview": "Do create on-brand | graphics that follow  | our style guide",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "lt1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 3,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Do create on-brand"
+          },
+          {
+            "index": 2,
+            "text": "graphics that follow"
+          },
+          {
+            "index": 3,
+            "text": "our style guide"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Do create on-brand\ngraphics that follow \nour style guide",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Do",
+              "fontSize": 21.33,
+              "color": "#3F6B4B",
+              "bold": true
+            },
+            {
+              "index": 2,
+              "text": " create on-brand",
+              "fontSize": 21.33,
+              "color": "tx1"
+            },
+            {
+              "index": 3,
+              "text": "\n"
+            },
+            {
+              "index": 4,
+              "text": "graphics that follow ",
+              "fontSize": 21.33,
+              "color": "tx1"
+            },
+            {
+              "index": 5,
+              "text": "\n"
+            },
+            {
+              "index": 6,
+              "text": "our ",
+              "fontSize": 21.33,
+              "color": "tx1"
+            },
+            {
+              "index": 7,
+              "text": "style guide",
+              "fontSize": 21.33,
+              "color": "#00688C"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 26,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/90nq9gfi",
+      "id": "20",
+      "name": "Rectangle 19",
+      "bbox": [
+        962.1,
+        550.22,
+        249.6,
+        76.8
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "text": "Don’t create off-brand graphics using AI",
+      "textPreview": "Don’t create off-brand graphics using AI",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Oracle Sans Tab",
+        "color": "lt1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Don’t create off-brand"
+          },
+          {
+            "index": 2,
+            "text": "graphics using AI"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Don’t create off-brand graphics using AI",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Don’t",
+              "fontSize": 21.33,
+              "typeface": "Oracle Sans Tab",
+              "color": "#C74634",
+              "bold": true
+            },
+            {
+              "index": 2,
+              "text": " ",
+              "fontSize": 21.33,
+              "typeface": "Oracle Sans Tab",
+              "color": "tx1",
+              "bold": true
+            },
+            {
+              "index": 3,
+              "text": "create off-brand graphics using AI",
+              "fontSize": 21.33,
+              "typeface": "Oracle Sans Tab",
+              "color": "tx1"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 27,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/mxw7e1gr",
+      "id": "23",
+      "name": "Straight Connector 22",
+      "bbox": [
+        962.1,
+        408.93,
+        249.6,
+        140.42
+      ],
+      "rotation": 0,
+      "verticalFlip": true,
+      "geometry": "line",
+      "lineColor": "#C74634",
+      "lineWidth": 1.33
+    },
+    {
+      "order": 28,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/9wzqlkri",
+      "id": "56",
+      "name": "Picture 17",
+      "bbox": [
+        962.11,
+        148.12,
+        252.64,
+        142.11
+      ],
+      "rotation": 0,
+      "contentType": "image/jpeg",
+      "imageCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "asset": {
+        "assetId": "/ppt/media/image109.jpeg",
+        "contentType": "image/jpeg",
+        "byteLength": 10884
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image109.jpeg",
+        "contentType": "image/jpeg",
+        "byteLength": 10884
+      }
+    },
+    {
+      "order": 29,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ulw7ihoj",
+      "id": "16",
+      "name": "Column Divider",
+      "bbox": [
+        350.98,
+        146.18,
+        0,
+        489.6
+      ],
+      "geometry": "line",
+      "lineColor": "rgba(139, 133, 128, 0.25)",
+      "lineWidth": 1.33
+    },
+    {
+      "order": 30,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/0vepcbyl",
+      "id": "25",
+      "name": "Column Divider",
+      "bbox": [
+        645.35,
+        146.18,
+        0,
+        489.6
+      ],
+      "geometry": "line",
+      "lineColor": "rgba(139, 133, 128, 0.25)",
+      "lineWidth": 1.33
+    },
+    {
+      "order": 31,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/zul836xg",
+      "id": "26",
+      "name": "Column Divider",
+      "bbox": [
+        939.72,
+        146.18,
+        0,
+        489.6
+      ],
+      "geometry": "line",
+      "lineColor": "rgba(139, 133, 128, 0.25)",
+      "lineWidth": 1.33
+    }
+  ],
+  "composeRuns": []
+}
