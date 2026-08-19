@@ -13,13 +13,15 @@ public record TransactionResponse(
         String debitAccountId, String creditAccountId, String externalBeneficiary, String description,
         BigDecimal amount, String currencyCode, BigDecimal feeAmount,
         String initiatedByCustomerId, String initiatedByUserId, LocalDateTime initiatedAt,
-        LocalDateTime completedAt, LocalDate interestPeriodEnd, String failureCode, String failureReason) {
+        LocalDateTime completedAt, LocalDate interestPeriodEnd, String failureCode, String failureReason,
+        String riskAssessmentId, String riskLevel, BigDecimal riskScore, String riskReasons) {
     public static TransactionResponse from(BankTransaction transaction) {
         return new TransactionResponse(transaction.getTransactionId(), transaction.getTransactionRef(), transaction.getTransactionType(),
                 transaction.getTransactionStatus(),transaction.getDebitAccountId(),
                 transaction.getCreditAccountId(), transaction.getExternalBeneficiary(), transaction.getDescription(),
                 transaction.getAmount(), transaction.getCurrencyCode(),
                 transaction.getFeeAmount(), transaction.getInitiatedByCustomerId(), transaction.getInitiatedByUserId(), transaction.getInitiatedAt(),
-                transaction.getCompletedAt(), transaction.getInterestPeriodEnd(), transaction.getFailureCode(), transaction.getFailureReason());
+                transaction.getCompletedAt(), transaction.getInterestPeriodEnd(), transaction.getFailureCode(), transaction.getFailureReason(),
+                transaction.getRiskAssessmentId(), transaction.getRiskLevel(), transaction.getRiskScore(), transaction.getRiskReasons());
     }
 }

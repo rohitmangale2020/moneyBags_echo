@@ -37,6 +37,8 @@ services:
     internal-key: ${BANKING_INTERNAL_KEY:local-banking-key}
   customers:
     base-url: ${CUSTOMERS_SERVICE_URL:http://customers-service}
+  risk:
+    base-url: ${RISK_SERVICE_URL:http://localhost:8089}
 
 audit:
   internal-key: ${AUDIT_INTERNAL_KEY:local-audit-key}

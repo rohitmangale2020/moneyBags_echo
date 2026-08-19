@@ -14,8 +14,10 @@ import com.training.platform.transactions.entity.TransactionType;
 import com.training.platform.transactions.repository.BankTransactionRepository;
 import com.training.platform.transactions.repository.AccountStatementRepository;
 import com.training.platform.transactions.repository.TransactionEventOutboxRepository;
+import com.training.platform.transactions.repository.TransactionApprovalRepository;
 import com.training.platform.transactions.client.AccountsClient;
 import com.training.platform.transactions.client.CustomersClient;
+import com.training.platform.transactions.client.RiskServiceClient;
 import com.training.platform.transactions.client.AccountAdjustmentRequest;
 import com.training.platform.transactions.client.AccountAdjustmentResponse;
 import com.training.platform.transactions.entity.AccountStatement;
@@ -44,13 +46,15 @@ class BankTransactionServiceTest {
     @Mock private CustomersClient customersClient;
     @Mock private AuditClient auditClient;
     @Mock private LedgerService ledgerService;
+    @Mock private RiskServiceClient riskServiceClient;
+    @Mock private TransactionApprovalRepository approvalRepository;
     @Mock private BankTransaction transaction;
     private BankTransactionService transactionService;
 
     @BeforeEach void setUp() {
         transactionService = new BankTransactionService(transactionRepository, statementRepository,
                 outboxRepository, accountsClient, customersClient, new ObjectMapper().findAndRegisterModules(),
-                auditClient, ledgerService);
+                auditClient, ledgerService, riskServiceClient, approvalRepository);
         org.mockito.Mockito.lenient().when(auditClient.changes(any(), any())).thenReturn(Map.of(
                 "changedFields", "transactionStatus,description",
                 "oldValuesJson", "{}",

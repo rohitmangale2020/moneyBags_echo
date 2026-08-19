@@ -85,6 +85,7 @@
                 workspace</small
               ><strong>MoneyBags Banking</strong>
             </div>
+            <button class="mb-notification-bell" type="button" data-bind="visible:isAdmin,click:openRiskApprovals" aria-label="Open risk approvals"><svg class="mb-notification-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg><span class="mb-notification-count" data-bind="visible:pendingRiskApprovalCount,text:pendingRiskApprovalCount"></span></button>
             <details class="mb-profile-menu">
                 <summary aria-label="Open profile menu">
     <span class="mb-avatar">
@@ -145,7 +146,7 @@
     </div>
     <script>
       window.oj_whenReady = true;
-      window.MONEYBAGS_API_BASE_URL = "";
+      window.MONEYBAGS_API_BASE_URL = window.MONEYBAGS_API_BASE_URL || "http://localhost:8080";
     </script>
     <script src="js/libs/require/require.js"></script>
     <script src="js/main.js"></script>
