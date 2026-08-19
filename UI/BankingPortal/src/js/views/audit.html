@@ -137,13 +137,11 @@
       </article>
     </div>
 
-    <div class="mb-pagination mb-audit-pagination" data-bind="visible:totalViewPages() > 1">
-      <oj-button on-oj-action="[[previousPage]]" disabled="[[currentPage() === 0]]">Previous</oj-button>
-      <span data-bind="text:pageSummary"></span>
-      <label>Rows
-        <select data-bind="value:pageSize"><option value="10">10</option><option value="20">20</option><option value="50">50</option></select>
-      </label>
-      <oj-button on-oj-action="[[nextPage]]" disabled="[[currentPage() >= totalViewPages() - 1]]">Next</oj-button>
+    <div class="mb-pagination mb-audit-pagination" role="navigation" aria-label="Audit pagination" data-bind="visible:filteredLogs().length">
+      <label class="mb-page-size">Rows per page<select data-bind="value:pageSize,options:pageSizeOptions"></select></label>
+      <oj-button chroming="outlined" on-oj-action="[[previousPage]]" disabled="[[state.loading() || currentPage() === 0]]">Previous</oj-button>
+      <span class="mb-page-status" data-bind="text:pageSummary"></span>
+      <oj-button chroming="outlined" on-oj-action="[[nextPage]]" disabled="[[state.loading() || currentPage() >= totalViewPages() - 1]]">Next</oj-button>
     </div>
 
     <div class="mb-empty" data-bind="visible:!pagedLogs().length && !state.loading() && !state.error()">

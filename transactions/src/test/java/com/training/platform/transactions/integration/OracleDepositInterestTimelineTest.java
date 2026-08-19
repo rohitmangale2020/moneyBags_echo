@@ -97,13 +97,13 @@ class OracleDepositInterestTimelineTest {
 
         String unique = UUID.randomUUID().toString().replace("-", "").substring(0, 10);
         JsonNode customer = post(api, token, "/api/customers", Map.of(
-                "firstName", "OracleInterest",
-                "lastName", "Timeline" + unique,
+                "firstName", "Vijay",
+                "lastName", "Mallya" + unique,
                 "dob", "1990-01-15",
                 "gender", "OTHER",
                 "phone", uniquePhone(),
-                "email", "oracle.interest." + unique + "@example.test",
-                "occupation", "Integration Test"));
+                "email", "vijay.mallya." + unique + "@loot.lunga",
+                "occupation", "Bankruptcy"));
         String customerId = customer.path("customerId").asText();
         assertFalse(customerId.isBlank());
 

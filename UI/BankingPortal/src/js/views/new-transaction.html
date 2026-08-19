@@ -1,0 +1,47 @@
+<section class="mb-stack mb-new-transaction-page">
+  <div class="mb-heading">
+    <div>
+      <small>PAYMENTS / NEW TRANSACTION</small>
+      <h1>Post transaction</h1>
+      <p>Choose the transaction type, load eligible customer accounts, and post the transaction.</p>
+    </div>
+    <oj-button chroming="outlined" on-oj-action="[[close]]">Back to transactions</oj-button>
+  </div>
+
+  <section class="mb-panel mb-transaction-page-form">
+    <div class="mb-transaction-submit-state" data-bind="visible:submissionState() !== 'idle',css:submissionState">
+      <span class="mb-transaction-submit-spinner" data-bind="visible:submissionState() === 'submitting'" aria-hidden="true"></span>
+      <span class="mb-transaction-submit-icon" data-bind="visible:submissionState() === 'success'" aria-hidden="true">✓</span>
+      <span class="mb-transaction-submit-icon" data-bind="visible:submissionState() === 'failure'" aria-hidden="true">!</span>
+      <strong data-bind="text:submissionState() === 'submitting' ? 'Processing transaction' : submissionState() === 'success' ? 'Transaction complete' : 'Transaction failed'"></strong>
+      <p data-bind="text:submissionMessage"></p>
+    </div>
+
+    <div class="mb-stack" data-bind="visible:submissionState() === 'idle'">
+      <div><small>TRANSACTION TYPE</small><h2 data-bind="text:operationTitle"></h2></div>
+      <div class="mb-segment">
+        <button data-bind="click:selectOperation.bind(null,'TRANSFER'),css:{active:operation()==='TRANSFER'}">Transfer</button>
+        <button data-bind="click:selectOperation.bind(null,'DEPOSIT'),css:{active:operation()==='DEPOSIT'}">Deposit</button>
+        <button data-bind="click:selectOperation.bind(null,'WITHDRAWAL'),css:{active:operation()==='WITHDRAWAL'}">Withdraw</button>
+        <button data-bind="click:selectOperation.bind(null,'SELF_TRANSFER'),css:{active:operation()==='SELF_TRANSFER'}">Self transfer</button>
+      </div>
+      <div class="mb-error" data-bind="visible:error,text:error"></div>
+
+      <div class="mb-transaction-parties" data-bind="visible:isInternalTransfer">
+        <section class="mb-transaction-party"><h3>Debit customer</h3><div class="mb-transaction-cif-row"><oj-input-text label-hint="Customer CIF or name" value="{{form.customerCif}}"></oj-input-text><oj-button on-oj-action="[[loadCustomerAccounts]]" disabled="[[loadingAccounts]]">Load accounts</oj-button></div><div class="mb-customer-match-list" data-bind="visible:customerMatches().length"><small>Matching customers</small><!-- ko foreach: customerMatches --><button type="button" data-bind="text:$parent.customerLookupLabel($data),click:() => $parent.chooseCustomerMatch($data)"></button><!-- /ko --></div><div class="mb-form"><label class="wide">Debit account<select data-bind="value:form.debitAccountId,options:accounts,optionsText:accountLabel,optionsValue:'accountId',enable:hasCustomerAccounts"></select></label></div></section>
+        <section class="mb-transaction-party"><h3>Recipient customer</h3><div class="mb-transaction-cif-row"><oj-input-text label-hint="Customer CIF or name" value="{{form.recipientCustomerCif}}"></oj-input-text><oj-button on-oj-action="[[loadRecipientAccounts]]" disabled="[[loadingRecipientAccounts]]">Load accounts</oj-button></div><div class="mb-customer-match-list" data-bind="visible:recipientMatches().length"><small>Matching customers</small><!-- ko foreach: recipientMatches --><button type="button" data-bind="text:$parent.customerLookupLabel($data),click:() => $parent.chooseRecipientMatch($data)"></button><!-- /ko --></div><div class="mb-form"><label class="wide">Recipient account<select data-bind="value:form.creditAccountId,options:eligibleRecipientAccounts,optionsText:accountLabel,optionsValue:'accountId',enable:hasRecipientAccounts"></select></label></div></section>
+      </div>
+
+      <div class="mb-search-panel" data-bind="visible:!isInternalTransfer()"><oj-input-text label-hint="Customer CIF or name" value="{{form.customerCif}}"></oj-input-text><div class="mb-customer-match-list" data-bind="visible:customerMatches().length"><small>Matching customers</small><!-- ko foreach: customerMatches --><button type="button" data-bind="text:$parent.customerLookupLabel($data),click:() => $parent.chooseCustomerMatch($data)"></button><!-- /ko --></div><oj-button on-oj-action="[[loadCustomerAccounts]]" disabled="[[loadingAccounts]]">Load accounts</oj-button></div>
+      <div class="mb-form" data-bind="visible:isSingleAccount"><label class="wide" data-bind="visible:hasCustomerAccounts">Customer account<select data-bind="value:form.accountId,options:accounts,optionsText:accountLabel,optionsValue:'accountId'"></select></label></div>
+      <div class="mb-stack" data-bind="visible:isSelfTransfer"><div class="mb-form" data-bind="visible:accounts().length"><label>From account<select data-bind="value:form.fromAccountId,options:accounts,optionsText:accountLabel,optionsValue:'accountId'"></select></label><label>To account<select data-bind="value:form.toAccountId,options:accounts,optionsText:accountLabel,optionsValue:'accountId'"></select></label></div></div>
+      <div class="mb-info" data-bind="visible:hasActiveCustomer">Load a customer by CIF or name to choose eligible active accounts.</div>
+      <div class="mb-form"><oj-input-text label-hint="Amount" value="{{form.amount}}"></oj-input-text><oj-input-text label-hint="Currency" value="{{form.currencyCode}}"></oj-input-text></div>
+    </div>
+
+    <div class="mb-dialog-actions" data-bind="visible:submissionState() === 'idle'">
+      <oj-button on-oj-action="[[close]]" disabled="[[busy]]">Cancel</oj-button>
+      <oj-button chroming="callToAction" on-oj-action="[[submit]]" disabled="[[busy]]">Post transaction</oj-button>
+    </div>
+  </section>
+</section>

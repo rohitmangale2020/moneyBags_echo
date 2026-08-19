@@ -383,6 +383,7 @@ define([
         document.getElementById('customerAccountDialog').open();
       } catch (e) { s.error(e.message); }
     };
+    s.openTransactionForCustomer = () => app.go('new-transaction');
     s.createAccount = async () => {
       const product = s.accountProducts().find((item) => String(item.productId) === String(s.accountForm.productId()));
       const requestedBalance = Number(s.accountForm.availableBalance());
