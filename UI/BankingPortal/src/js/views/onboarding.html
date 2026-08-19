@@ -4,7 +4,7 @@
       <div>
         <small>CUSTOMERS / ONBOARDING</small>
         <h1>Customer onboarding</h1>
-        <p>Create a new customer or resume account opening for an activated customer.</p>
+        <p>Create a new customer or resume their onboarding record.</p>
       </div>
     </div>
   </div>
@@ -63,11 +63,8 @@
     <li data-bind="css:{active:step()===4,done:step()>4}">
       <span>4</span>KYC
     </li>
-    <li data-bind="css:{active:step()===5,done:step()>5}">
+    <li data-bind="css:{active:step()===5}">
       <span>5</span>Review
-    </li>
-    <li data-bind="css:{active:step()===6}">
-      <span>6</span>Account
     </li>
   </ol>
 
@@ -78,7 +75,7 @@
 
   <!-- ko if:step()===1 -->
   <article class="mb-workflow">
-    <small>STEP 1 OF 6</small>
+    <small>STEP 1 OF 5</small>
     <h2>Customer profile</h2>
     <p>
       Customer Service generates the CIF only after all required profile values are valid.
@@ -248,22 +245,13 @@
       <strong data-bind="text:customer().cifNo"></strong>
     </div>
 
-    <small>STEP 2 OF 6</small>
-    <h2>Residential address</h2>
+    <small>STEP 2 OF 5</small>
+    <h2>Permanent and current addresses</h2>
+    <p>Enter the permanent address first. Current address can be copied when it is the same.</p>
 
     <div class="mb-form three">
 
-      <div class="mb-plain-select">
-        <select
-                id="customerAddressType"
-                data-bind="value:address.addressType"
-        >
-          <option value="" disabled>Address type</option>
-          <option>CURRENT</option>
-          <option>PERMANENT</option>
-          <option>OFFICE</option>
-        </select>
-      </div>
+      <div class="wide"><h3 class="mb-subsection">Permanent address</h3></div>
 
       <div>
         <oj-input-text
@@ -275,7 +263,7 @@
 
         <small
                 class="mb-field-error"
-                data-bind="visible:fieldErrors().country,text:fieldErrors().country"
+                data-bind="visible:fieldErrors().permanentcountry,text:fieldErrors().permanentcountry"
         ></small>
       </div>
 
@@ -289,7 +277,7 @@
 
         <small
                 class="mb-field-error"
-                data-bind="visible:fieldErrors().line1,text:fieldErrors().line1"
+                data-bind="visible:fieldErrors().permanentline1,text:fieldErrors().permanentline1"
         ></small>
       </div>
 
@@ -302,7 +290,7 @@
 
         <small
                 class="mb-field-error"
-                data-bind="visible:fieldErrors().line2,text:fieldErrors().line2"
+                data-bind="visible:fieldErrors().permanentline2,text:fieldErrors().permanentline2"
         ></small>
       </div>
 
@@ -311,13 +299,13 @@
 
         <small
                 class="mb-field-error"
-                data-bind="visible:fieldErrors().state,text:fieldErrors().state"
+                data-bind="visible:fieldErrors().permanentstate,text:fieldErrors().permanentstate"
         ></small>
       </div>
 
       <div class="mb-plain-select">
         <select id="customerDistrict" aria-label="City or district" data-bind="value:address.city,enable:address.state"><option value="" disabled>City / district</option><!-- ko foreach:addressDistricts --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select>
-        <small class="mb-field-error" data-bind="visible:fieldErrors().city,text:fieldErrors().city"></small>
+        <small class="mb-field-error" data-bind="visible:fieldErrors().permanentcity,text:fieldErrors().permanentcity"></small>
       </div>
 
       <div class="wide">
@@ -336,9 +324,21 @@
 
         <small
                 class="mb-field-error"
-                data-bind="visible:fieldErrors().pincode,text:fieldErrors().pincode"
+                data-bind="visible:fieldErrors().permanentpincode,text:fieldErrors().permanentpincode"
         ></small>
       </div>
+
+      <label class="wide mb-check-option"><input type="checkbox" data-bind="checked:sameAsPermanentAddress" /> Current address is the same as permanent address</label>
+
+      <!-- ko if:!sameAsPermanentAddress() -->
+      <div class="wide"><h3 class="mb-subsection">Current address</h3></div>
+      <div><oj-input-text label-hint="Country" required maxlength="100" value="{{currentAddress.country}}"></oj-input-text><small class="mb-field-error" data-bind="visible:fieldErrors().currentcountry,text:fieldErrors().currentcountry"></small></div>
+      <div class="wide"><oj-input-text label-hint="Address line 1" required maxlength="250" value="{{currentAddress.line1}}"></oj-input-text><small class="mb-field-error" data-bind="visible:fieldErrors().currentline1,text:fieldErrors().currentline1"></small></div>
+      <div class="wide"><oj-input-text label-hint="Address line 2" maxlength="250" value="{{currentAddress.line2}}"></oj-input-text><small class="mb-field-error" data-bind="visible:fieldErrors().currentline2,text:fieldErrors().currentline2"></small></div>
+      <div class="mb-plain-select"><select aria-label="Current address state" data-bind="value:currentAddress.state"><option value="" disabled>State</option><!-- ko foreach:indianStates --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select><small class="mb-field-error" data-bind="visible:fieldErrors().currentstate,text:fieldErrors().currentstate"></small></div>
+      <div class="mb-plain-select"><select aria-label="Current address city or district" data-bind="value:currentAddress.city,enable:currentAddress.state"><option value="" disabled>City / district</option><!-- ko foreach:currentAddressDistricts --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select><small class="mb-field-error" data-bind="visible:fieldErrors().currentcity,text:fieldErrors().currentcity"></small></div>
+      <div class="wide"><oj-input-text label-hint="Pincode" required inputmode="numeric" maxlength="6" placeholder="560001" value="{{currentAddress.pincode}}"></oj-input-text><small class="mb-field-error" data-bind="visible:fieldErrors().currentpincode,text:fieldErrors().currentpincode"></small></div>
+      <!-- /ko -->
 
     </div>
 
@@ -357,7 +357,7 @@
                 disabled="[[busy()]]"
                 on-oj-action="[[saveAddress]]"
         >
-          <span data-bind="text:addressSaved() ? 'Update address →' : 'Save address →'"></span>
+          <span data-bind="text:addressSaved() ? 'Update addresses →' : 'Save addresses →'"></span>
         </oj-button>
       </div>
 
@@ -369,7 +369,7 @@
   <!-- ko if:step()===3 -->
   <article class="mb-workflow">
 
-    <small>STEP 3 OF 6</small>
+    <small>STEP 3 OF 5</small>
     <h2>Identity document</h2>
 
     <div class="mb-form three">
@@ -377,64 +377,9 @@
       <div class="mb-plain-select">
         <select data-bind="value:document.documentType">
           <option value="" disabled>Document type</option>
-          <option>PAN</option>
-          <option>AADHAAR</option>
-          <option>PASSPORT</option>
-          <option>DRIVING_LICENSE</option>
-          <option>SALARY_SLIP</option>
-          <option>PHOTO</option>
-          <option>SIGNATURE</option>
+          <!-- ko foreach:availableDocumentTypes --><option data-bind="value:$data,text:$data"></option><!-- /ko -->
         </select>
       </div>
-
-      <!-- ko if:documentRequiresNumber -->
-      <div>
-        <oj-input-text
-                label-hint="[[document.documentType()==='PAN' ? 'PAN number (AAAAA0000A)' : document.documentType()==='AADHAAR' ? 'Aadhaar number (12 digits)' : 'Document number']]"
-                required
-                maxlength="100"
-                value="{{document.documentNumber}}"
-        ></oj-input-text>
-
-        <small
-                class="mb-field-error"
-                data-bind="visible:fieldErrors().documentNumber,text:fieldErrors().documentNumber"
-        ></small>
-      </div>
-      <!-- /ko -->
-
-      <!-- ko if:documentShowsIssueDate -->
-      <div>
-        <oj-input-date
-                label-hint="Issue date"
-                value="{{document.issueDate}}"
-        ></oj-input-date>
-
-        <small class="mb-field-hint">
-          Cannot be in the future.
-        </small>
-
-        <small
-                class="mb-field-error"
-                data-bind="visible:fieldErrors().issueDate,text:fieldErrors().issueDate"
-        ></small>
-      </div>
-      <!-- /ko -->
-
-      <!-- ko if:documentRequiresExpiry -->
-      <div>
-        <oj-input-date
-                label-hint="Expiry date"
-                required
-                value="{{document.expiryDate}}"
-        ></oj-input-date>
-
-        <small
-                class="mb-field-error"
-                data-bind="visible:fieldErrors().expiryDate,text:fieldErrors().expiryDate"
-        ></small>
-      </div>
-      <!-- /ko -->
 
       <div class="wide">
         <label class="mb-file">
@@ -454,6 +399,38 @@
         ></small>
       </div>
 
+      <!-- ko if:documentRequiresNumber -->
+      <div>
+        <oj-input-text label-hint="[[document.documentType()==='PAN' ? 'PAN number (AAAAA0000A)' : document.documentType()==='AADHAAR' ? 'Aadhaar number (12 digits)' : 'Document number']]" required maxlength="100" value="{{document.documentNumber}}"></oj-input-text>
+        <small class="mb-field-error" data-bind="visible:fieldErrors().documentNumber,text:fieldErrors().documentNumber"></small>
+      </div>
+      <!-- /ko -->
+
+      <!-- ko if:documentShowsIssueDate -->
+      <div>
+        <oj-input-date label-hint="Issue date" value="{{document.issueDate}}"></oj-input-date>
+        <small class="mb-field-hint">Cannot be in the future.</small>
+        <small class="mb-field-error" data-bind="visible:fieldErrors().issueDate,text:fieldErrors().issueDate"></small>
+      </div>
+      <!-- /ko -->
+
+      <!-- ko if:documentRequiresExpiry -->
+      <div>
+        <oj-input-date label-hint="Expiry date" required value="{{document.expiryDate}}"></oj-input-date>
+        <small class="mb-field-error" data-bind="visible:fieldErrors().expiryDate,text:fieldErrors().expiryDate"></small>
+      </div>
+      <!-- /ko -->
+
+    </div>
+
+    <div class="mb-document-upload-action">
+      <oj-button chroming="callToAction" disabled="[[busy()]]" on-oj-action="[[upload]]"><span data-bind="text:editingDocument() ? 'Update document →' : 'Upload document →'"></span></oj-button>
+    </div>
+
+    <div class="mb-uploaded-document-list" data-bind="visible:uploadedDocumentCount()">
+      <!-- ko foreach:uploadedDocuments -->
+      <article><strong data-bind="text:documentType"></strong><span data-bind="text:documentNumber || 'File uploaded'"></span><button class="mb-edit" type="button" data-bind="click:()=>$parent.editDocument($data)" aria-label="Edit uploaded document">✎ Edit</button></article>
+      <!-- /ko -->
     </div>
 
     <div class="mb-info mb-document-count" data-bind="visible:uploadedDocumentCount()">
@@ -475,23 +452,14 @@
         <span data-bind="text:uploadedDocuments().length ? 'Continue to KYC' : 'Skip for now'"></span>
       </oj-button>
 
-      <oj-button
-              chroming="callToAction"
-              disabled="[[busy()]]"
-              on-oj-action="[[upload]]"
-      >
-        Upload document →
-      </oj-button>
-
     </div>
   </article>
   <!-- /ko -->
 
-
   <!-- ko if:step()===4 -->
   <article class="mb-workflow">
 
-    <small>STEP 4 OF 6</small>
+    <small>STEP 4 OF 5</small>
     <h2>KYC assessment and nominee</h2>
 
     <div class="mb-form three">
@@ -759,13 +727,13 @@
   <!-- ko if:step()===5 -->
   <article class="mb-workflow review">
 
-    <span class="mb-success-mark" data-bind="text:kycSaved() ? '✓' : 'Review'"></span>
+    <span class="mb-review-mark" data-bind="css:{saved:kycSaved()},text:kycSaved() ? '✓ Saved' : 'Review details'"></span>
 
-    <small>STEP 5 OF 6</small>
+    <small>STEP 5 OF 5</small>
 
     <h2 data-bind="text:kycSaved() ? 'Onboarding details saved' : 'Review onboarding details'"></h2>
 
-    <p data-bind="text:skippedKyc() ? 'Documents and KYC were skipped. The customer remains pending KYC and cannot open an account until verification is completed.' : (kycSaved() ? (canProceedToAccount() ? 'KYC is verified and this customer is active. Continue to account opening when ready.' : 'The customer must now be reviewed and activated from Customer Management. Account opening can be resumed after verified KYC and activation.') : 'Review the entered profile, address, documents, KYC, and nominee details before saving.')"></p>
+    <p data-bind="text:skippedKyc() ? 'Documents and KYC were skipped. The customer remains pending KYC until verification is completed.' : (kycSaved() ? 'Onboarding details have been saved. Review and activate the customer from Customer Management when appropriate.' : 'Review the entered profile, address, documents, KYC, and nominee details before saving.')"></p>
 
     <div class="mb-review-sections">
       <section class="mb-review-section">
@@ -773,8 +741,8 @@
         <dl><div><dt>Name</dt><dd data-bind="text:`${profile.firstName()} ${profile.lastName()||''}`"></dd></div><div><dt>Date of birth</dt><dd data-bind="text:profile.dob"></dd></div><div><dt>Gender</dt><dd data-bind="text:profile.gender"></dd></div><div><dt>Occupation</dt><dd data-bind="text:profile.occupation"></dd></div><div><dt>Mobile</dt><dd data-bind="text:profile.phone"></dd></div><div><dt>Email</dt><dd data-bind="text:profile.email"></dd></div><div><dt>CIF</dt><dd data-bind="text:customer().cifNo"></dd></div></dl>
       </section>
       <section class="mb-review-section">
-        <header><h3>Residential address</h3><button class="mb-edit" type="button" data-bind="click:() => editSection(2)" aria-label="Edit residential address">✎ Edit</button></header>
-        <dl><div><dt>Type</dt><dd data-bind="text:address.addressType"></dd></div><div><dt>Country</dt><dd data-bind="text:address.country"></dd></div><div class="wide"><dt>Address</dt><dd data-bind="text:`${address.line1()}${address.line2() ? ', ' + address.line2() : ''}`"></dd></div><div><dt>State / district</dt><dd data-bind="text:`${address.state()} / ${address.city()}`"></dd></div><div><dt>Pincode</dt><dd data-bind="text:address.pincode"></dd></div></dl>
+        <header><h3>Permanent and current addresses</h3><button class="mb-edit" type="button" data-bind="click:() => editSection(2)" aria-label="Edit customer addresses">✎ Edit</button></header>
+        <dl><div class="wide"><dt>Permanent address</dt><dd data-bind="text:`${address.line1()}${address.line2() ? ', ' + address.line2() : ''}, ${address.city()}, ${address.state()} ${address.pincode()}`"></dd></div><div class="wide"><dt>Current address</dt><dd data-bind="text:sameAsPermanentAddress() ? 'Same as permanent address' : `${currentAddress.line1()}${currentAddress.line2() ? ', ' + currentAddress.line2() : ''}, ${currentAddress.city()}, ${currentAddress.state()} ${currentAddress.pincode()}`"></dd></div></dl>
       </section>
       <section class="mb-review-section">
         <header><h3>Identity documents</h3><button class="mb-edit" type="button" data-bind="click:() => editSection(3)" aria-label="Edit identity documents">✎ Edit</button></header>
@@ -786,7 +754,7 @@
       </section>
     </div>
 
-    <div class="mb-info" data-bind="visible:kycSaved,text:canProceedToAccount() ? 'You may now proceed to account opening, or finish and manage the customer record.' : 'Next: open Customers, manage this CIF, verify the KYC record, and activate the customer. Then return here and use Resume onboarding.'">
+    <div class="mb-info" data-bind="visible:kycSaved,text:'Next: open Customers and manage this CIF. Verify the KYC record and activate the customer when appropriate.'">
       Then return here and use “Resume onboarding”.
     </div>
 
@@ -798,10 +766,6 @@
 
       <!-- ko if:!kycSaved() && !skippedKyc() -->
       <oj-button chroming="callToAction" disabled="[[busy()]]" on-oj-action="[[confirmOnboarding]]">Save customer →</oj-button>
-      <!-- /ko -->
-
-      <!-- ko if:kycSaved() && canProceedToAccount -->
-      <oj-button chroming="callToAction" on-oj-action="[[proceedToAccount]]">Proceed to account opening</oj-button>
       <!-- /ko -->
 
       <!-- ko if:kycSaved() || skippedKyc() -->
@@ -818,122 +782,5 @@
   </article>
   <!-- /ko -->
 
-
-  <!-- ko if:step()===6 -->
-  <article class="mb-workflow">
-
-    <div class="mb-record">
-      Active customer
-      <strong data-bind="text:customer().cifNo"></strong>
-    </div>
-
-    <small>STEP 6 OF 6</small>
-    <h2>Open customer account</h2>
-
-    <div class="mb-info">
-      Accounts Service requires an operator-supplied account number;
-      no number-generation endpoint exists.
-    </div>
-
-    <div class="mb-form three">
-
-      <div class="wide">
-
-        <label>
-          Active product
-
-          <select data-bind="value:accountForm.productId">
-            <option value="">Select product</option>
-
-            <!-- ko foreach:products -->
-            <option
-                    data-bind="value:productId,text:`${productName} · ${productCode} · ${currency}`"
-            ></option>
-            <!-- /ko -->
-
-          </select>
-        </label>
-
-        <small
-                class="mb-field-error"
-                data-bind="visible:fieldErrors().productId,text:fieldErrors().productId"
-        ></small>
-
-      </div>
-
-      <label>
-        Ownership
-
-        <select data-bind="value:accountForm.ownershipType">
-          <option>INDIVIDUAL</option>
-          <option>JOINT</option>
-          <option>CORPORATE</option>
-          <option>TRUST</option>
-        </select>
-      </label>
-
-      <div>
-
-        <oj-input-text
-                label-hint="[[isFixedDeposit() ? 'Fixed deposit principal' : 'Opening deposit']]"
-                value="{{accountForm.availableBalance}}"
-        ></oj-input-text>
-
-        <small class="mb-field-hint" data-bind="text:isFixedDeposit() ? 'The FD account opens at zero and is funded from the selected customer account.' : 'Zero or a positive amount.'">
-        </small>
-
-        <small
-                class="mb-field-error"
-                data-bind="visible:fieldErrors().availableBalance,text:fieldErrors().availableBalance"
-        ></small>
-
-      </div>
-
-      <div class="wide mb-info" data-bind="visible:isFixedDeposit">
-        Select the account that funds the FD. The same account receives principal plus interest at maturity or early withdrawal.
-      </div>
-
-      <div class="wide" data-bind="visible:isFixedDeposit">
-        <label>
-          Fund from customer account
-          <select data-bind="value:accountForm.fundingAccountId,options:eligibleFundingAccounts,optionsText:fixedDepositAccountLabel,optionsValue:'accountId',optionsCaption:'Select funding account'"></select>
-        </label>
-        <small class="mb-field-hint">Only active same-currency accounts that can retain their minimum balance are shown.</small>
-        <small class="mb-field-error" data-bind="visible:fieldErrors().fundingAccountId,text:fieldErrors().fundingAccountId"></small>
-      </div>
-
-      <div class="wide mb-info" data-bind="visible:isFixedDeposit() && accountForm.fundingAccountId()">
-        Principal and applicable interest return to this same account at maturity or early withdrawal.
-      </div>
-
-      <div class="wide mb-info" data-bind="visible:isFixedDeposit() && !transactionalAccounts().length">
-        No eligible account is available. Open or activate a savings/current account for this customer first.
-      </div>
-
-    </div>
-
-    <div class="mb-actions">
-
-      <span></span>
-
-      <oj-button
-              chroming="callToAction"
-              disabled="[[busy()||!!account()]]"
-              on-oj-action="[[openAccount]]"
-      >
-        Open account
-      </oj-button>
-
-    </div>
-
-    <div class="mb-success" data-bind="visible:account">
-      <strong>Account opened successfully</strong>
-      <span
-              data-bind="text:account()&&`${account().accountNumber} · ${account().accountId}`"
-      ></span>
-    </div>
-
-  </article>
-  <!-- /ko -->
 
 </section>

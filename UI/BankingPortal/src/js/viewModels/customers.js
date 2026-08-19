@@ -24,6 +24,7 @@ define([
   const nomineeBlank = () => ({
     nomineeId: null, nomineeName: '', relationship: '', relationType: 'NOMINEE', dob: '', phone: '', sharePercentage: 100, status: 'ACTIVE', updatedBy: '', startDate: '', endDate: '', includeAddress: false, address: addressBlank(),
   });
+  const documentTypes = ['PAN', 'AADHAAR', 'PASSPORT', 'DRIVING_LICENSE', 'SALARY_SLIP', 'PHOTO', 'SIGNATURE'];
   const adultDobMax = () => {
     const date = new Date();
     date.setFullYear(date.getFullYear() - 18);
@@ -84,7 +85,14 @@ define([
     s.onDocumentTypeChange = (_, event) => s.setDocumentExpiryRequirement(event.target.value);
     s.kycForm = ko.observable(kycBlank());
     s.documentForm = ko.observable(documentBlank());
+    s.availableDocumentTypes = ko.pureComputed(() => {
+      const usedTypes = new Set((s.detailState.data().documents || []).map((document) => document.documentType));
+      const currentType = s.documentForm().documentType;
+      return documentTypes.filter((type) => type === currentType || !usedTypes.has(type));
+    });
     s.nomineeForm = ko.observable(nomineeBlank());
+    s.otherNomineeShares = ko.observableArray([]);
+    s.nomineeShareLocked = ko.pureComputed(() => s.otherNomineeShares().length === 0);
     s.includeNomineeAddress = ko.observable(false);
     s.indianStates = ko.observableArray(indiaAddress.states());
     s.nomineeAddressState = ko.observable('');
@@ -372,7 +380,7 @@ define([
       try { await app.services.customers.remove(x.customerId); s.showDetailPage(false); app.notify('Customer deleted.'); s.load(); }
       catch (e) { app.notify(e.message, 'error'); }
     };
-    s.openAddress = async (x) => { s.error(''); try { const value = x ? await app.services.customers.getAddress(s.selected().customerId, x.addressId) : null; s.addressForm(Object.assign(addressBlank(), value || {})); document.getElementById('addressDialog').open(); } catch (e) { app.notify(e.message, 'error'); } };
+    s.openAddress = async (x, newAddressType = 'OFFICE') => { s.error(''); try { const value = x ? await app.services.customers.getAddress(s.selected().customerId, x.addressId) : null; s.addressForm(Object.assign(addressBlank(), { addressType: newAddressType }, value || {})); document.getElementById('addressDialog').open(); } catch (e) { app.notify(e.message, 'error'); } };
     s.saveAddress = async () => {
       const raw = ko.toJS(s.addressForm()), addressId = raw.addressId, d = clean({ addressType: raw.addressType, line1: raw.line1, line2: raw.line2, city: raw.city, state: raw.state, country: raw.country, pincode: raw.pincode }), id = s.selected().customerId;
       if (!d.line1 || !d.city || !d.state || !d.country || !/^[1-9][0-9]{5}$/.test(d.pincode || '')) return s.error('Complete the address and enter a valid six-digit pincode.');
@@ -430,6 +438,26 @@ define([
           ? await app.services.customers.getNominee(s.selected().customerId, x.nomineeId)
           : null;
         const form = Object.assign(nomineeBlank(), value || {});
+        const otherNominees = (s.detailState.data().nominees || []).filter((nominee) =>
+          nominee.nomineeId !== form.nomineeId
+          && String(nominee.status || '').toUpperCase() === 'ACTIVE'
+          && String(nominee.relationType || 'NOMINEE').toUpperCase() === 'NOMINEE',
+        );
+        const otherShares = otherNominees.map((nominee) => ({
+          nominee,
+          nomineeId: nominee.nomineeId,
+          nomineeName: nominee.nomineeName,
+          sharePercentage: ko.observable(Number(nominee.sharePercentage || 0)),
+        }));
+        s.otherNomineeShares(otherShares);
+        if (!otherShares.length) {
+          form.sharePercentage = 100;
+        } else if (!x && otherShares.length === 1 && Number(otherShares[0].sharePercentage()) === 100) {
+          otherShares[0].sharePercentage(50);
+          form.sharePercentage = 50;
+        } else if (!x) {
+          form.sharePercentage = Math.max(0, 100 - otherShares.reduce((total, nominee) => total + Number(nominee.sharePercentage() || 0), 0));
+        }
         s.includeNomineeAddress(Boolean(value && value.address));
         form.address = Object.assign(addressBlank(), (value && value.address) || {});
         s.nomineeForm(form);
@@ -443,13 +471,12 @@ define([
     };
     s.saveNominee = async () => {
       const raw = ko.toJS(s.nomineeForm()), nomineeId = raw.nomineeId, d = clean({ nomineeName: raw.nomineeName, relationship: raw.relationship, relationType: raw.relationType, dob: raw.dob, phone: raw.phone, address: s.includeNomineeAddress() ? clean({ addressType: raw.address.addressType, line1: raw.address.line1, line2: raw.address.line2, city: raw.address.city, state: raw.address.state, country: raw.address.country, pincode: raw.address.pincode }) : null, sharePercentage: raw.sharePercentage, status: raw.status, updatedBy: raw.updatedBy, startDate: raw.startDate, endDate: raw.endDate }), id = s.selected().customerId;
-      d.sharePercentage = Number(d.sharePercentage);
+      const otherShares = s.otherNomineeShares();
+      d.sharePercentage = s.nomineeShareLocked() ? 100 : Number(d.sharePercentage);
       if (!d.nomineeName || d.sharePercentage <= 0 || d.sharePercentage > 100) return s.error('Enter a nominee name and share between 0.01 and 100.');
-      const allocatedShare = (s.detailState.data().nominees || [])
-        .filter((nominee) => nominee.nomineeId !== nomineeId && String(nominee.status || '').toUpperCase() === 'ACTIVE')
-        .reduce((total, nominee) => total + Number(nominee.sharePercentage || 0), 0);
-      if (String(d.status || '').toUpperCase() === 'ACTIVE' && allocatedShare + d.sharePercentage > 100.000001) {
-        return s.error(`Nominee share cannot exceed 100%. ${allocatedShare.toFixed(2)}% is already allocated.`);
+      const allocatedShare = otherShares.reduce((total, nominee) => total + Number(nominee.sharePercentage() || 0), 0);
+      if (String(d.status || '').toUpperCase() === 'ACTIVE' && otherShares.length && Math.abs(allocatedShare + d.sharePercentage - 100) > 0.000001) {
+        return s.error(`All active nominee shares must equal 100%. Current total: ${(allocatedShare + d.sharePercentage).toFixed(2)}%.`);
       }
       if (d.phone && !/^[6-9][0-9]{9}$/.test(d.phone)) return s.error('Nominee phone must be a valid 10-digit Indian mobile number.');
       if (d.dob && new Date(`${d.dob}T00:00:00`) >= new Date()) return s.error('Nominee date of birth must be in the past.');
@@ -462,7 +489,33 @@ define([
           return s.error('PIN validation is temporarily unavailable. Please try again.');
         }
       }
-      try { nomineeId ? await app.services.customers.updateNominee(id, nomineeId, d) : await app.services.customers.nominee(id, d); document.getElementById('nomineeDialog').close(); app.notify('Nominee saved.'); await s.loadDetail(s.selected()); }
+      try {
+        const changedOtherShares = otherShares
+          .filter((nominee) => Number(nominee.nominee.sharePercentage || 0) !== Number(nominee.sharePercentage()))
+          .sort((left, right) =>
+            (Number(left.sharePercentage()) - Number(left.nominee.sharePercentage || 0))
+            - (Number(right.sharePercentage()) - Number(right.nominee.sharePercentage || 0)));
+        const saveOtherShares = async () => {
+          for (const nominee of changedOtherShares) {
+            await app.services.customers.updateNominee(id, nominee.nomineeId,
+              Object.assign({}, nominee.nominee, { sharePercentage: Number(nominee.sharePercentage()) }));
+          }
+        };
+        const previousShare = nomineeId
+          ? Number((s.detailState.data().nominees || []).find((nominee) => nominee.nomineeId === nomineeId)?.sharePercentage || 0)
+          : 0;
+        const saveCurrentNominee = () => nomineeId
+          ? app.services.customers.updateNominee(id, nomineeId, d)
+          : app.services.customers.nominee(id, d);
+        if (d.sharePercentage > previousShare) {
+          await saveOtherShares();
+          await saveCurrentNominee();
+        } else {
+          await saveCurrentNominee();
+          await saveOtherShares();
+        }
+        document.getElementById('nomineeDialog').close(); app.notify('Nominee saved.'); await s.loadDetail(s.selected());
+      }
       catch (e) { s.error(e.message); }
     };
     s.closeNominee = async (x) => { try { await app.services.customers.closeNominee(s.selected().customerId, x.nomineeId); app.notify('Nominee closed.'); await s.loadDetail(s.selected()); } catch (e) { app.notify(e.message, 'error'); } };
