@@ -490,10 +490,29 @@ define([
       return null;
     }
 
+    async function validateTransactionCustomersAreActive(payload) {
+      const accountIds = [...new Set([payload.debitAccountId, payload.creditAccountId]
+        .filter(Boolean)
+        .map(String))];
+      if (!accountIds.length) return null;
+      try {
+        const accounts = await Promise.all(accountIds.map((accountId) => app.services.accounts.get(accountId)));
+        const customerIds = [...new Set(accounts.map((account) => String(account.customerId || '')).filter(Boolean))];
+        const customers = await Promise.all(customerIds.map((customerId) => app.services.customers.get(customerId)));
+        return customers.some((customer) => String(customer.status || '').toUpperCase() !== 'ACTIVE')
+          ? 'Only an active customer can make a transaction.'
+          : null;
+      } catch (_) {
+        return 'Unable to verify the customer status for this transaction.';
+      }
+    }
+
     s.submit = async () => {
       let payload = requestPayload();
       const validationError = validate(payload);
       if (validationError) return s.error(validationError);
+      const customerStatusError = await validateTransactionCustomersAreActive(payload);
+      if (customerStatusError) return s.error(customerStatusError);
 
       s.busy(true);
       s.error('');

@@ -838,9 +838,17 @@ s.busy(true);
 s.submissionState('submitting');
 s.submissionMessage(s.editingId() ? 'Saving account changes...' : 'Opening account...');
       try {
-        const customerId = s.editingId()
-          ? String(s.form.customerId())
-          : String((await app.services.customers.byCif(s.form.customerCif().trim())).customerId);
+        let customerId = String(s.form.customerId());
+        if (!s.editingId()) {
+          const customer = await app.services.customers.byCif(s.form.customerCif().trim());
+          if (String(customer.status || '').toUpperCase() !== 'ACTIVE') {
+            s.error('Only an active customer can create an account.');
+            s.submissionState('idle');
+            s.submissionMessage('');
+            return;
+          }
+          customerId = String(customer.customerId);
+        }
         s.form.customerId(customerId);
         const payload = {
           accountNumber: s.editingId() ? s.form.accountNumber() : null,

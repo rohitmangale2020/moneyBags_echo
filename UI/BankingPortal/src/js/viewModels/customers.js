@@ -251,6 +251,9 @@ define([
     s.kycVerified = ko.pureComputed(() =>
       String((s.detailState.data().kyc || {}).kycStatus || '').toUpperCase() === 'VERIFIED',
     );
+    s.customerIsActive = ko.pureComputed(() =>
+      String((s.selected() || {}).status || '').toUpperCase() === 'ACTIVE',
+    );
     s.accountActionLabel = ko.pureComputed(() => s.kycVerified() ? 'Add account' : 'Add account (KYC required)');
     s.load = async (requestedPage = 0) => {
       const requestId = ++s.directoryRequest;
@@ -376,6 +379,9 @@ define([
       if (!s.kycVerified()) {
         return app.notify('Verify KYC first. An account or product can only be added after KYC is verified.', 'warning');
       }
+      if (!s.customerIsActive()) {
+        return app.notify('Only an active customer can create an account.', 'warning');
+      }
       s.error('');
       s.accountForm.productId('');
       s.accountForm.ownershipType('INDIVIDUAL');
@@ -388,12 +394,18 @@ define([
         document.getElementById('customerAccountDialog').open();
       } catch (e) { s.error(e.message); }
     };
-    s.openTransactionForCustomer = () => app.go('new-transaction');
+    s.openTransactionForCustomer = () => {
+      if (!s.customerIsActive()) {
+        return app.notify('Only an active customer can make a transaction.', 'warning');
+      }
+      return app.go('new-transaction');
+    };
     s.createAccount = async () => {
       const product = s.accountProducts().find((item) => String(item.productId) === String(s.accountForm.productId()));
       const requestedBalance = Number(s.accountForm.availableBalance());
       const fixedDeposit = s.isFixedDeposit();
       if (!s.kycVerified()) return s.error('Verify KYC first. An account cannot be opened before KYC is verified.');
+      if (!s.customerIsActive()) return s.error('Only an active customer can create an account.');
       if (!product) return s.error('Select an active banking product.');
       if (!Number.isFinite(requestedBalance) || requestedBalance < 0) return s.error('Opening balance must be zero or a positive number.');
       if (requestedBalance < Number(product.minimumBalance || 0)) {
