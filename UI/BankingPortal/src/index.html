@@ -24,6 +24,11 @@
   <body>
     <a class="mb-skip" href="#mainContent">Skip to content</a>
     <div id="globalBody">
+      <div id="mbAppStartupLoader" class="mb-app-startup-loader" data-bind="visible:appLoading" role="status" aria-live="polite">
+        <svg class="mb-moneybags-loader-logo" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><rect width="36" height="36" rx="10" fill="white"/><text x="18" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="800" fill="#355eb8">M</text></svg>
+        <strong>Loading MoneyBags</strong>
+        <small>Preparing your banking workspace…</small>
+      </div>
       <script type="text/html" id="navTemplate">
         <li>
           <a href="#" class="mb-nav-link">

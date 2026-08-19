@@ -1,14 +1,63 @@
 <section class="mb-stack">
-  <div class="mb-heading"><div><small>ACCOUNT / PROFILE</small><h1>My profile</h1><p>Review and update your personal account information.</p></div><oj-button chroming="callToAction" on-oj-action="[[openPassword]]">Update password</oj-button></div>
-  <div class="mb-error" data-bind="visible:state.error,text:state.error"></div>
-  <div class="mb-loading mb-moneybags-loader" data-bind="visible:state.loading" role="status" aria-live="polite">
-    <svg class="mb-moneybags-loader-logo" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><rect width="36" height="36" rx="10" fill="white"/><text x="18" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="800" fill="#355eb8">M</text></svg>
-    <strong>Loading your profile</strong>
-    <small>Preparing your account details…</small>
-  </div>
-  <div class="mb-profile-page" data-bind="with:form,visible:!state.loading()">
-    <section class="mb-profile-summary"><span class="mb-avatar large" data-bind="text:($data.profile.firstName||$data.username).slice(0,2).toUpperCase()"></span><div><small>YOUR ACCOUNT</small><h2 data-bind="text:`${profile.firstName||''} ${profile.lastName||''}`.trim()||username"></h2><p data-bind="text:email"></p></div></section>
-    <section class="mb-panel"><h2>Account details</h2><div class="mb-form three"><oj-input-text label-hint="Username" required value="{{username}}"></oj-input-text><oj-input-text label-hint="Email" required value="{{email}}"></oj-input-text><oj-input-text label-hint="Phone" value="{{profile.phoneNumber}}"></oj-input-text><oj-input-text label-hint="First name" value="{{profile.firstName}}"></oj-input-text><oj-input-text label-hint="Middle name" value="{{profile.middleName}}"></oj-input-text><oj-input-text label-hint="Last name" value="{{profile.lastName}}"></oj-input-text><oj-input-text label-hint="Country code" value="{{profile.countryCode}}"></oj-input-text><oj-input-text label-hint="Address line 1" value="{{profile.addressLine1}}"></oj-input-text><oj-input-text label-hint="Address line 2" value="{{profile.addressLine2}}"></oj-input-text><oj-input-text label-hint="City" value="{{profile.city}}"></oj-input-text><oj-input-text label-hint="State" value="{{profile.state}}"></oj-input-text><oj-input-text label-hint="Postal code" value="{{profile.postalCode}}"></oj-input-text></div><div class="mb-dialog-actions"><oj-button chroming="callToAction" on-oj-action="[[$parent.save]]">Save changes</oj-button></div></section>
-  </div>
-  <oj-dialog id="myPasswordDialog" class="mb-dialog" dialog-title="Update password" cancel-behavior="[[passwordChangeRequired() ? 'none' : 'icon']]"><div slot="body"><p class="mb-help" data-bind="visible:passwordChangeRequired">Your administrator issued a temporary password. Choose a personal password to continue.</p><div class="mb-error" data-bind="visible:error,text:error"></div><div class="mb-password-form"><oj-input-password class="mb-full" label-hint="Current password" value="{{currentPassword}}"></oj-input-password><oj-input-password class="mb-full" label-hint="New password" value="{{password}}"></oj-input-password><oj-input-password class="mb-full" label-hint="Confirm new password" value="{{confirmPassword}}"></oj-input-password></div><p class="mb-help">Use 8–72 characters.</p></div><div slot="footer" class="mb-dialog-actions"><oj-button data-bind="visible:!passwordChangeRequired()" on-oj-action="[[closePassword]]">Cancel</oj-button><oj-button chroming="callToAction" on-oj-action="[[savePassword]]">Update password</oj-button></div></oj-dialog>
+    <div class="mb-heading">
+        <div><small>ACCOUNT / PROFILE</small>
+            <h1>My profile</h1>
+            <p>Review and update your personal account information.</p></div>
+        <oj-button chroming="callToAction" on-oj-action="[[openPassword]]">Update password</oj-button>
+    </div>
+    <div class="mb-error" data-bind="visible:state.error,text:state.error"></div>
+    <div aria-live="polite" class="mb-loading mb-moneybags-loader" data-bind="visible:state.loading" role="status">
+        <svg aria-hidden="true" class="mb-moneybags-loader-logo" focusable="false" viewBox="0 0 36 36">
+            <rect fill="white" height="36" rx="10" width="36"/>
+            <text fill="#355eb8" font-family="Arial, sans-serif" font-size="20" font-weight="800" text-anchor="middle" x="18"
+                  y="25">M
+            </text>
+        </svg>
+        <strong>Loading your profile</strong>
+        <small>Preparing your account details…</small>
+    </div>
+    <div class="mb-profile-page" data-bind="with:form,visible:!state.loading()">
+<!--        <section class="mb-profile-summary"><span class="mb-avatar large" data-bind="text:($data.profile.firstName||$data.username).slice(0,2).toUpperCase()"></span>-->
+<!--            <div><small>YOUR ACCOUNT</small>-->
+<!--                <h2 data-bind="text:`${profile.firstName||''} ${profile.lastName||''}`.trim()||username"></h2>-->
+<!--                <p data-bind="text:email"></p></div>-->
+<!--        </section>-->
+        <section class="mb-panel"><h2>Account details</h2>
+            <div class="mb-form three">
+                <oj-input-text label-hint="Username" required value="{{username}}"></oj-input-text>
+                <oj-input-text label-hint="Email" required value="{{email}}"></oj-input-text>
+                <oj-input-text label-hint="Phone" value="{{profile.phoneNumber}}"></oj-input-text>
+                <oj-input-text label-hint="First name" value="{{profile.firstName}}"></oj-input-text>
+                <oj-input-text label-hint="Middle name" value="{{profile.middleName}}"></oj-input-text>
+                <oj-input-text label-hint="Last name" value="{{profile.lastName}}"></oj-input-text>
+                <oj-input-text label-hint="Country code" value="{{profile.countryCode}}"></oj-input-text>
+                <oj-input-text label-hint="Address line 1" value="{{profile.addressLine1}}"></oj-input-text>
+                <oj-input-text label-hint="Address line 2" value="{{profile.addressLine2}}"></oj-input-text>
+                <oj-input-text label-hint="City" value="{{profile.city}}"></oj-input-text>
+                <oj-input-text label-hint="State" value="{{profile.state}}"></oj-input-text>
+                <oj-input-text label-hint="Postal code" value="{{profile.postalCode}}"></oj-input-text>
+            </div>
+            <div class="mb-dialog-actions">
+                <oj-button chroming="callToAction" on-oj-action="[[$parent.save]]">Save changes</oj-button>
+            </div>
+        </section>
+    </div>
+    <oj-dialog cancel-behavior="[[passwordChangeRequired() ? 'none' : 'icon']]" class="mb-dialog" dialog-title="Update password"
+               id="myPasswordDialog">
+        <div slot="body"><p class="mb-help" data-bind="visible:passwordChangeRequired">Your administrator issued a
+            temporary password. Choose a personal password to continue.</p>
+            <div class="mb-error" data-bind="visible:error,text:error"></div>
+            <div class="mb-password-form">
+                <oj-input-password class="mb-full" label-hint="Current password"
+                                   value="{{currentPassword}}"></oj-input-password>
+                <oj-input-password class="mb-full" label-hint="New password" value="{{password}}"></oj-input-password>
+                <oj-input-password class="mb-full" label-hint="Confirm new password"
+                                   value="{{confirmPassword}}"></oj-input-password>
+            </div>
+            <p class="mb-help">Use 8–72 characters.</p></div>
+        <div class="mb-dialog-actions" slot="footer">
+            <oj-button data-bind="visible:!passwordChangeRequired()" on-oj-action="[[closePassword]]">Cancel</oj-button>
+            <oj-button chroming="callToAction" on-oj-action="[[savePassword]]">Update password</oj-button>
+        </div>
+    </oj-dialog>
 </section>

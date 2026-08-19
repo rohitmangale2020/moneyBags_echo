@@ -38,6 +38,9 @@ define([
     // navigation have completed.  The access token is stored earlier, so using
     // session.isAuthenticated here would briefly render both app states.
     self.isAppShellReady = ko.observable(false);
+    self.appLoading = ko.observable(true);
+    self.finishInitialLoad = () => window.requestAnimationFrame(() =>
+      window.requestAnimationFrame(() => self.appLoading(false)));
     self.KnockoutTemplateUtils = KnockoutTemplateUtils;
     self.toasts = ko.observableArray([]);
     self.manner = ko.observable("polite");
@@ -331,6 +334,7 @@ define([
     };
     self.completeLogin = async () => {
       self.isAppShellReady(false);
+      self.appLoading(true);
       try {
         session.profile(await services.users.get(session.userId()));
       } catch (_) {
@@ -339,6 +343,7 @@ define([
       await self.refreshRiskApprovals();
       await router.go({ path: session.passwordChangeRequired() ? "profile" : "dashboard" });
       self.isAppShellReady(true);
+      self.finishInitialLoad();
     };
     self.signOut = () => {
       self.isAppShellReady(false);
@@ -395,8 +400,12 @@ define([
       .sync()
       .then(() => {
         if (session.isAuthenticated()) self.completeLogin();
+        else self.finishInitialLoad();
       })
-      .catch(() => router.go({ path: "login" }));
+      .catch(async () => {
+        await router.go({ path: "login" });
+        self.finishInitialLoad();
+      });
   }
   Context.getPageContext().getBusyContext().applicationBootstrapComplete();
   return new App();

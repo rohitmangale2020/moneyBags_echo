@@ -2,6 +2,32 @@
   display: none !important;
 }
 
+.mb-app-startup-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 10px;
+  background: #edf3fa;
+  color: var(--acct-ink);
+  text-align: center;
+}
+
+.mb-app-startup-loader .mb-moneybags-loader-logo {
+  width: 64px;
+  height: 64px;
+}
+
+.mb-app-startup-loader strong {
+  font-size: 18px;
+}
+
+.mb-app-startup-loader small {
+  color: #647a9e;
+}
+
 .mb-table-loader {
   position: static;
   inset: auto;

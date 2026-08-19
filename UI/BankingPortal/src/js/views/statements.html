@@ -55,19 +55,18 @@
     <span data-bind="text:`${fromDate()} to ${toDate()}`"></span>
   </div>
   <div class="mb-error" data-bind="visible:state.error,text:state.error"></div>
-  <div class="mb-loading mb-moneybags-loader" data-bind="visible:state.loading" role="status" aria-live="polite">
+  <div class="mb-account-page-loader mb-table-loader mb-moneybags-loader" data-bind="visible:state.loading" role="status" aria-live="polite">
     <svg class="mb-moneybags-loader-logo" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><rect width="36" height="36" rx="10" fill="white"/><text x="18" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="800" fill="#355eb8">M</text></svg>
     <strong>Loading statement</strong>
     <small>Preparing account activity…</small>
   </div>
 
-  <div class="mb-table mb-statements-table" data-bind="visible:pagedStatements().length">
+  <div class="mb-table mb-statements-table" data-bind="visible:pagedStatements().length && !state.loading()">
     <table>
       <thead>
         <tr>
           <th>Date</th>
           <th>Description</th>
-          <th>Reference</th>
           <th>Channel</th>
           <th class="mb-amount">Withdrawal</th>
           <th class="mb-amount">Deposit</th>
@@ -78,7 +77,6 @@
         <tr>
           <td data-bind="text:$parent.date(postedAt)"></td>
           <td data-bind="text:description || ''"></td>
-          <td><strong data-bind="text:transactionRef || ''"></strong><small data-bind="text:transactionId || ''"></small></td>
           <td data-bind="text:channel || ''"></td>
           <td class="debit mb-amount" data-bind="text:$parent.displayMoney(withdrawalAmount,currencyCode)"></td>
           <td class="credit mb-amount" data-bind="text:$parent.displayMoney(depositAmount,currencyCode)"></td>
