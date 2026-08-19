@@ -26,6 +26,7 @@ define([
     nomineeId: null, nomineeName: '', relationship: '', relationType: '', dob: '', phone: '', sharePercentage: 100, status: 'ACTIVE', updatedBy: '', startDate: '', endDate: '', includeAddress: false, address: addressBlank(),
   });
   const documentTypes = ['PAN', 'AADHAAR', 'PASSPORT', 'DRIVING_LICENSE', 'SALARY_SLIP', 'PHOTO', 'SIGNATURE'];
+  const customerAddressTypes = ['CURRENT', 'PERMANENT', 'OFFICE'];
   const adultDobMax = () => {
     const date = new Date();
     date.setFullYear(date.getFullYear() - 18);
@@ -68,6 +69,13 @@ define([
     s.selected = ko.observable(null);
     s.form = ko.observable(customerBlank());
     s.addressForm = ko.observable(addressBlank());
+    s.availableAddressTypes = ko.pureComputed(() => {
+      const form = s.addressForm();
+      const usedTypes = new Set((s.detailState.data().addresses || [])
+        .filter((address) => String(address.addressId) !== String(form.addressId || ''))
+        .map((address) => String(address.addressType || '').toUpperCase()));
+      return customerAddressTypes.filter((type) => !usedTypes.has(type) || type === String(form.addressType || '').toUpperCase());
+    });
     s.documentRequiresExpiry = ko.observable(false);
     s.documentRequiresNumber = ko.observable(false);
     s.documentShowsIssueDate = ko.observable(false);
@@ -170,6 +178,9 @@ define([
     s.documentFile = ko.observable(null);
     s.activationNotice = ko.observable('');
     s.accountProducts = ko.observableArray([]);
+    s.accountCreationState = ko.observable('idle');
+    s.accountCreationMessage = ko.observable('');
+    s.accountCreationBusy = ko.pureComputed(() => s.accountCreationState() === 'submitting');
     s.accountForm = {
       productId: ko.observable(''),
       ownershipType: ko.observable('INDIVIDUAL'),
@@ -383,6 +394,8 @@ define([
         return app.notify('Only an active customer can create an account.', 'warning');
       }
       s.error('');
+      s.accountCreationState('idle');
+      s.accountCreationMessage('');
       s.accountForm.productId('');
       s.accountForm.ownershipType('INDIVIDUAL');
       s.accountForm.availableBalance(0);
@@ -401,6 +414,7 @@ define([
       return app.go('new-transaction');
     };
     s.createAccount = async () => {
+      if (s.accountCreationBusy()) return;
       const product = s.accountProducts().find((item) => String(item.productId) === String(s.accountForm.productId()));
       const requestedBalance = Number(s.accountForm.availableBalance());
       const fixedDeposit = s.isFixedDeposit();
@@ -416,6 +430,8 @@ define([
         if (!funding) return s.error('Select an eligible customer account with enough available balance to fund the FD.');
       }
       let savedAccount = null;
+      s.accountCreationState('submitting');
+      s.accountCreationMessage('Creating the account and completing the opening deposit…');
       try {
         savedAccount = await app.services.accounts.create({
           customerId: String(s.selected().customerId),
@@ -439,14 +455,19 @@ define([
         } else if (requestedBalance > 0) {
           await s.postOpeningDeposit(savedAccount, requestedBalance);
         }
-        document.getElementById('customerAccountDialog').close();
-        app.notify(fixedDeposit ? 'Fixed deposit opened and funded successfully.'
-          : 'Account opened and its opening deposit was posted successfully.');
+        const successMessage = fixedDeposit ? 'Fixed deposit opened and funded successfully.'
+          : 'Account opened and its opening deposit was posted successfully.';
+        s.accountCreationState('success');
+        s.accountCreationMessage(successMessage);
+        app.notify(successMessage);
         await s.loadDetail(s.selected());
+        window.setTimeout(() => document.getElementById('customerAccountDialog').close(), 1400);
       } catch (e) {
         s.error(savedAccount
           ? `Account ${savedAccount.accountNumber || savedAccount.accountId} was created at zero balance. ${e.message}`
           : e.message);
+        s.accountCreationState('idle');
+        s.accountCreationMessage('');
       }
     };
     s.remove = async (x) => {
@@ -454,10 +475,30 @@ define([
       try { await app.services.customers.remove(x.customerId); s.showDetailPage(false); app.notify('Customer deleted.'); s.load(); }
       catch (e) { app.notify(e.message, 'error'); }
     };
-    s.openAddress = async (x, newAddressType = 'OFFICE') => { s.error(''); try { const value = x ? await app.services.customers.getAddress(s.selected().customerId, x.addressId) : null; const form = Object.assign(addressBlank(), { addressType: newAddressType }, value || {}); s.addressForm(form); s.settingAddress = true; s.addressState(form.state || ''); s.addressDistrict(form.city || ''); s.addressArea(form.line2 || ''); s.settingAddress = false; document.getElementById('addressDialog').open(); } catch (e) { app.notify(e.message, 'error'); } };
+    s.openAddress = async (x) => {
+      s.error('');
+      try {
+        const value = x ? await app.services.customers.getAddress(s.selected().customerId, x.addressId) : null;
+        if (!value && (s.detailState.data().addresses || []).length >= customerAddressTypes.length) {
+          return app.notify('Current, permanent, and office addresses have already been added.', 'warning');
+        }
+        const form = Object.assign(addressBlank(), { addressType: '' }, value || {});
+        s.addressForm(form);
+        s.settingAddress = true;
+        s.addressState(form.state || '');
+        s.addressDistrict(form.city || '');
+        s.addressArea(form.line2 || '');
+        s.settingAddress = false;
+        document.getElementById('addressDialog').open();
+      } catch (e) { app.notify(e.message, 'error'); }
+    };
     s.saveAddress = async () => {
       const raw = ko.toJS(s.addressForm()), addressId = raw.addressId, d = clean({ addressType: raw.addressType, line1: raw.line1, line2: raw.line2, city: raw.city, state: raw.state, country: raw.country, pincode: raw.pincode }), id = s.selected().customerId;
-      if (!d.line1 || !d.city || !d.state || !d.country || !/^[1-9][0-9]{5}$/.test(d.pincode || '')) return s.error('Complete the address and enter a valid six-digit pincode.');
+      if (!d.addressType || !d.line1 || !d.city || !d.state || !d.country || !/^[1-9][0-9]{5}$/.test(d.pincode || '')) return s.error('Select an address type, complete the address, and enter a valid six-digit pincode.');
+      const duplicateType = (s.detailState.data().addresses || []).some((address) =>
+        String(address.addressId) !== String(addressId || '')
+        && String(address.addressType || '').toUpperCase() === String(d.addressType).toUpperCase());
+      if (duplicateType) return s.error(`A ${String(d.addressType).toLowerCase()} address already exists for this customer.`);
       try { addressId ? await app.services.customers.updateAddress(id, addressId, d) : await app.services.customers.address(id, d); document.getElementById('addressDialog').close(); app.notify('Address saved.'); await s.loadDetail(s.selected()); }
       catch (e) { s.error(e.message); }
     };
