@@ -23,7 +23,7 @@ define([
     docId: null, documentType: '', documentNumber: '', issueDate: '', expiryDate: '', status: 'UPLOADED', verifiedBy: '', rejectedReason: '', remarks: '', updatedBy: '',
   });
   const nomineeBlank = () => ({
-    nomineeId: null, nomineeName: '', relationship: '', relationType: 'NOMINEE', dob: '', phone: '', sharePercentage: 100, status: 'ACTIVE', updatedBy: '', startDate: '', endDate: '', includeAddress: false, address: addressBlank(),
+    nomineeId: null, nomineeName: '', relationship: '', relationType: '', dob: '', phone: '', sharePercentage: 100, status: 'ACTIVE', updatedBy: '', startDate: '', endDate: '', includeAddress: false, address: addressBlank(),
   });
   const documentTypes = ['PAN', 'AADHAAR', 'PASSPORT', 'DRIVING_LICENSE', 'SALARY_SLIP', 'PHOTO', 'SIGNATURE'];
   const adultDobMax = () => {
@@ -565,6 +565,7 @@ define([
       const otherShares = s.otherNomineeShares();
       d.sharePercentage = s.nomineeShareLocked() ? 100 : Number(d.sharePercentage);
       if (!d.nomineeName || d.sharePercentage <= 0 || d.sharePercentage > 100) return s.error('Enter a nominee name and share between 0.01 and 100.');
+      if (!d.relationType) return s.error('Select a relation type.');
       const allocatedShare = otherShares.reduce((total, nominee) => total + Number(nominee.sharePercentage() || 0), 0);
       if (String(d.status || '').toUpperCase() === 'ACTIVE' && otherShares.length && Math.abs(allocatedShare + d.sharePercentage - 100) > 0.000001) {
         return s.error(`All active nominee shares must equal 100%. Current total: ${(allocatedShare + d.sharePercentage).toFixed(2)}%.`);
@@ -645,7 +646,19 @@ define([
         }
       });
     }
-    s.connected = () => setTimeout(consumeRequestedCustomer, 0);
+    const revealManagementSelection = (event) => {
+      const select = event.target;
+      if (!(select instanceof HTMLSelectElement)) return;
+      const dialog = select.closest('#customerEditDialog,#addressDialog,#kycDialog,#documentDialog,#nomineeDialog,#customerAccountDialog');
+      if (!dialog) return;
+      const field = select.closest('.mb-managed-field,.mb-select-field');
+      if (field) field.classList.toggle('mb-has-selection', Boolean(select.value));
+    };
+    s.connected = () => {
+      document.addEventListener('change', revealManagementSelection);
+      setTimeout(consumeRequestedCustomer, 0);
+    };
+    s.disconnected = () => document.removeEventListener('change', revealManagementSelection);
     s.load().then(() => {
       if (app.selection && app.selection.path() === 'customers') consumeRequestedCustomer();
     });

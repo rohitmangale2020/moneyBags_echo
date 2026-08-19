@@ -154,8 +154,7 @@
       <div class="mb-form three">
         <oj-input-text label-hint="Name" required value="{{nomineeForm().nomineeName}}"></oj-input-text>
         <label class="mb-managed-field" data-field-label="Relationship"><select data-bind="value:nomineeForm().relationship"><option value="">Select relationship</option><option>Legal guardian</option><option>Parent</option><option>Spouse</option><option>Child</option><option>Sibling</option><option>Other</option></select></label>
-        <label class="mb-managed-field" data-field-label="Relation type"><select data-bind="value:nomineeForm().relationType"><option>NOMINEE</option><option>JOIN_HOLDER</option><option>GUARDIAN</option><option>AUTHORIZED_SIGNATORY</option></select></label>
-        <label class="mb-managed-field" data-field-label="Status"><select data-bind="value:nomineeForm().status"><option>ACTIVE</option><option>INACTIVE</option><option>PENDING</option><option>CLOSED</option></select></label>
+        <label class="mb-managed-field" data-field-label="Relation type"><select data-bind="value:nomineeForm().relationType"><option value="" disabled>Select relation type</option><option>NOMINEE</option><option>JOIN_HOLDER</option><option>GUARDIAN</option><option>AUTHORIZED_SIGNATORY</option></select></label>
         <oj-input-date label-hint="Date of birth" max="[[adultDobMax]]" value="{{nomineeForm().dob}}"></oj-input-date>
         <div>
           <div class="mb-phone-pair">
