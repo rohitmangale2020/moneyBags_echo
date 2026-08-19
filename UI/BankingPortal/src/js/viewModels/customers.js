@@ -566,6 +566,7 @@ define([
       d.sharePercentage = s.nomineeShareLocked() ? 100 : Number(d.sharePercentage);
       if (!d.nomineeName || d.sharePercentage <= 0 || d.sharePercentage > 100) return s.error('Enter a nominee name and share between 0.01 and 100.');
       if (!d.relationType) return s.error('Select a relation type.');
+      if (otherShares.some((nominee) => !Number.isFinite(Number(nominee.sharePercentage())) || Number(nominee.sharePercentage()) <= 0 || Number(nominee.sharePercentage()) > 100)) return s.error('Enter each nominee share between 0.01 and 100.');
       const allocatedShare = otherShares.reduce((total, nominee) => total + Number(nominee.sharePercentage() || 0), 0);
       if (String(d.status || '').toUpperCase() === 'ACTIVE' && otherShares.length && Math.abs(allocatedShare + d.sharePercentage - 100) > 0.000001) {
         return s.error(`All active nominee shares must equal 100%. Current total: ${(allocatedShare + d.sharePercentage).toFixed(2)}%.`);
