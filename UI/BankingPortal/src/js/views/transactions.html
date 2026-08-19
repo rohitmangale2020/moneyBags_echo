@@ -16,9 +16,16 @@
   </div>
 
   <div class="mb-filter-panel mb-filter-panel-transactions">
+    <!-- ko if:hasActiveCustomer() -->
+    <label class="mb-filter-search">Customer account
+      <select data-bind="value:query,options:contextAccounts,optionsText:'accountNumber',optionsValue:'accountNumber',optionsCaption:'All customer accounts'"></select>
+    </label>
+    <!-- /ko -->
+    <!-- ko ifnot:hasActiveCustomer() -->
     <label class="mb-filter-search">Account number
       <input type="search" inputmode="numeric" placeholder="Search by account number" data-bind="value:query,valueUpdate:'input'" />
     </label>
+    <!-- /ko -->
     <label>Type
       <select data-bind="value:typeFilter">
         <option value="ALL">All types</option><option>TRANSFER</option><option>DEPOSIT</option><option>WITHDRAWAL</option>
@@ -66,7 +73,7 @@
           <th>Date</th>
           <th>Description</th>
           <th>Type</th>
-          <th>Amount</th>
+          <th class="mb-amount">Amount</th>
           <th>Status</th>
         </tr>
       </thead>
@@ -75,17 +82,18 @@
           <td data-bind="text:$parent.date(initiatedAt)"></td>
           <td data-bind="text:description || ''"></td>
           <td><strong data-bind="text:transactionType"></strong></td>
-          <td><strong data-bind="text:$parent.money(amount,currencyCode)"></strong></td>
+          <td class="mb-amount"><strong data-bind="text:$parent.money(amount,currencyCode)"></strong></td>
           <td><span class="mb-badge" data-bind="text:transactionStatus,css:$parent.statusClass(transactionStatus)"></span></td>
         </tr>
       </tbody>
     </table>
   </div>
 
-  <div class="mb-pagination" data-bind="visible:totalPages() > 1">
-    <oj-button on-oj-action="[[previousPage]]" disabled="[[state.loading() || currentPage() === 0]]">Previous</oj-button>
-    <span data-bind="text:`Page ${currentPage() + 1} of ${totalPages()}`"></span>
-    <oj-button on-oj-action="[[nextPage]]" disabled="[[state.loading() || currentPage() >= totalPages() - 1]]">Next</oj-button>
+  <div class="mb-pagination" role="navigation" aria-label="Transactions pagination" data-bind="visible:totalTransactions() > 0">
+    <label class="mb-page-size">Rows per page<select data-bind="value:pageSize,options:pageSizeOptions"></select></label>
+    <oj-button chroming="outlined" on-oj-action="[[previousPage]]" disabled="[[state.loading() || currentPage() === 0]]">Previous</oj-button>
+    <span class="mb-page-status" data-bind="text:`Page ${currentPage() + 1} of ${totalPages()}`"></span>
+    <oj-button chroming="outlined" on-oj-action="[[nextPage]]" disabled="[[state.loading() || currentPage() >= totalPages() - 1]]">Next</oj-button>
   </div>
 
   <div class="mb-empty" data-bind="visible:!filteredTransactions().length && !state.loading()">
@@ -176,9 +184,9 @@
         <oj-input-text label-hint="Currency" value="{{form.currencyCode}}"></oj-input-text>
       </div>
 
-      <div class="mb-info">
-        Every submission uses a hidden idempotency reference, so retrying the same request cannot post balances twice.
-      </div>
+<!--      <div class="mb-info">-->
+<!--        Every submission uses a hidden idempotency reference, so retrying the same request cannot post balances twice.-->
+<!--      </div>-->
       </div>
     </div>
     <div slot="footer" class="mb-dialog-actions" data-bind="visible:submissionState() === 'idle'">

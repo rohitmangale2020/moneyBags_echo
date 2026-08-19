@@ -6,20 +6,19 @@
         <h1>Account statements</h1>
         <p>View account activity, descriptions, withdrawals, deposits, and closing balances.</p>
       </div>
-      <oj-button on-oj-action="[[download]]" disabled="[[!filteredStatements().length]]">Download CSV</oj-button>
+      <oj-button on-oj-action="[[download]]" disabled="[[!filteredStatements().length]]">Download protected PDF</oj-button>
     </div>
-
-    <oj-button on-oj-action="[[download]]" disabled="[[!filteredStatements().length]]">Download protected PDF</oj-button>
-
   </div>
 
   <div class="mb-filter-panel mb-filter-panel-statements">
+    <!-- ko if:hasActiveCustomer() -->
+    <label class="mb-filter-search">Customer account
+      <select data-bind="value:accountNumber,options:customerAccounts,optionsText:'accountNumber',optionsValue:'accountNumber',optionsCaption:'Select an account'"></select>
+    </label>
+    <!-- /ko -->
+    <!-- ko ifnot:hasActiveCustomer() -->
     <label class="mb-filter-search">Account number
       <input type="search" inputmode="numeric" placeholder="Required account number" data-bind="value:accountNumber,valueUpdate:'input'" />
-    </label>
-    <!-- ko if:hasActiveCustomer() -->
-    <label>Active customer account
-      <select data-bind="value:accountNumber,options:customerAccounts,optionsText:'accountNumber',optionsValue:'accountNumber'"></select>
     </label>
     <!-- /ko -->
     <label>Movement
@@ -65,7 +64,7 @@
   <div class="mb-error" data-bind="visible:state.error,text:state.error"></div>
   <div class="mb-loading" data-bind="visible:state.loading">Loading statement...</div>
 
-  <div class="mb-table mb-statements-table" data-bind="visible:filteredStatements().length">
+  <div class="mb-table mb-statements-table" data-bind="visible:pagedStatements().length">
     <table>
       <thead>
         <tr>
@@ -73,25 +72,43 @@
           <th>Description</th>
           <th>Reference</th>
           <th>Channel</th>
-          <th>Withdrawal</th>
-          <th>Deposit</th>
-          <th>Closing balance</th>
+          <th class="mb-amount">Withdrawal</th>
+          <th class="mb-amount">Deposit</th>
+          <th class="mb-amount">Closing balance</th>
         </tr>
       </thead>
-      <tbody data-bind="foreach:filteredStatements">
+      <tbody data-bind="foreach:pagedStatements">
         <tr>
           <td data-bind="text:$parent.date(postedAt)"></td>
           <td data-bind="text:description || ''"></td>
           <td><strong data-bind="text:transactionRef || ''"></strong><small data-bind="text:transactionId || ''"></small></td>
           <td data-bind="text:channel || ''"></td>
-          <td class="debit" data-bind="text:$parent.displayMoney(withdrawalAmount,currencyCode)"></td>
-          <td class="credit" data-bind="text:$parent.displayMoney(depositAmount,currencyCode)"></td>
-          <td><strong data-bind="text:$parent.displayMoney(closingBalance,currencyCode)"></strong></td>
+          <td class="debit mb-amount" data-bind="text:$parent.displayMoney(withdrawalAmount,currencyCode)"></td>
+          <td class="credit mb-amount" data-bind="text:$parent.displayMoney(depositAmount,currencyCode)"></td>
+          <td class="mb-amount"><strong data-bind="text:$parent.displayMoney(closingBalance,currencyCode)"></strong></td>
         </tr>
       </tbody>
     </table>
   </div>
+  <div class="mb-pagination" role="navigation" aria-label="Statement pagination" data-bind="visible:filteredStatements().length">
+    <label class="mb-page-size">Rows per page<select data-bind="value:pageSize,options:pageSizeOptions"></select></label>
+    <oj-button chroming="outlined" on-oj-action="[[previousPage]]" disabled="[[state.loading() || currentPage() === 0]]">Previous</oj-button>
+    <span class="mb-page-status" data-bind="text:`Page ${currentPage() + 1} of ${totalPages()}`"></span>
+    <oj-button chroming="outlined" on-oj-action="[[nextPage]]" disabled="[[state.loading() || currentPage() >= totalPages() - 1]]">Next</oj-button>
+  </div>
   <div class="mb-empty" data-bind="visible:!state.loading()&&!state.error()&&!filteredStatements().length">
     Enter an account number to load this month's statement, or change the date range and filters.
   </div>
+
+  <oj-dialog id="statementPasswordDialog" class="mb-dialog" dialog-title="Statement PDF password" cancel-behavior="icon">
+    <div slot="body">
+      <p>Your downloaded statement is password-protected.</p>
+      <p><strong>Password format:</strong> the first four letters of the account holder's first name (uppercase), followed by date of birth in <strong>DDMM</strong> format.</p>
+      <p><strong>Example:</strong> Priya Shah, born 9 August 1992, uses <strong>PRIY0908</strong>.</p>
+    </div>
+    <div slot="footer" class="mb-dialog-actions">
+      <oj-button on-oj-action="[[cancelDownload]]">Cancel</oj-button>
+      <oj-button chroming="callToAction" on-oj-action="[[confirmDownload]]">Download PDF</oj-button>
+    </div>
+  </oj-dialog>
 </section>

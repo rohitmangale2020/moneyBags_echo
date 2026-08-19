@@ -7,14 +7,23 @@
         <h1>Account management</h1>
         <p>Review every account, narrow the directory, or open an account against an active product.</p>
       </div>
-      <oj-button class="mb-open-account" chroming="callToAction" on-oj-action="[[open]]">Open account</oj-button>
+      <div class="mb-account-actions">
+        <oj-button class="mb-open-account" chroming="callToAction" on-oj-action="[[open]]">Open account</oj-button>
+      </div>
 
     </div>
   </div>
   <div class="mb-filter-panel mb-filter-panel-accounts">
+    <!-- ko if:hasActiveCustomer() -->
+    <label class="mb-filter-search">Account number
+      <input type="text" value="All customer accounts" readonly aria-label="All customer accounts in the active customer context" />
+    </label>
+    <!-- /ko -->
+    <!-- ko ifnot:hasActiveCustomer() -->
     <label class="mb-filter-search">Account number or customer CIF
       <input type="search" placeholder="Enter account number or CIF" data-bind="value:query,valueUpdate:'input'" />
     </label>
+    <!-- /ko -->
     <label>Status
       <select data-bind="value:statusFilter">
         <option value="ALL">All statuses</option><option>ACTIVE</option><option>INACTIVE</option>
@@ -84,10 +93,11 @@
       </dl>
     </article>
   </div>
-  <div class="mb-pagination" data-bind="visible:totalPages() > 1">
-    <oj-button on-oj-action="[[previousPage]]" disabled="[[state.loading() || currentPage() === 0]]">Previous</oj-button>
-    <span data-bind="text:`Page ${currentPage() + 1} of ${totalPages()}`"></span>
-    <oj-button on-oj-action="[[nextPage]]" disabled="[[state.loading() || currentPage() >= totalPages() - 1]]">Next</oj-button>
+  <div class="mb-pagination" role="navigation" aria-label="Accounts pagination" data-bind="visible:totalAccounts() > 0">
+    <label class="mb-page-size">Rows per page<select data-bind="value:pageSize,options:pageSizeOptions"></select></label>
+    <oj-button chroming="outlined" on-oj-action="[[previousPage]]" disabled="[[state.loading() || currentPage() === 0]]">Previous</oj-button>
+    <span class="mb-page-status" data-bind="text:`Page ${currentPage() + 1} of ${totalPages()}`"></span>
+    <oj-button chroming="outlined" on-oj-action="[[nextPage]]" disabled="[[state.loading() || currentPage() >= totalPages() - 1]]">Next</oj-button>
   </div>
   <div class="mb-empty" data-bind="visible:!state.loading()&&!filteredAccounts().length">
     No accounts match the selected filters.

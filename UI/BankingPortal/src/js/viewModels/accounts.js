@@ -16,7 +16,8 @@ define([
     let balanceAnimationFrame;
     let balanceAnimationId = 0;
     s.state = u.state([]);
-    s.pageSize = 10;
+    s.pageSize = ko.observable(12);
+    s.pageSizeOptions = [12, 18, 24];
     s.currentPage = ko.observable(0);
     s.totalAccounts = ko.observable(0);
     s.totalPages = ko.observable(0);
@@ -284,7 +285,7 @@ define([
       const page = Number.isInteger(requestedPage) ? requestedPage : s.currentPage();
       const customerId = s.searchCustomerId()
         || (s.hasActiveCustomer() ? s.activeCustomer().customerId : null);
-      const response = await app.services.accounts.list(page, s.pageSize, {
+      const response = await app.services.accounts.list(page, Number(s.pageSize()), {
         customerId,
         status: s.statusFilter(),
         ownershipType: s.ownershipFilter(),
@@ -341,6 +342,7 @@ define([
     s.nextPage = () => {
       if (s.currentPage() < s.totalPages() - 1) s.load(s.currentPage() + 1);
     };
+    s.pageSize.subscribe(() => s.load(0));
     let resettingFilters = false;
     [s.statusFilter, s.ownershipFilter, s.currencyFilter].forEach((filter) => {
       filter.subscribe(() => {
