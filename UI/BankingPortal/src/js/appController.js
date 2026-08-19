@@ -83,7 +83,7 @@ define([
       },
       {
         path: "risk-approvals",
-        detail: { label: "Risk approvals", iconClass: "mb-risk-approvals-icon", roles: ["ADMIN"] },
+        detail: { label: "Risk approvals", iconClass: "oj-ux-ico-shield", roles: ["ADMIN"] },
       },
       {
         path: "onboarding",

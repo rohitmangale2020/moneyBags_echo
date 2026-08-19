@@ -1,1 +1,47 @@
-<section class="mb-stack"><div class="mb-heading"><div><small>RISK OPERATIONS</small><h1>Transactions awaiting approval</h1><p>Account balances do not change until an administrator approves the transaction.</p></div><oj-button on-oj-action="[[load]]">Refresh</oj-button></div><div class="mb-error" data-bind="visible:state.error"><span data-bind="text:state.error"></span></div><div class="mb-error" data-bind="visible:error"><span data-bind="text:error"></span></div><div class="mb-empty" data-bind="visible:!state.loading() && !state.data().length">There are no transactions awaiting approval.</div><div class="mb-risk-review-list" data-bind="foreach:state.data"><article class="mb-risk-review-card"><header><div><small data-bind="text:`${transactionType} · ${transactionRef}`"></small><h2 data-bind="text:$parent.money(amount,currencyCode)"></h2><time data-bind="text:$parent.date(initiatedAt)"></time></div><span class="mb-badge" data-bind="text:riskLevel || 'RISK_UNAVAILABLE'"></span></header><div class="mb-info"><strong>Why review is required</strong><p data-bind="text:riskReasons || 'Risk scoring was unavailable. Review before approval.'"></p></div><dl><div><dt>Debit account</dt><dd data-bind="text:debitAccountId || '—'"></dd></div><div><dt>Credit account</dt><dd data-bind="text:creditAccountId || '—'"></dd></div></dl><label>Decision note (optional)<textarea rows="3" maxlength="500" data-bind="value:$parent.note"></textarea></label><footer><oj-button on-oj-action="[[$parent.reject.bind(null,$data)]]" disabled="[[$parent.busy]]">Reject</oj-button><oj-button chroming="callToAction" on-oj-action="[[$parent.approve.bind(null,$data)]]" disabled="[[$parent.busy]]">Approve and post</oj-button></footer></article></div></section>
+<section class="mb-stack mb-risk-approvals-page">
+  <div class="mb-heading mb-risk-approvals-heading">
+    <div>
+      <small>RISK OPERATIONS</small>
+      <h1>Transactions awaiting approval</h1>
+      <p>Account balances do not change until an administrator approves the transaction.</p>
+    </div>
+    <oj-button on-oj-action="[[load]]">Refresh</oj-button>
+  </div>
+
+  <div class="mb-error" data-bind="visible:state.error"><span data-bind="text:state.error"></span></div>
+  <div class="mb-error" data-bind="visible:error"><span data-bind="text:error"></span></div>
+  <div class="mb-empty" data-bind="visible:!state.loading() && !state.data().length">There are no transactions awaiting approval.</div>
+
+  <div class="mb-risk-review-list" data-bind="foreach:state.data">
+    <article class="mb-risk-review-card">
+      <header class="mb-risk-review-card-header">
+        <div>
+          <small data-bind="text:`${transactionType} · ${transactionRef}`"></small>
+          <h2 data-bind="text:$parent.money(amount,currencyCode)"></h2>
+          <time data-bind="text:$parent.date(initiatedAt)"></time>
+        </div>
+        <span class="mb-badge" data-bind="text:riskLevel || 'RISK_UNAVAILABLE', css:(riskLevel || 'RISK_UNAVAILABLE').toLowerCase()"></span>
+      </header>
+
+      <div class="mb-info mb-risk-review-reasons">
+        <strong>Why review is required</strong>
+        <p data-bind="text:riskReasons || 'Risk scoring was unavailable. Review before approval.'"></p>
+      </div>
+
+      <dl class="mb-risk-review-accounts">
+        <div><dt>Debit account</dt><dd data-bind="text:debitAccountId || '—'"></dd></div>
+        <div><dt>Credit account</dt><dd data-bind="text:creditAccountId || '—'"></dd></div>
+      </dl>
+
+      <label class="mb-risk-review-note">
+        <span>Decision note <em>(optional)</em></span>
+        <textarea rows="3" maxlength="500" placeholder="Add a note for the audit record" data-bind="value:$parent.noteFor($data)"></textarea>
+      </label>
+
+      <footer class="mb-risk-review-actions">
+        <oj-button on-oj-action="[[$parent.reject.bind(null,$data)]]" disabled="[[$parent.busy]]">Reject</oj-button>
+        <oj-button chroming="callToAction" on-oj-action="[[$parent.approve.bind(null,$data)]]" disabled="[[$parent.busy]]">Approve and post</oj-button>
+      </footer>
+    </article>
+  </div>
+</section>
