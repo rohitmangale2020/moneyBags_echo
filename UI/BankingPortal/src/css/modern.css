@@ -1889,7 +1889,8 @@ body:has(.mb-assistant-chat) .mb-ai-fab { display:none; }
 @media (max-width:767px) { .mb-assistant-composer { left:0; } }
 
 /* Single-scroll chat container: the page itself does not add a second scrollbar. */
-body:has(.mb-assistant-chat) .mb-content { height:calc(100dvh - var(--mb-shell-header-height) - 36px); padding:18px; overflow:hidden; }
+body:has(.mb-assistant-chat) .mb-content { height:calc(100dvh - var(--mb-shell-header-height)); padding:18px; overflow:hidden; }
+body:has(.mb-assistant-chat) .mb-content > oj-module { display:block; height:100%; }
 body:has(.mb-assistant-chat) .mb-stack { height:100%; min-height:0; }
 .mb-assistant-chat { display:flex; flex-direction:column; height:100%; min-height:0; margin:0; padding:20px 28px 220px; border:1px solid var(--mb-line); border-radius:16px; background:#f8fbff; box-shadow:var(--mb-shadow-sm); }
 .mb-assistant-message-list { flex:1; min-height:0; max-height:none; margin-bottom:0; overflow-y:auto; scrollbar-width:none; -ms-overflow-style:none; }
@@ -1919,6 +1920,16 @@ body:has(.mb-assistant-chat) .mb-stack { height:100%; min-height:0; }
 /* The panel height includes its padding; otherwise the bottom composer falls below the viewport. */
 .mb-assistant-chat { box-sizing:border-box; }
 
+/* Empty assistant state. The greeting disappears as soon as a conversation starts. */
+.mb-assistant-welcome { display:grid; flex:1; place-content:center; justify-items:center; gap:10px; min-height:260px; color:var(--mb-text); text-align:center; animation:mb-assistant-welcome-in .55s ease-out both; }
+.mb-assistant-welcome-orb { display:grid; place-items:center; width:68px; height:68px; margin-bottom:4px; border-radius:50%; background:linear-gradient(135deg,#1675eb,#71c8ff); color:#fff; box-shadow:0 0 0 12px rgba(22,117,235,.08),0 14px 30px rgba(22,117,235,.24); font-size:18px; font-weight:850; letter-spacing:.04em; animation:mb-assistant-orb-pulse 2.4s ease-in-out infinite; }
+.mb-assistant-welcome h2 { margin:0; color:#6b7280; font-size:20px; letter-spacing:-.02em; }
+.mb-assistant-welcome p { margin:0; color:#7b8495; font-size:13px; }
+.mb-assistant-message-list-empty { display:none; }
+@keyframes mb-assistant-welcome-in { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+@keyframes mb-assistant-orb-pulse { 0%,100% { transform:scale(1); box-shadow:0 0 0 12px rgba(22,117,235,.08),0 14px 30px rgba(22,117,235,.24); } 50% { transform:scale(1.05); box-shadow:0 0 0 20px rgba(22,117,235,.03),0 18px 36px rgba(22,117,235,.3); } }
+@media (prefers-reduced-motion:reduce) { .mb-assistant-welcome,.mb-assistant-welcome-orb { animation:none; } }
+
 /* Selected tools need a complete high-contrast state, including their background. */
 .mb-assistant-composer .mb-assistant-tools button.mb-link.active {
   border-color:var(--mb-primary) !important;
@@ -1931,7 +1942,7 @@ body:has(.mb-assistant-chat) .mb-stack { height:100%; min-height:0; }
 .mb-assistant-chat {
   display:flex;
   flex-direction:column;
-  /* The JET module host has no fixed height, so size the chat from the viewport. */
+  /* Fill the content area while leaving room for its rounded outer edges. */
   height:calc(100dvh - var(--mb-shell-header-height) - 36px);
   min-height:0;
   padding:20px 28px 118px;
@@ -1981,7 +1992,8 @@ body:has(.mb-assistant-chat) .mb-stack { height:100%; min-height:0; }
 }
 .mb-assistant-composer { padding:6px 8px; }
 .mb-assistant-composer > label textarea { height:32px; min-height:32px; padding:6px 10px; resize:none; }
-.mb-send-button { min-height:32px; padding:0 12px; }
+.mb-assistant-composer > label textarea:focus { border-color:var(--mb-line); outline:3px solid rgba(17,104,232,.12); outline-offset:0; box-shadow:none; }
+.mb-send-button { display:grid; place-items:center; min-width:42px; min-height:32px; padding:0; }
 .mb-assistant-chat {
   padding-bottom:112px;
 }
@@ -1993,7 +2005,20 @@ body:has(.mb-assistant-chat) .mb-stack { height:100%; min-height:0; }
 .mb-chat-customer-card header { display:flex; align-items:center; justify-content:space-between; padding:10px; border:1px solid var(--mb-line); border-radius:9px; background:#fff; }
 .mb-chat-customer-card header strong { display:block; color:var(--mb-text); font-size:12px; letter-spacing:0; text-transform:none; }
 .mb-chat-customer-card header small { display:block; margin-top:3px; color:var(--mb-subtle); font-size:10px; }
-.mb-chat-customer-card header > span { color:var(--mb-primary); font-size:22px; line-height:1; }
+.mb-chat-product-list .mb-chat-product-minimum { margin-top:5px; color:var(--mb-text); font-size:10px; font-weight:700; }
+
+/* Results are rendered in the chat stream; hide the legacy duplicate panels. */
+.mb-stack:has(.mb-assistant-chat) > .mb-assistant-operations,
+.mb-stack:has(.mb-assistant-chat) > .mb-assistant-response-chat,
+.mb-stack:has(.mb-assistant-chat) > .mb-conversation-panel { display:none !important; }
+
+/* Editable confirmation before assistant-collected onboarding details are saved. */
+.mb-onboarding-review-backdrop { position:fixed; z-index:300; inset:0; display:grid; place-items:center; padding:24px; overflow:auto; background:rgba(4,23,51,.42); backdrop-filter:blur(3px); }
+.mb-onboarding-review-modal { width:min(920px,100%); max-height:calc(100dvh - 48px); display:grid; grid-template-rows:auto minmax(0,1fr) auto; overflow:hidden; border:1px solid #d7e4f4; border-radius:20px; background:#fff; box-shadow:0 24px 65px rgba(3,27,69,.3); }
+.mb-onboarding-review-modal > header { padding:24px 28px 18px; border-bottom:1px solid var(--mb-line); }.mb-onboarding-review-modal header small,.mb-onboarding-review-modal h3 { color:var(--mb-primary); font-size:10px; font-weight:800; letter-spacing:.09em; }.mb-onboarding-review-modal h2 { margin:5px 0; color:var(--mb-text); font-size:25px; }.mb-onboarding-review-modal header p { margin:0; color:var(--mb-subtle); font-size:13px; }
+.mb-onboarding-review-form { display:grid; gap:18px; padding:22px 28px; overflow:auto; background:#fafcff; }.mb-onboarding-review-form section { padding:18px; border:1px solid var(--mb-line); border-radius:14px; background:#fff; }.mb-onboarding-review-form h3 { margin:0 0 14px; }.mb-onboarding-review-form label { display:grid; gap:6px; color:var(--mb-text); font-size:11px; font-weight:700; }.mb-onboarding-review-form input,.mb-onboarding-review-form select { width:100%; min-height:40px; padding:8px 10px; border:1px solid #d5e0ef; border-radius:8px; background:#fff; color:var(--mb-text); font:13px inherit; }.mb-onboarding-review-form input:focus,.mb-onboarding-review-form select:focus { border-color:var(--mb-primary); outline:3px solid rgba(17,104,232,.12); }
+.mb-onboarding-review-modal > .mb-error { margin:0 28px 16px; }.mb-onboarding-review-modal > footer { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:16px 28px; border-top:1px solid var(--mb-line); background:#fff; }.mb-onboarding-review-modal > footer > div { display:flex; gap:10px; }.mb-onboarding-review-modal > footer .mb-link { min-height:40px; padding:0 14px; border:1px solid var(--mb-line); border-radius:9px; background:#fff; }.mb-onboarding-review-modal > footer .mb-link.danger { border-color:#efc4ca; background:#fff6f7; }.mb-onboarding-review-modal > footer .mb-primary { min-height:40px; padding:0 16px; border:0; border-radius:9px; background:var(--mb-primary); color:#fff; font-weight:750; cursor:pointer; }
+@media (max-width:700px) { .mb-onboarding-review-backdrop { padding:10px; }.mb-onboarding-review-modal { max-height:calc(100dvh - 20px); border-radius:14px; }.mb-onboarding-review-modal > header,.mb-onboarding-review-form,.mb-onboarding-review-modal > footer { padding-right:16px; padding-left:16px; }.mb-onboarding-review-modal > footer { align-items:stretch; flex-direction:column; }.mb-onboarding-review-modal > footer > div { display:grid; grid-template-columns:1fr; }.mb-onboarding-review-form .mb-form.three { grid-template-columns:1fr; } }
 .mb-chat-account-activity { padding:10px; border:1px solid var(--mb-line); border-radius:9px; background:#fff; }
 .mb-chat-account-activity > strong { display:block; margin-bottom:5px; color:var(--mb-text); font-size:11px; }
 .mb-chat-account-activity p { display:flex; justify-content:space-between; gap:12px; margin:5px 0; color:var(--mb-subtle); font-size:10px; }

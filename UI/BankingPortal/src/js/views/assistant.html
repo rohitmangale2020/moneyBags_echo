@@ -20,13 +20,18 @@
       <!-- /ko -->
     </div>
     <div class="mb-info">The assistant answers banking questions and employee-authorized customer questions. It cannot move money, reveal passwords, or bypass approval controls.</div>
-    <div class="mb-assistant-message-list" data-bind="foreach:chatMessages">
+    <div class="mb-assistant-welcome" data-bind="visible:chatMessages().length === 0 && !loading()" aria-live="polite">
+      <span class="mb-assistant-welcome-orb" aria-hidden="true">AI</span>
+      <h2>Welcome to the AI Assistant</h2>
+      <p>How can I help you today?</p>
+    </div>
+    <div class="mb-assistant-message-list" data-bind="foreach:chatMessages, css:{'mb-assistant-message-list-empty': chatMessages().length === 0}">
       <article class="mb-chat-bubble" data-bind="css:role">
         <strong data-bind="text:role === 'assistant' ? 'AI Assistant' : 'You'"></strong>
         <span data-bind="text:text"></span>
         <!-- ko if:customer360 -->
         <section class="mb-chat-customer-card" data-bind="with:customer360">
-          <header><div><strong data-bind="text:fullName"></strong><small data-bind="text:'CIF: ' + cifNo"></small></div><span>›</span></header>
+          <header><div><strong data-bind="text:fullName"></strong><small data-bind="text:'CIF: ' + cifNo"></small></div></header>
           <div class="mb-chat-account-activity">
             <strong>Account summary</strong>
             <div data-bind="foreach:accounts">
@@ -49,7 +54,7 @@
           <header><div><small>PRODUCT OPTIONS</small><strong data-bind="text:'Recommended for ' + fullName"></strong><span data-bind="text:'CIF: ' + cifNo"></span></div><b>✦</b></header>
           <div class="mb-chat-product-summary"><span data-bind="text:activeAccountCount + ' active account(s)'"></span><strong data-bind="text:totalBalance"></strong></div>
           <div class="mb-chat-product-list" data-bind="foreach:products">
-            <article><div><strong data-bind="text:name"></strong><small data-bind="text:type"></small></div><span data-bind="text:interestRate"></span></article>
+            <article><div><strong data-bind="text:name"></strong><small data-bind="text:type"></small><small class="mb-chat-product-minimum" data-bind="text:'Min. balance: ' + minimumBalance"></small></div><span data-bind="text:interestRate"></span></article>
           </div>
           <p data-bind="visible:!products.length">No active product options are currently available.</p>
         </section>
@@ -79,9 +84,36 @@
     </div>
     <article class="mb-chat-bubble assistant mb-chat-typing" data-bind="visible:loading"><strong>AI Assistant</strong><span>Thinking…</span></article>
     <div class="mb-assistant-composer">
-      <label>Ask a banking question<textarea rows="2" maxlength="1000" data-bind="value:message, attr:{placeholder:composerPlaceholder}, event:{keydown:messageKeypress}"></textarea></label>
-      <button type="button" class="mb-send-button" data-bind="click:send, disable:loading" aria-label="Send message"><span aria-hidden="true">➤</span> Send</button>
+      <label>Ask a banking question<textarea rows="2" maxlength="1000" data-bind="value:message, valueUpdate:'input', attr:{placeholder:composerPlaceholder}, event:{keydown:messageKeypress}"></textarea></label>
+      <button type="button" class="mb-send-button" data-bind="click:send, disable:loading" aria-label="Send message"><span aria-hidden="true">➤</span></button>
     </div>
+  </div>
+
+  <div class="mb-onboarding-review-backdrop" data-bind="visible:onboardingReviewOpen">
+    <section class="mb-onboarding-review-modal" role="dialog" aria-modal="true" aria-labelledby="onboardingReviewTitle">
+      <header><div><small>ONBOARDING PREVIEW</small><h2 id="onboardingReviewTitle">Review customer details</h2><p>Review or edit the details gathered by the AI before creating the customer record.</p></div></header>
+      <div class="mb-onboarding-review-form">
+        <section><h3>Customer profile</h3><div class="mb-form three">
+          <label>First name<input type="text" maxlength="100" data-bind="value:onboarding.firstName" /></label>
+          <label>Last name<input type="text" maxlength="100" data-bind="value:onboarding.lastName" /></label>
+          <label>Date of birth<input type="date" data-bind="value:onboarding.dob" /></label>
+          <label>Gender<select data-bind="value:onboarding.gender"><option value="MALE">Male</option><option value="FEMALE">Female</option><option value="OTHER">Other</option></select></label>
+          <label>Mobile<input type="tel" maxlength="10" data-bind="value:onboarding.phone" /></label>
+          <label>Email<input type="email" maxlength="254" data-bind="value:onboarding.email" /></label>
+          <label class="wide">Occupation<input type="text" maxlength="100" data-bind="value:onboarding.occupation" /></label>
+        </div></section>
+        <section><h3>Residential address</h3><div class="mb-form three">
+          <label>Address type<select data-bind="value:onboarding.addressType"><option value="CURRENT">Current</option><option value="PERMANENT">Permanent</option><option value="OFFICE">Office</option></select></label>
+          <label class="wide">Address line 1<input type="text" maxlength="250" data-bind="value:onboarding.line1" /></label>
+          <label class="wide">Address line 2<input type="text" maxlength="250" data-bind="value:onboarding.line2" /></label>
+          <label>City / district<input type="text" maxlength="100" data-bind="value:onboarding.city" /></label>
+          <label>State<input type="text" maxlength="100" data-bind="value:onboarding.state" /></label>
+          <label>PIN code<input type="text" inputmode="numeric" maxlength="6" data-bind="value:onboarding.pincode" /></label>
+        </div></section>
+      </div>
+      <div class="mb-error" data-bind="visible:onboardingError"><span data-bind="text:onboardingError"></span></div>
+      <footer><button type="button" class="mb-link danger" data-bind="click:discardOnboarding, disable:onboardingBusy">Discard</button><div><button type="button" class="mb-link" data-bind="click:submitOnboarding, disable:onboardingBusy">Create customer</button><button type="button" class="mb-primary" data-bind="click:continueWithKyc, disable:onboardingBusy">Continue with KYC</button></div></footer>
+    </section>
   </div>
 
   <article class="mb-panel mb-chat-onboarding" data-bind="visible:onboardingActive">

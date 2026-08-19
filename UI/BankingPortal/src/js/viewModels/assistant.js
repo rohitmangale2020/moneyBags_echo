@@ -3,7 +3,8 @@ define(['knockout', 'appController'], function (ko, app) {
 
   function VM() {
     const self = this;
-    self.message = ko.observable('Prepare a customer 360 briefing');
+    let onboardingSession = 0;
+    self.message = ko.observable('');
     self.customerId = ko.observable((app.activeCustomer() || {}).customerId || '');
     self.customerCif = ko.observable((app.activeCustomer() || {}).cifNo || '');
     self.transactionId = ko.observable('');
@@ -11,6 +12,7 @@ define(['knockout', 'appController'], function (ko, app) {
     self.module = ko.pureComputed(() => app.assistantContext() || 'platform');
     self.history = ko.observableArray([]);
     self.chatMessages = ko.observableArray([]);
+    self.referencedCustomer = ko.observable(null);
     self.loading = ko.observable(false);
     self.error = ko.observable('');
     self.response = ko.observable(null);
@@ -46,6 +48,7 @@ define(['knockout', 'appController'], function (ko, app) {
     self.onboardingBusy = ko.observable(false);
     self.onboardingReply = ko.observable('');
     self.onboardingError = ko.observable('');
+    self.onboardingReviewOpen = ko.observable(false);
     self.onboardedCustomer = ko.observable(null);
     self.onboardingPrompt = ko.observable('I’ll create the customer profile and residential address, then start a pending KYC assessment. Complete document upload and verification in the onboarding workspace.');
     self.onboardingMessages = ko.observableArray([]);
@@ -55,6 +58,11 @@ define(['knockout', 'appController'], function (ko, app) {
       phone: ko.observable(''), email: ko.observable(''), occupation: ko.observable(''), addressType: ko.observable(''),
       line1: ko.observable(''), line2: ko.observable(''), city: ko.observable(''), state: ko.observable(''), pincode: ko.observable('')
     };
+    const indianStates = new Set([
+      'andhra pradesh', 'arunachal pradesh', 'assam', 'bihar', 'chhattisgarh', 'goa', 'gujarat', 'haryana', 'himachal pradesh', 'jharkhand', 'karnataka', 'kerala', 'madhya pradesh', 'maharashtra', 'manipur', 'meghalaya', 'mizoram', 'nagaland', 'odisha', 'punjab', 'rajasthan', 'sikkim', 'tamil nadu', 'telangana', 'tripura', 'uttar pradesh', 'uttarakhand', 'west bengal', 'andaman and nicobar islands', 'chandigarh', 'dadra and nagar haveli and daman and diu', 'delhi', 'jammu and kashmir', 'ladakh', 'lakshadweep', 'puducherry'
+    ]);
+    const isCityOrDistrict = (value) => !indianStates.has(String(value).trim().toLocaleLowerCase('en-IN'))
+      || 'Enter a city or district here, not a state.';
     const onboardingQuestions = [
       { key: 'firstName', prompt: 'What is the customer’s first name?', valid: (value) => value.length <= 100 || 'First name must be 100 characters or fewer.' },
       { key: 'lastName', prompt: 'What is the customer’s last name?', valid: (value) => value.length <= 100 || 'Last name must be 100 characters or fewer.' },
@@ -65,7 +73,7 @@ define(['knockout', 'appController'], function (ko, app) {
       { key: 'occupation', prompt: 'What is the customer’s occupation?', valid: (value) => value.length <= 100 || 'Occupation must be 100 characters or fewer.' },
       { key: 'addressType', prompt: 'Is this the Current, Permanent, or Office address?', valid: (value) => ['CURRENT', 'PERMANENT', 'OFFICE'].includes(value.toUpperCase()) || 'Reply Current, Permanent, or Office.', transform: (value) => value.toUpperCase() },
       { key: 'line1', prompt: 'What is address line 1?', valid: (value) => value.length <= 250 || 'Address line 1 must be 250 characters or fewer.' },
-      { key: 'city', prompt: 'What is the city or district?', valid: (value) => value.length <= 100 || 'City must be 100 characters or fewer.' },
+      { key: 'city', prompt: 'What is the city or district?', valid: (value) => value.length > 100 ? 'City must be 100 characters or fewer.' : isCityOrDistrict(value) },
       { key: 'state', prompt: 'What is the state?', valid: (value) => value.length <= 100 || 'State must be 100 characters or fewer.' },
       { key: 'pincode', prompt: 'What is the six-digit PIN code?', valid: (value) => /^[1-9]\d{5}$/.test(value) || 'Enter a valid six-digit PIN code.' }
     ];
@@ -85,7 +93,10 @@ define(['knockout', 'appController'], function (ko, app) {
     const askOnboardingQuestion = () => {
       const question = onboardingQuestions[self.onboardingStep()];
       if (question) addOnboardingMessage('assistant', question.prompt);
-      else addOnboardingMessage('assistant', 'All required details are collected. Type “Create customer” to save the record and start KYC.');
+      else {
+        self.onboardingReviewOpen(true);
+        addOnboardingMessage('assistant', 'All details are collected. Review and confirm the customer information to continue.');
+      }
     };
 
     const bankingTerms = [
@@ -98,6 +109,59 @@ define(['knockout', 'appController'], function (ko, app) {
     const isBankingQuestion = (message) => bankingTerms.some((term) => message.toLowerCase().includes(term));
     const rows = (value) => Array.isArray(value) ? value : (value && (value.content || value.items || value.data)) || [];
     const currency = (amount, code) => `${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 }).format(Number(amount || 0))} ${code || 'INR'}`;
+    const customerStatusName = (message) => {
+      const match = message.match(/\bstatus\s+(?:for|of)\s+([a-z][a-z .'-]*)\??\s*$/i)
+        || message.match(/\bstatus\s+([a-z][a-z .'-]*)\??\s*$/i);
+      return match ? match[1].trim().replace(/^(?:the\s+)?customer\s+/i, '') : '';
+    };
+    const answerCustomerStatus = async (name) => {
+      const firstName = name.split(/\s+/)[0];
+      self.loading(true);
+      self.error('');
+      self.response(null);
+      try {
+        const matches = rows(await app.services.customers.byFirstName(firstName));
+        const normalizedName = name.toLowerCase();
+        const exactMatches = matches.filter((customer) =>
+          `${customer.firstName || ''} ${customer.lastName || ''}`.trim().toLowerCase() === normalizedName,
+        );
+        const customers = exactMatches.length ? exactMatches : matches;
+        if (!customers.length) {
+          self.response({ intent: 'CUSTOMER_STATUS', answer: `No customer named ${name} was found in the bank records.`, evidence: [], nextSteps: [], recommendations: [] });
+        } else if (customers.length > 1) {
+          self.response({ intent: 'CUSTOMER_STATUS', answer: `I found multiple customers named ${name}. Please provide the Customer CIF to check the correct status.`, evidence: [], nextSteps: [], recommendations: [] });
+        } else {
+          const customer = customers[0];
+          const fullName = `${customer.firstName || ''} ${customer.lastName || ''}`.trim();
+          self.referencedCustomer({ customerId: customer.customerId, fullName, cifNo: customer.cifNo });
+          self.response({ intent: 'CUSTOMER_STATUS', answer: `${fullName}'s customer status is ${String(customer.status || 'NOT_RECORDED').replace(/_/g, ' ')}.`, evidence: [], nextSteps: [], recommendations: [] });
+        }
+      } catch (error) {
+        self.error(requestError(error, `Unable to find the customer named ${name}.`));
+      } finally {
+        self.loading(false);
+      }
+    };
+    const isReferencedKycQuestion = (message) => /\bkyc\b.*\bstatus\b|\bstatus\b.*\bkyc\b/i.test(message)
+      && /\b(her|his|their|this customer|that customer)\b/i.test(message);
+    const answerReferencedKycStatus = async () => {
+      const customer = self.referencedCustomer();
+      if (!customer) return false;
+      self.loading(true);
+      self.error('');
+      self.response(null);
+      try {
+        const kyc = await app.services.customers.kyc(customer.customerId);
+        const status = String((kyc && kyc.kycStatus) || 'NOT_AVAILABLE').replace(/_/g, ' ');
+        const risk = String((kyc && kyc.riskLevel) || 'NOT_AVAILABLE').replace(/_/g, ' ');
+        self.response({ intent: 'CUSTOMER_KYC_STATUS', answer: `${customer.fullName}'s KYC status is ${status}. Current risk level: ${risk}.`, evidence: [], nextSteps: [], recommendations: [] });
+      } catch (error) {
+        self.error(requestError(error, `Unable to retrieve ${customer.fullName}'s KYC status.`));
+      } finally {
+        self.loading(false);
+      }
+      return true;
+    };
     function isAdultDateOfBirth(value) {
       if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
       const [year, month, day] = value.split('-').map(Number);
@@ -178,6 +242,9 @@ define(['knockout', 'appController'], function (ko, app) {
       if (kind !== 'account') self.accountId('');
     };
     self.selectAssistantTool = (tool) => {
+      // A new tool replaces an unfinished onboarding conversation. Otherwise
+      // the composer continues routing replies to the onboarding questions.
+      if (self.onboardingActive() && tool.id !== 'onboarding') self.discardOnboarding();
       self.selectedTool(tool);
       self.toolSelectionId(tool.id);
       self.toolInput('');
@@ -214,7 +281,7 @@ define(['knockout', 'appController'], function (ko, app) {
     };
     self.useCustomerBriefing = () => {
       retainContext('cif');
-      self.message('Prepare a customer 360 briefing');
+      self.message('');
       if (self.customerCif().trim()) self.prepareCustomer360();
     };
     self.prepareCustomer360 = async () => {
@@ -226,6 +293,7 @@ define(['knockout', 'appController'], function (ko, app) {
       self.loading(true); self.error(''); self.response(null);
       try {
         const customer = await app.services.customers.byCif(cif);
+        self.referencedCustomer({ customerId: customer.customerId, fullName: `${customer.firstName} ${customer.lastName || ''}`.trim(), cifNo: customer.cifNo });
         const [accountsResult, kycResult] = await Promise.allSettled([
           app.services.accounts.customer(customer.customerId),
           app.services.customers.kyc(customer.customerId),
@@ -319,6 +387,7 @@ define(['knockout', 'appController'], function (ko, app) {
       self.loading(true); self.error(''); self.response(null);
       try {
         const customer = await app.services.customers.byCif(cif);
+        self.referencedCustomer({ customerId: customer.customerId, fullName: `${customer.firstName} ${customer.lastName || ''}`.trim(), cifNo: customer.cifNo });
         const [accountsResult, productsResult] = await Promise.allSettled([app.services.accounts.customer(customer.customerId), app.services.products.list()]);
         const accounts = accountsResult.status === 'fulfilled' ? rows(accountsResult.value) : [];
         const products = productsResult.status === 'fulfilled' ? rows(productsResult.value).filter((product) => String(product.status || 'ACTIVE').toUpperCase() === 'ACTIVE').slice(0, 3) : [];
@@ -335,13 +404,16 @@ define(['knockout', 'appController'], function (ko, app) {
             fullName: `${customer.firstName} ${customer.lastName || ''}`.trim(), cifNo: customer.cifNo,
             activeAccountCount: accounts.filter((account) => String(account.status).toUpperCase() === 'ACTIVE').length,
             totalBalance: currency(totalBalance, accounts[0] && accounts[0].currencyCode), eligibility: ko.observable(null),
-            products: products.map((product) => ({
-              name: product.productName || product.name || product.productCode || 'Banking product',
-              code: product.productCode || 'PRODUCT', type: product.productType || 'Product',
-              minimumBalanceValue: Number(product.minimumBalance || 0),
-              minimumBalance: product.minimumBalance === null || product.minimumBalance === undefined ? 'Not specified' : currency(product.minimumBalance, product.currency),
-              interestRate: product.interestRate === null || product.interestRate === undefined ? 'Rate on request' : `${product.interestRate}% p.a.`
-            }))
+            products: products.map((product) => {
+              const interestRate = product.rate?.interestRate ?? product.interestRate;
+              return {
+                name: product.productName || product.name || product.productCode || 'Banking product',
+                code: product.productCode || 'PRODUCT', type: product.productType || 'Product',
+                minimumBalanceValue: Number(product.minimumBalance || 0),
+                minimumBalance: product.minimumBalance === null || product.minimumBalance === undefined ? 'Not specified' : currency(product.minimumBalance, product.currency),
+                interestRate: interestRate === null || interestRate === undefined ? 'Rate on request' : `${interestRate}% p.a.`
+              };
+            })
             };
             productOptions.reviewEligibility = (product) => {
               const hasRequiredBalance = totalBalance >= product.minimumBalanceValue;
@@ -391,9 +463,11 @@ define(['knockout', 'appController'], function (ko, app) {
       publish('POLICY_HELP', 'Policy help', ['Policy guidance', '', '- Verify the employee role and customer consent before viewing records.', '- Mask sensitive information outside approved screens.', '- Route KYC, account changes, and product applications through their approved workflows.', `- Reference supplied: ${reference || 'None'}`].join('\n'), ['Use the relevant Customer 360, Transaction review, or Account overview action to see factual details.']);
     };
     self.startOnboarding = () => {
+      onboardingSession += 1;
       retainContext('none');
       self.onboardingActive(true);
       self.onboardingError('');
+      self.onboardingReviewOpen(false);
       self.onboardedCustomer(null);
       self.onboardingStep(0);
       self.onboardingReply('');
@@ -404,8 +478,11 @@ define(['knockout', 'appController'], function (ko, app) {
       self.history.unshift({ message: 'Start customer onboarding', intent: 'CUSTOMER_ONBOARDING', answer: 'The onboarding chatbot is collecting the customer profile and address.' });
     };
     self.cancelOnboarding = () => {
+      onboardingSession += 1;
       self.onboardingActive(false);
+      self.onboardingBusy(false);
       self.onboardingError('');
+      self.onboardingReviewOpen(false);
     };
     self.discardOnboarding = () => {
       self.cancelOnboarding();
@@ -416,6 +493,7 @@ define(['knockout', 'appController'], function (ko, app) {
       Object.keys(self.onboarding).forEach((key) => self.onboarding[key](''));
     };
     self.captureOnboardingReply = async (reply) => {
+      const session = onboardingSession;
       const question = onboardingQuestions[self.onboardingStep()];
       if (!question) return;
       const value = reply.trim();
@@ -427,24 +505,26 @@ define(['knockout', 'appController'], function (ko, app) {
       try {
         if (question.key === 'phone' || question.key === 'email') {
           const availability = await ensureContactIsAvailable(question.key, value);
+          if (!self.onboardingActive() || session !== onboardingSession) return;
           if (availability !== true) { addOnboardingMessage('assistant', `${availability} ${question.prompt}`); return; }
         }
 
         if (question.key === 'pincode') {
           const location = await lookupPincode(value);
+          if (!self.onboardingActive() || session !== onboardingSession) return;
           if (!location) {
             addOnboardingMessage('assistant', `This PIN code could not be mapped to an Indian city. ${question.prompt}`);
             return;
           }
           const enteredCity = String(self.onboarding.city()).trim().toLocaleLowerCase('en-IN');
           const validCities = location.names.map((name) => String(name).trim().toLocaleLowerCase('en-IN'));
-          if (!validCities.includes(enteredCity)) {
+          const cityMatchesPincode = validCities.some((name) => name === enteredCity || name.includes(enteredCity) || enteredCity.includes(name));
+          if (!cityMatchesPincode) {
             addOnboardingMessage('assistant', `PIN code ${value} belongs to ${location.city}, ${location.state}, not ${self.onboarding.city()}. Enter a PIN code for the stated city.`);
             return;
           }
-          self.onboarding.city(location.city);
           self.onboarding.state(location.state);
-          addOnboardingMessage('assistant', `PIN code verified. City and state are mapped to ${location.city}, ${location.state}.`);
+          addOnboardingMessage('assistant', `PIN code verified for ${self.onboarding.city()}, ${location.state}.`);
         }
 
         self.onboarding[question.key](question.transform ? question.transform(value) : value);
@@ -477,7 +557,7 @@ define(['knockout', 'appController'], function (ko, app) {
       sessionStorage.setItem('moneybags.resumeOnboardingCustomerId', String(customer.customerId));
       app.go('onboarding');
     };
-    self.submitOnboarding = async () => {
+    const completeOnboarding = async (continueWithKyc) => {
       const data = self.onboarding;
       const value = (key) => String(data[key]()).trim();
       const required = ['firstName', 'lastName', 'dob', 'gender', 'phone', 'email', 'occupation', 'addressType', 'line1', 'city', 'state', 'pincode'];
@@ -507,10 +587,17 @@ define(['knockout', 'appController'], function (ko, app) {
         self.onboardingPrompt('Customer profile and address were saved. KYC is pending; continue to upload identity documents and complete verification.');
         addChatMessage('assistant', `Customer ${customer.firstName} ${customer.lastName} was created with CIF ${customer.cifNo}. KYC is pending document upload and verification.`);
         self.onboardingActive(false);
+        self.onboardingReviewOpen(false);
+        if (continueWithKyc) {
+          sessionStorage.setItem('moneybags.resumeOnboardingCustomerId', String(customer.customerId));
+          app.go('onboarding');
+        }
       } catch (error) {
         self.onboardingError(requestError(error, 'Unable to start customer onboarding. Check the details and try again.'));
       } finally { self.onboardingBusy(false); }
     };
+    self.submitOnboarding = () => completeOnboarding(false);
+    self.continueWithKyc = () => completeOnboarding(true);
     self.requestEmployeeStatusChange = () => {
       const employeeId = self.employeeId().trim();
       if (!employeeId) { self.error('Enter the employee User ID before changing a status.'); return; }
@@ -596,21 +683,13 @@ define(['knockout', 'appController'], function (ko, app) {
     self.send = async () => {
       const message = self.message().trim();
       if (!message) {
-        self.error('Enter a question for the assistant.');
+        self.error('');
         return;
       }
       if (self.onboardingActive()) {
         self.message('');
         if (self.onboardingReady()) {
-          addOnboardingMessage('employee', message);
-          if (/^cancel$/i.test(message)) {
-            self.discardOnboarding();
-            addChatMessage('assistant', 'Customer onboarding was discarded.');
-          } else if (/^(create|create customer|confirm)$/i.test(message)) {
-            await self.submitOnboarding();
-          } else {
-            addOnboardingMessage('assistant', 'All details are collected. Type “Create customer” to create the record and start KYC, or type “Cancel” to discard it.');
-          }
+          self.onboardingReviewOpen(true);
           return;
         }
         self.sendOnboardingReply(message);
@@ -623,6 +702,12 @@ define(['knockout', 'appController'], function (ko, app) {
       }
       addChatMessage('employee', message);
       self.message('');
+      const statusName = customerStatusName(message);
+      if (statusName) {
+        await answerCustomerStatus(statusName);
+        return;
+      }
+      if (isReferencedKycQuestion(message) && await answerReferencedKycStatus()) return;
       if (self.isStaff() && /\b(onboard|onboarding|create)\b.*\b(customer|client)\b|\b(customer|client)\b.*\b(onboard|onboarding)\b/i.test(message)) {
         self.startOnboarding();
         return;
@@ -650,7 +735,8 @@ define(['knockout', 'appController'], function (ko, app) {
       self.error('');
       self.response(null);
       try {
-        const response = await app.services.assistant.chat(message, null, self.transactionId().trim(), self.accountId().trim(), self.module());
+        const referencedCustomer = self.referencedCustomer();
+        const response = await app.services.assistant.chat(message, referencedCustomer && referencedCustomer.customerId, self.transactionId().trim(), self.accountId().trim(), self.module());
         self.response(response);
         self.history.unshift({ message, intent: response.intent, answer: response.answer });
       } catch (error) {
