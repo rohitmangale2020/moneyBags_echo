@@ -347,7 +347,8 @@ define([
         const customer = await s.resolveCustomer(recipientLookup, s.recipientMatches);
         if (!customer) return s.error('Choose a matching recipient below.');
         const accounts = (await app.services.accounts.customer(String(customer.customerId)))
-          .filter(isEligibleTransactionAccount);
+          .filter((account) => account.status === 'ACTIVE'
+            && String(account.productTypeCode || '').toUpperCase() !== 'FD');
         s.recipientAccounts(accounts);
         const eligibleAccounts = s.eligibleRecipientAccounts();
         s.form.creditAccountId(eligibleAccounts[0] ? String(eligibleAccounts[0].accountId) : '');
