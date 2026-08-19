@@ -8,7 +8,7 @@
         <p>Review every account, narrow the directory, or open an account against an active product.</p>
       </div>
       <div class="mb-account-actions">
-        <oj-button class="mb-open-account" chroming="callToAction" on-oj-action="[[open]]">Open account</oj-button>
+        <oj-button class="mb-open-account" chroming="callToAction" on-oj-action="[[openAccountPage]]">Open account</oj-button>
       </div>
 
     </div>
@@ -20,20 +20,14 @@
     </label>
     <!-- /ko -->
     <!-- ko ifnot:hasActiveCustomer() -->
-    <label class="mb-filter-search">Account number or customer CIF
-      <input type="search" placeholder="Enter account number or CIF" data-bind="value:query,valueUpdate:'input'" />
+    <label class="mb-filter-search">Account number, customer CIF, or name
+      <input type="search" placeholder="Enter account number, CIF, or customer name" data-bind="value:query,valueUpdate:'input'" />
     </label>
     <!-- /ko -->
     <label>Status
       <select data-bind="value:statusFilter">
         <option value="ALL">All statuses</option><option>ACTIVE</option><option>INACTIVE</option>
         <option>DORMANT</option><option>FROZEN</option><option>CLOSED</option>
-      </select>
-    </label>
-    <label>Ownership
-      <select data-bind="value:ownershipFilter">
-        <option value="ALL">All ownerships</option><option>INDIVIDUAL</option><option>JOINT</option>
-        <option>CORPORATE</option><option>TRUST</option>
       </select>
     </label>
     <label>Currency
@@ -51,7 +45,6 @@
     </label>
     <div class="mb-filter-actions">
       <button type="button" class="mb-link" data-bind="click:clearFilters">Clear filters</button>
-      <oj-button on-oj-action="[[search]]" disabled="[[state.loading]]">Search</oj-button>
     </div>
   </div>
   <div class="mb-list-meta"><strong data-bind="text:resultSummary"></strong><span>Filters update instantly</span></div>
@@ -62,7 +55,7 @@
     <small>Preparing account balances...</small>
   </div>
   <div class="mb-card-grid" data-bind="foreach:filteredAccounts,visible:filteredAccounts().length && !state.loading()">
-    <article class="mb-card account" data-bind="event:{dblclick:$parent.edit}">
+    <article class="mb-card account" data-bind="event:{dblclick:$parent.openEditPage}">
       <div class="mb-card-top">
         <div>
           <small data-bind="text:$data.customerName || 'Account holder unavailable'"></small>
@@ -70,7 +63,7 @@
           <h2 data-bind="text:accountNumber"></h2>
         </div>
         <div class="mb-card-actions">
-          <button type="button" class="mb-card-edit" aria-label="Edit account" title="Edit account" data-bind="click:()=>$parent.edit($data)"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 16.5V20h3.5L18.4 9.1l-3.5-3.5L4 16.5Zm13.6-9.8 1.3-1.3a1 1 0 0 0 0-1.4l-1.8-1.8a1 1 0 0 0-1.4 0l-1.3 1.3 3.2 3.3Z"/></svg></button>
+          <button type="button" class="mb-card-edit" aria-label="Edit account" title="Edit account" data-bind="click:()=>$parent.openEditPage($data)"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 16.5V20h3.5L18.4 9.1l-3.5-3.5L4 16.5Zm13.6-9.8 1.3-1.3a1 1 0 0 0 0-1.4l-1.8-1.8a1 1 0 0 0-1.4 0l-1.3 1.3 3.2 3.3Z"/></svg></button>
         </div>
       </div>
       <div class="mb-balance">
@@ -117,6 +110,13 @@
         <p data-bind="text:submissionMessage"></p>
       </div>
       <div data-bind="visible:submissionState() === 'idle'">
+      <div class="mb-transaction-submit-state" data-bind="visible:fdWithdrawalState() !== 'idle',css:fdWithdrawalState">
+        <span class="mb-transaction-submit-spinner" data-bind="visible:fdWithdrawalState() === 'submitting'" aria-hidden="true"></span>
+        <span class="mb-transaction-submit-icon" data-bind="visible:fdWithdrawalState() === 'success'" aria-hidden="true">✓</span>
+        <span class="mb-transaction-submit-icon" data-bind="visible:fdWithdrawalState() === 'failure'" aria-hidden="true">!</span>
+        <strong data-bind="text:fdWithdrawalState() === 'submitting' ? 'Withdrawing fixed deposit' : fdWithdrawalState() === 'success' ? 'Fixed deposit withdrawn' : 'Fixed-deposit withdrawal failed'"></strong>
+        <p data-bind="text:fdWithdrawalMessage"></p>
+      </div>
       <div class="mb-form">
         <label class="wide" data-bind="visible:!editingId()"><span>Active product</span>
           <select data-bind="value:form.productId,disable:pendingCreatedAccount">
@@ -131,7 +131,6 @@
         ><label data-bind="visible:editingId"><span>Customer ID</span><input type="text" disabled="disabled" data-bind="value:form.customerId" /></label
         ><label data-bind="visible:editingId"><span>Customer CIF</span><input type="text" disabled="disabled" data-bind="value:form.customerCif" /></label
         ><label data-bind="visible:editingId"><span>Account number</span><input type="text" disabled="disabled" data-bind="value:form.accountNumber" /></label
-        ><label data-bind="visible:editingId"><span>Ownership</span><input type="text" disabled="disabled" data-bind="value:form.ownershipType" /></label
         ><label><span data-bind="text:!editingId() && isFixedDeposit() ? 'Fixed deposit principal' : 'Opening deposit'"></span><input type="number" min="0" data-bind="value:form.availableBalance,disable:editingId,attr:{min:selectedProductMinimum()}" /><small class="mb-field-rule" data-bind="visible:!editingId() && selectedProduct(),text:selectedProductRule"></small></label
         ><div class="wide mb-info" data-bind="visible:!editingId() && isFixedDeposit()">The FD account opens at zero. The selected customer account is then debited for the principal through the fixed-deposit transaction workflow.</div
         ><div class="wide mb-dialog-actions" data-bind="visible:!editingId() && isFixedDeposit()"><oj-button on-oj-action="[[loadFixedDepositAccounts]]" disabled="[[loadingCustomerAccounts]]"><span data-bind="text:loadingCustomerAccounts() ? 'Loading accounts…' : fixedDepositAccountsLoaded() ? 'Reload eligible accounts' : 'Load eligible accounts'"></span></oj-button></div
@@ -140,12 +139,14 @@
         ><div class="wide mb-info" data-bind="visible:!editingId() && isFixedDeposit() && fixedDepositAccountsLoaded() && !loadingCustomerAccounts() && !transactionalCustomerAccounts().length">No eligible active account exists for this customer and currency. Open or activate a savings/current account first.</div
         ><div class="wide mb-info" data-bind="visible:!editingId() && isFixedDeposit() && fixedDepositAccountsLoaded() && !loadingCustomerAccounts() && transactionalCustomerAccounts().length && !eligibleFundingAccounts().length">The customer has an active account in this currency, but it cannot fund this principal while retaining its required minimum balance.</div
         ><label data-bind="visible:editingId() && !closingAccount()"><span>Status</span><select data-bind="value:form.status"><option>ACTIVE</option><option>INACTIVE</option><option>DORMANT</option><option>FROZEN</option></select></label
-        ><label data-bind="visible:editingId"><span>Currency</span><input type="text" maxlength="3" data-bind="value:form.currencyCode" /></label
-        ><div class="wide mb-info" data-bind="visible:isEditingFixedDeposit() && editingFixedDepositContract()"><span>Fixed-deposit contract: </span><strong data-bind="text:editingFixedDepositStatusLabel"></strong></div
+        ><label data-bind="visible:editingId"><span>Interest rate</span><input type="text" disabled="disabled" data-bind="value:selectedProductInterestRate" /></label
+        ><label data-bind="visible:editingId() && isEditingFixedDeposit()"><span>Tenure</span><input type="text" disabled="disabled" data-bind="value:selectedProductTenure" /></label
+        ><label data-bind="visible:editingId"><span>Currency</span><input type="text" disabled="disabled" data-bind="value:form.currencyCode" /></label
         ><div class="mb-dialog-actions" data-bind="visible:editingId() && !closingAccount() && !isEditingFixedDeposit()"><oj-button chroming="danger" on-oj-action="[[closeAccount]]">Close account</oj-button></div
-        ><div class="wide mb-dialog-actions" data-bind="visible:canWithdrawEditingFixedDeposit"><oj-button chroming="danger" on-oj-action="[[withdrawEditingFixedDeposit]]" disabled="[[withdrawingFdAccountId]]">Withdraw fixed deposit</oj-button></div
+        ><div class="wide mb-dialog-actions" data-bind="visible:canWithdrawEditingFixedDeposit"><oj-button chroming="danger" on-oj-action="[[withdrawEditingFixedDeposit]]" disabled="[[withdrawingFdAccountId]]"><span data-bind="text:withdrawingFdAccountId() ? 'Withdrawing fixed deposit…' : 'Withdraw fixed deposit'"></span></oj-button></div
         ><div class="wide mb-dialog-actions" data-bind="visible:canRetryEditingFixedDeposit"><oj-button chroming="callToAction" on-oj-action="[[retryEditingFixedDeposit]]" disabled="[[retryingFdAccountId]]">Retry FD funding</oj-button></div
-        ><label data-bind="visible:closingAccount"><span>Closing date</span><input type="date" data-bind="value:form.closedAt,attr:{min:closeDateMin}" /></label>
+        ><label data-bind="visible:closingAccount"><span>Closing date</span><input type="date" disabled="disabled" data-bind="value:form.closedAt" /></label
+        ><div class="wide mb-info" data-bind="visible:isEditingFixedDeposit() && editingFixedDepositContract()"><span>Fixed-deposit contract: </span><strong data-bind="text:editingFixedDepositStatusLabel"></strong></div
       </div>
       </div>
     </div>

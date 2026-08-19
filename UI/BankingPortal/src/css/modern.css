@@ -956,11 +956,14 @@ body:not(:has(#navDrawer)) .mb-content {
 }
 
 .mb-detail-hero {
+  position: relative;
   padding: 20px;
   border: 1px solid var(--mb-line);
   border-radius: 15px;
   background: #f8faff;
 }
+.mb-customer-status { position: absolute; top: 20px; right: 20px; }
+.mb-customer-new-transaction { position: absolute; right: 20px; bottom: 20px; }
 
 .mb-detail-hero h2,
 .mb-detail-hero p,
@@ -1717,6 +1720,10 @@ body:not(:has(#navDrawer)) .mb-content {
 }
 
 /* Ledger workspace */
+.mb-new-transaction-page { max-width: 1060px; margin: 0 auto; }
+.mb-transaction-page-form { display: grid; gap: 20px; }
+.mb-account-edit-page { max-width: 980px; margin: 0 auto; }
+.mb-account-edit-form { display: grid; gap: 20px; }
 .mb-ledger-page { gap: 22px; }
 .mb-ledger-accounts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
 .mb-ledger-account { display: grid; min-width: 0; padding: 19px; border: 1px solid var(--mb-line); border-radius: 14px; color: var(--mb-text); background: var(--mb-surface); box-shadow: var(--mb-shadow-sm); text-align: left; cursor: pointer; transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease; }
@@ -1760,7 +1767,14 @@ body:not(:has(#navDrawer)) .mb-content {
 .mb-transaction-party h3 { margin: 0; color: var(--mb-text); font-size: 15px; }
 .mb-transaction-cif-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 12px; }
 .mb-transaction-cif-row oj-input-text { width: 100%; }
-.mb-transaction-cif-row oj-button { min-width: 128px; }
+.mb-transaction-cif-row oj-button { min-width: 128px; min-height: 46px; }
+.mb-transaction-cif-row oj-button .oj-button-button { min-height: 46px; }
+.mb-new-transaction-page .mb-search-panel > oj-button { min-height: 46px; }
+.mb-new-transaction-page .mb-search-panel > oj-button .oj-button-button { min-height: 46px; }
+.mb-customer-match-list { display: grid; gap: 4px; color: var(--mb-subtle); }
+.mb-customer-match-list small { font-size: 10px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
+.mb-customer-match-list button { padding: 3px 0; border: 0; color: var(--mb-primary); background: transparent; text-align: left; font: inherit; font-size: 12px; cursor: pointer; }
+.mb-customer-match-list button:hover { text-decoration: underline; }
 .mb-transaction-submit-state { display: grid; min-height: 270px; place-items: center; align-content: center; gap: 12px; padding: 28px; border-radius: var(--mb-radius); text-align: center; }
 .mb-transaction-submit-state.submitting { color: var(--mb-primary); background: var(--mb-primary-soft); }
 .mb-transaction-submit-state.success { color: #18794e; background: #e9f7f0; }

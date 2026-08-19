@@ -11,7 +11,7 @@
         <h1>Transactions</h1>
         <p>Review every posting, filter the transaction history, or submit a new transaction.</p>
       </div>
-      <oj-button class="mb-open-account" chroming="callToAction" on-oj-action="[[open]]">New transaction</oj-button>
+      <oj-button class="mb-open-account" chroming="callToAction" on-oj-action="[[openPage]]">New transaction</oj-button>
     </div>
   </div>
 
@@ -22,8 +22,8 @@
     </label>
     <!-- /ko -->
     <!-- ko ifnot:hasActiveCustomer() -->
-    <label class="mb-filter-search">Account number
-      <input type="search" inputmode="numeric" placeholder="Search by account number" data-bind="value:query,valueUpdate:'input'" />
+    <label class="mb-filter-search">Account number or description
+      <input type="search" placeholder="Search by account number or description" data-bind="value:query,valueUpdate:'input'" />
     </label>
     <!-- /ko -->
     <label>Type
@@ -55,7 +55,6 @@
     </label>
     <div class="mb-filter-actions">
       <button type="button" class="mb-link" data-bind="click:clearFilters">Clear filters</button>
-      <oj-button on-oj-action="[[load.bind(null,0)]]" disabled="[[state.loading]]">Search</oj-button>
     </div>
   </div>
 
@@ -128,8 +127,14 @@
         <section class="mb-transaction-party" aria-labelledby="debitCustomerHeading">
           <h3 id="debitCustomerHeading">Debit Customer</h3>
           <div class="mb-transaction-cif-row">
-            <oj-input-text label-hint="CIF no." value="{{form.customerCif}}"></oj-input-text>
+            <oj-input-text label-hint="Customer CIF or name" value="{{form.customerCif}}"></oj-input-text>
             <oj-button on-oj-action="[[loadCustomerAccounts]]" disabled="[[loadingAccounts]]">Load accounts</oj-button>
+          </div>
+          <div class="mb-customer-match-list" data-bind="visible:customerMatches().length">
+            <small>Matching customers</small>
+            <!-- ko foreach: customerMatches -->
+            <button type="button" data-bind="text:$parent.customerLookupLabel($data),click:() => $parent.chooseCustomerMatch($data)"></button>
+            <!-- /ko -->
           </div>
           <div class="mb-form">
             <label class="wide">Debit account
@@ -141,8 +146,14 @@
         <section class="mb-transaction-party" aria-labelledby="recipientCustomerHeading">
           <h3 id="recipientCustomerHeading">Recipient Customer</h3>
           <div class="mb-transaction-cif-row">
-            <oj-input-text label-hint="CIF no." value="{{form.recipientCustomerCif}}"></oj-input-text>
+            <oj-input-text label-hint="Customer CIF or name" value="{{form.recipientCustomerCif}}"></oj-input-text>
             <oj-button on-oj-action="[[loadRecipientAccounts]]" disabled="[[loadingRecipientAccounts]]">Load accounts</oj-button>
+          </div>
+          <div class="mb-customer-match-list" data-bind="visible:recipientMatches().length">
+            <small>Matching customers</small>
+            <!-- ko foreach: recipientMatches -->
+            <button type="button" data-bind="text:$parent.customerLookupLabel($data),click:() => $parent.chooseRecipientMatch($data)"></button>
+            <!-- /ko -->
           </div>
           <div class="mb-form">
             <label class="wide">Recipient account
@@ -153,8 +164,13 @@
       </div>
 
       <div class="mb-search-panel" data-bind="visible:!isInternalTransfer()">
-        <oj-input-text label-hint="Customer CIF" value="{{form.customerCif}}"></oj-input-text>
-        <span></span>
+        <oj-input-text label-hint="Customer CIF or name" value="{{form.customerCif}}"></oj-input-text>
+        <div class="mb-customer-match-list" data-bind="visible:customerMatches().length">
+          <small>Matching customers</small>
+          <!-- ko foreach: customerMatches -->
+          <button type="button" data-bind="text:$parent.customerLookupLabel($data),click:() => $parent.chooseCustomerMatch($data)"></button>
+          <!-- /ko -->
+        </div>
         <oj-button on-oj-action="[[loadCustomerAccounts]]" disabled="[[loadingAccounts]]">Load accounts</oj-button>
       </div>
 

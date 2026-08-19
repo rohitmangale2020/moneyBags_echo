@@ -114,6 +114,18 @@ define([
         },
       },
       {
+        path: "edit-account",
+        detail: { hidden: true, roles: ["ADMIN", "EMPLOYEE"] },
+      },
+      {
+        path: "new-account",
+        detail: { hidden: true, roles: ["ADMIN", "EMPLOYEE"] },
+      },
+      {
+        path: "new-transaction",
+        detail: { hidden: true, roles: ["ADMIN", "EMPLOYEE"] },
+      },
+      {
         path: "statements",
         detail: {
           label: "Statements",

@@ -13,6 +13,7 @@ define([
 
   function VM() {
     const s = this;
+    s.isTransactionPage = app.selection.path() === 'new-transaction';
     s.state = u.state([]);
     s.pageSize = ko.observable(10);
     s.pageSizeOptions = [5, 10, 20];
@@ -35,6 +36,8 @@ define([
     s.loadingRecipientAccounts = ko.observable(false);
     s.accounts = ko.observableArray([]);
     s.recipientAccounts = ko.observableArray([]);
+    s.customerMatches = ko.observableArray([]);
+    s.recipientMatches = ko.observableArray([]);
     s.activeCustomer = app.activeCustomer;
     s.hasActiveCustomer = app.hasActiveCustomer;
     s.contextAccounts = ko.observableArray([]);
@@ -55,6 +58,7 @@ define([
 
     s.money = u.money;
     s.date = u.date;
+    s.customerLookupLabel = (customer) => `${[customer.firstName, customer.lastName].filter(Boolean).join(' ')} · ${customer.phone || 'No phone'} · ${customer.cifNo}`;
     s.isInternalTransfer = ko.pureComputed(() => s.operation() === 'TRANSFER');
     s.isSelfTransfer = ko.pureComputed(() => s.operation() === 'SELF_TRANSFER');
     s.isSingleAccount = ko.pureComputed(
@@ -84,6 +88,8 @@ define([
       Array.from(new Set(s.state.data().map((transaction) => transaction.currencyCode).filter(Boolean))).sort(),
     );
     s.filteredTransactions = ko.pureComputed(() => {
+      const descriptionQuery = String(s.query() || '').trim().toLowerCase();
+      const isAccountNumberSearch = /^\d+$/.test(descriptionQuery);
       const from = s.dateFrom() ? new Date(`${s.dateFrom()}T00:00:00`).getTime() : null;
       const to = s.dateTo() ? new Date(`${s.dateTo()}T23:59:59.999`).getTime() : null;
       const transactions = s.state.data().filter((transaction) => {
@@ -91,6 +97,8 @@ define([
         return (s.typeFilter() === 'ALL' || transaction.transactionType === s.typeFilter())
           && (s.statusFilter() === 'ALL' || transaction.transactionStatus === s.statusFilter())
           && (s.currencyFilter() === 'ALL' || transaction.currencyCode === s.currencyFilter())
+          && (!descriptionQuery || isAccountNumberSearch
+            || String(transaction.description || '').toLowerCase().includes(descriptionQuery))
           && (from === null || initiated >= from)
           && (to === null || initiated <= to);
       });
@@ -125,7 +133,7 @@ define([
     s.load = (requestedPage) => s.state.run(async () => {
       const page = Number.isInteger(requestedPage) ? requestedPage : s.currentPage();
       const accountNumber = String(s.query() || '').trim();
-      if (accountNumber) {
+      if (/^\d+$/.test(accountNumber)) {
         const accounts = u.list(await app.services.accounts.number(accountNumber));
         if (!accounts.length) {
           s.currentPage(0);
@@ -148,6 +156,17 @@ define([
         s.totalTransactions(uniqueTransactions.length);
         s.totalPages(totalPages);
         return uniqueTransactions.slice(safePage * Number(s.pageSize()), (safePage + 1) * Number(s.pageSize()));
+      }
+      if (accountNumber) {
+        const transactions = u.list(await app.services.transactions.list()).filter((transaction) =>
+          String(transaction.description || '').toLowerCase().includes(accountNumber.toLowerCase()),
+        );
+        const totalPages = Math.max(1, Math.ceil(transactions.length / Number(s.pageSize())));
+        const safePage = Math.min(Math.max(0, page), totalPages - 1);
+        s.currentPage(safePage);
+        s.totalTransactions(transactions.length);
+        s.totalPages(totalPages);
+        return transactions.slice(safePage * Number(s.pageSize()), (safePage + 1) * Number(s.pageSize()));
       }
       if (s.hasActiveCustomer()) {
         const customerId = String(s.activeCustomer().customerId);
@@ -192,6 +211,11 @@ define([
       s.sortBy('initiated-desc');
       s.load(0);
     };
+    let transactionSearchTimer = null;
+    s.query.subscribe(() => {
+      if (transactionSearchTimer) window.clearTimeout(transactionSearchTimer);
+      transactionSearchTimer = window.setTimeout(() => s.load(0), 300);
+    });
     s.activeCustomer.subscribe(() => {
       s.query('');
       s.loadContextAccounts();
@@ -215,6 +239,7 @@ define([
       closeTimer = window.setTimeout(() => s.close(), milliseconds);
     };
 
+    s.openPage = () => app.go('new-transaction');
     s.open = () => {
       clearCloseTimer();
       s.form.transactionRef(u.ref());
@@ -230,28 +255,52 @@ define([
       s.form.currencyCode('INR');
       s.accounts([]);
       s.recipientAccounts([]);
+      s.customerMatches([]);
+      s.recipientMatches([]);
       s.operation('TRANSFER');
       s.error('');
       s.submissionState('idle');
       s.submissionMessage('');
-      document.getElementById('transactionDialog').open();
+      if (!s.isTransactionPage) document.getElementById('transactionDialog').open();
       if (s.hasActiveCustomer()) s.loadCustomerAccounts();
     };
 
     s.close = () => {
       clearCloseTimer();
-      document.getElementById('transactionDialog').close();
+      if (s.isTransactionPage) app.go('transactions');
+      else document.getElementById('transactionDialog').close();
       s.submissionState('idle');
       s.submissionMessage('');
     };
 
+    s.resolveCustomer = async (value, matchList) => {
+      const searchValue = String(value || '').trim();
+      if (!searchValue) throw new Error('Enter a customer CIF or name first.');
+      if (/^CIF/i.test(searchValue)) {
+        matchList([]);
+        return app.services.customers.byCif(searchValue);
+      }
+      const firstName = searchValue.split(/\s+/)[0];
+      const matches = u.list(await app.services.customers.byFirstName(firstName)).filter((customer) =>
+        [customer.firstName, customer.lastName].filter(Boolean).join(' ')
+          .toLowerCase().includes(searchValue.toLowerCase()),
+      );
+      if (!matches.length) throw new Error('No customer matches that name.');
+      if (matches.length > 1) {
+        matchList(matches);
+        return null;
+      }
+      matchList([]);
+      return matches[0];
+    };
     s.loadCustomerAccounts = async () => {
-      const customerCif = s.form.customerCif().trim();
-      if (!customerCif) return s.error('Enter a customer CIF first.');
+      const customerLookup = String(s.form.customerCif() || '').trim();
+      if (!customerLookup) return s.error('Enter a customer CIF or name first.');
       s.loadingAccounts(true);
       s.error('');
       try {
-        const customer = await app.services.customers.byCif(customerCif);
+        const customer = await s.resolveCustomer(customerLookup, s.customerMatches);
+        if (!customer) return s.error('Choose a matching customer below.');
         const customerId = String(customer.customerId);
         if (app.setTransactionCustomerId) app.setTransactionCustomerId(customerId);
         const accounts = (await app.services.accounts.customer(customerId))
@@ -279,12 +328,13 @@ define([
     };
 
     s.loadRecipientAccounts = async () => {
-      const recipientCif = s.form.recipientCustomerCif().trim();
-      if (!recipientCif) return s.error('Enter the recipient CIF first.');
+      const recipientLookup = String(s.form.recipientCustomerCif() || '').trim();
+      if (!recipientLookup) return s.error('Enter the recipient CIF or name first.');
       s.loadingRecipientAccounts(true);
       s.error('');
       try {
-        const customer = await app.services.customers.byCif(recipientCif);
+        const customer = await s.resolveCustomer(recipientLookup, s.recipientMatches);
+        if (!customer) return s.error('Choose a matching recipient below.');
         const accounts = (await app.services.accounts.customer(String(customer.customerId)))
           .filter((account) => account.status === 'ACTIVE'
             && String(account.productTypeCode || '').toUpperCase() !== 'FD');
@@ -307,6 +357,46 @@ define([
       const account = s.accounts().find((item) => String(item.accountId) === String(accountId));
       if (account) s.form.currencyCode(account.currencyCode);
     });
+    s.chooseCustomerMatch = (customer) => {
+      if (!customer) return;
+      s.form.customerCif(customer.cifNo);
+      s.customerMatches([]);
+      s.loadCustomerAccounts();
+    };
+    s.chooseRecipientMatch = (customer) => {
+      if (!customer) return;
+      s.form.recipientCustomerCif(customer.cifNo);
+      s.recipientMatches([]);
+      s.loadRecipientAccounts();
+    };
+    const findCustomerMatches = async (value, matchList) => {
+      const searchValue = String(value || '').trim();
+      if (searchValue.length < 2 || /^CIF/i.test(searchValue)) {
+        matchList([]);
+        return;
+      }
+      try {
+        const firstName = searchValue.split(/\s+/)[0];
+        const matches = u.list(await app.services.customers.byFirstName(firstName)).filter((customer) =>
+          [customer.firstName, customer.lastName].filter(Boolean).join(' ')
+            .toLowerCase().includes(searchValue.toLowerCase()),
+        );
+        matchList(matches);
+      } catch (_) {
+        matchList([]);
+      }
+    };
+    let customerMatchTimer = null;
+    let recipientMatchTimer = null;
+    const scheduleCustomerMatches = (value, matchList, timerName) => {
+      if (timerName === 'customer' && customerMatchTimer) window.clearTimeout(customerMatchTimer);
+      if (timerName === 'recipient' && recipientMatchTimer) window.clearTimeout(recipientMatchTimer);
+      const timer = window.setTimeout(() => findCustomerMatches(value, matchList), 250);
+      if (timerName === 'customer') customerMatchTimer = timer;
+      else recipientMatchTimer = timer;
+    };
+    s.form.customerCif.subscribe((value) => scheduleCustomerMatches(value, s.customerMatches, 'customer'));
+    s.form.recipientCustomerCif.subscribe((value) => scheduleCustomerMatches(value, s.recipientMatches, 'recipient'));
     s.form.debitAccountId.subscribe((accountId) => {
       const account = s.accounts().find((item) => String(item.accountId) === String(accountId));
       if (account) s.form.currencyCode(account.currencyCode);
@@ -420,8 +510,11 @@ define([
         s.busy(false);
       }
     };
-    s.loadContextAccounts();
-    s.load();
+    if (s.isTransactionPage) s.open();
+    else {
+      s.loadContextAccounts();
+      s.load();
+    }
   }
   return VM;
 });

@@ -27,7 +27,6 @@ define([
     const initialRange = currentMonthRange();
     s.state = u.state([]);
     s.accountNumber = ko.observable('');
-    s.entryType = ko.observable('ALL');
     s.channel = ko.observable('ALL');
     s.fromDate = ko.observable(initialRange.from);
     s.toDate = ko.observable(initialRange.to);
@@ -101,7 +100,6 @@ define([
         return app.services.statements.search(accountId, {
           fromDate: s.fromDate(),
           toDate: s.toDate(),
-          entryType: s.entryType(),
           channel: s.channel(),
         });
       }).catch(() => null);
@@ -114,7 +112,6 @@ define([
     };
 
     s.clearFilters = () => {
-      s.entryType('ALL');
       s.channel('ALL');
       s.sortBy('posted-desc');
       s.currentMonth();
@@ -126,7 +123,7 @@ define([
     s.nextPage = () => {
       if (s.currentPage() < s.totalPages() - 1) s.currentPage(s.currentPage() + 1);
     };
-    [s.accountNumber, s.entryType, s.channel, s.fromDate, s.toDate, s.sortBy, s.pageSize]
+    [s.accountNumber, s.channel, s.fromDate, s.toDate, s.sortBy, s.pageSize]
       .forEach((observable) => observable.subscribe(() => s.currentPage(0)));
     s.activeCustomer.subscribe(() => {
       s.accountNumber('');

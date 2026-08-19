@@ -13,6 +13,9 @@ define([
 
   function VM() {
     const s = this;
+    s.isAccountEditPage = app.selection.path() === 'edit-account';
+    s.isAccountOpenPage = app.selection.path() === 'new-account';
+    s.isAccountPage = s.isAccountEditPage || s.isAccountOpenPage;
     let balanceAnimationFrame;
     let balanceAnimationId = 0;
     s.state = u.state([]);
@@ -25,13 +28,14 @@ define([
     s.draggedAccount = ko.observable(null);
     s.movingAccountId = ko.observable(null);
     s.withdrawingFdAccountId = ko.observable(null);
+    s.fdWithdrawalMessage = ko.observable('');
+    s.fdWithdrawalState = ko.observable('idle');
     s.retryingFdAccountId = ko.observable(null);
     s.fixedDepositContracts = ko.observableArray([]);
     s.selectedAccount = ko.observable(null);
     s.query = ko.observable('');
     s.searchCustomerId = ko.observable(null);
     s.statusFilter = ko.observable('ALL');
-    s.ownershipFilter = ko.observable('ALL');
     s.currencyFilter = ko.observable('ALL');
     s.sortBy = ko.observable('opened-desc');
     s.products = ko.observableArray([]);
@@ -84,6 +88,7 @@ define([
       return 'Save account';
     });
     s.busy = ko.observable(false);
+    s.openingAccountForm = ko.observable(false);
     s.submissionState = ko.observable('idle');
     s.submissionMessage = ko.observable('');
     s.closingAccount = ko.observable(false);
@@ -230,7 +235,6 @@ define([
         const inCustomerContext = !customerId || String(account.customerId) === String(customerId);
         return inCustomerContext
           && (s.statusFilter() === 'ALL' || account.status === s.statusFilter())
-          && (s.ownershipFilter() === 'ALL' || account.ownershipType === s.ownershipFilter())
           && (s.currencyFilter() === 'ALL' || account.currencyCode === s.currencyFilter());
       });
       const sorters = {
@@ -288,7 +292,6 @@ define([
       const response = await app.services.accounts.list(page, Number(s.pageSize()), {
         customerId,
         status: s.statusFilter(),
-        ownershipType: s.ownershipFilter(),
         currencyCode: s.currencyFilter(),
       });
       const accounts = u.list(response);
@@ -344,7 +347,7 @@ define([
     };
     s.pageSize.subscribe(() => s.load(0));
     let resettingFilters = false;
-    [s.statusFilter, s.ownershipFilter, s.currencyFilter].forEach((filter) => {
+    [s.statusFilter, s.currencyFilter].forEach((filter) => {
       filter.subscribe(() => {
         if (!resettingFilters) s.load(0);
       });
@@ -357,8 +360,16 @@ define([
       }
       return /^CIF/i.test(searchValue)
         ? s.searchByCustomerCif(searchValue)
-        : s.searchByAccountNumber(searchValue);
+        : /^\d+$/.test(searchValue)
+          ? s.searchByAccountNumber(searchValue)
+          : s.searchByCustomerName(searchValue);
     };
+    let accountSearchTimer = null;
+    s.query.subscribe(() => {
+      if (s.hasActiveCustomer()) return;
+      if (accountSearchTimer) window.clearTimeout(accountSearchTimer);
+      accountSearchTimer = window.setTimeout(() => s.search(), 300);
+    });
     s.searchByCustomerCif = (cifNo) => {
       return s.state.run(async () => {
         const customer = await app.services.customers.byCif(cifNo);
@@ -366,6 +377,45 @@ define([
         return s.load(0);
       }).catch(() => null);
     };
+    s.searchByCustomerName = (name) => s.state.run(async () => {
+      const normalizedName = String(name || '').trim().replace(/\s+/g, ' ');
+      const firstName = normalizedName.split(' ')[0];
+      const customers = u.list(await app.services.customers.byFirstName(firstName));
+      const matches = customers.filter((customer) => {
+        const fullName = [customer.firstName, customer.lastName].filter(Boolean).join(' ').toLowerCase();
+        return fullName.includes(normalizedName.toLowerCase());
+      });
+      if (!matches.length) throw new Error('No customers match that name.');
+      const [accountsByCustomer, productsResult] = await Promise.all([
+        Promise.all(matches.map((customer) => app.services.accounts.customer(customer.customerId))),
+        app.services.products.list(),
+      ]);
+      const products = u.list(productsResult);
+      const productById = new Map(products.map((product) => [String(product.productId), product]));
+      const customerById = new Map(matches.map((customer) => [
+        String(customer.customerId),
+        [customer.firstName, customer.lastName].filter(Boolean).join(' '),
+      ]));
+      const accounts = accountsByCustomer.flatMap(u.list).map((account) => {
+        const product = productById.get(String(account.productId));
+        return Object.assign({}, account, {
+          customerName: account.customerName || customerById.get(String(account.customerId)) || '',
+          productName: account.productName || product?.productName || '',
+          productTypeCode: account.productTypeCode || product?.productTypeCode || '',
+          productStatus: account.productStatus || product?.status || '',
+          balanceDisplay: ko.observable(0),
+        });
+      });
+      s.searchCustomerId(null);
+      s.currentPage(0);
+      s.totalAccounts(accounts.length);
+      s.totalPages(1);
+      s.lastLoadedAccounts = accounts;
+      return accounts;
+    }).then((accounts) => {
+      if (accounts) s.animateBalances(accounts);
+      return accounts;
+    }).catch(() => null);
     s.searchByAccountNumber = (accountNumber) => s.state.run(async () => {
       const accounts = u.list(await app.services.accounts.number(accountNumber));
       if (!accounts.length) throw new Error('Account number was not found.');
@@ -530,9 +580,11 @@ define([
       && ['PENDING_FUNDING', 'FUNDING_FAILED'].includes(
         String(s.editingFixedDepositContract()?.status || '').toUpperCase(),
       ));
-    s.withdrawFixedDeposit = async (account, requireConfirmation = true) => {
+    s.withdrawFixedDeposit = async (account) => {
       if (!account || s.withdrawingFdAccountId()) return null;
       s.error('');
+      s.fdWithdrawalState('submitting');
+      s.fdWithdrawalMessage('Premature withdrawal is in progress. Principal and applicable interest will return to the original funding account.');
       s.withdrawingFdAccountId(account.accountId);
       try {
         const contracts = await s.openFixedDepositContracts();
@@ -541,20 +593,21 @@ define([
           && String(item.status).toUpperCase() === 'ACTIVE',
         );
         if (!contract) throw new Error('No active fixed-deposit contract was found for this account.');
-        if (requireConfirmation && !window.confirm(
-          'Withdraw this fixed deposit now? There is no lock-in period, but the configured premature-withdrawal penalty lowers the interest rate. Principal and applicable interest will return to the original funding account.',
-        )) return null;
         const closed = await app.services.fixedDeposits.close(contract.contractId);
         s.storeFixedDepositContract(closed);
         if (!['PREMATURELY_CLOSED', 'MATURED'].includes(String(closed.status || '').toUpperCase())) {
           throw new Error(`Fixed-deposit withdrawal did not complete. The contract remains ${String(closed.status || 'open').replace(/_/g, ' ').toLowerCase()}. Review its failed transaction before retrying.`);
         }
         const returned = Number(closed.principal || 0) + Number(closed.interestPaid || 0);
+        s.fdWithdrawalState('success');
+        s.fdWithdrawalMessage(`Fixed-deposit contract: ${String(closed.status || '').replace(/_/g, ' ')}`);
         app.notify(`Fixed deposit withdrawn. ${u.money(returned, account.currencyCode)} was returned to the original funding account.`);
         await s.load();
         return closed;
       } catch (error) {
         s.error(error.message);
+        s.fdWithdrawalState('failure');
+        s.fdWithdrawalMessage('Fixed-deposit withdrawal could not be completed.');
         app.notify(error.message, 'error');
         return null;
       } finally {
@@ -562,8 +615,12 @@ define([
       }
     };
     s.withdrawEditingFixedDeposit = async () => {
-      const closed = await s.withdrawFixedDeposit(s.editingAccount(), true);
-      if (closed) document.getElementById('accountDialog').close();
+      const closed = await s.withdrawFixedDeposit(s.editingAccount());
+      if (closed) {
+        s.form.closedAt(closed.closedAt ? String(closed.closedAt).slice(0, 10) : s.closeDateMin);
+        s.closingAccount(true);
+        window.setTimeout(() => s.close(), 1800);
+      }
     };
     s.retryEditingFixedDeposit = async () => {
       const account = s.editingAccount();
@@ -585,7 +642,7 @@ define([
           throw new Error('Fixed-deposit funding still did not complete. Review the latest failed transaction before retrying.');
         }
         app.notify('Fixed deposit funded successfully. It can now be withdrawn from this edit dialog.');
-        document.getElementById('accountDialog').close();
+        s.close();
         await s.load();
       } catch (error) {
         s.error(error.message);
@@ -599,18 +656,21 @@ define([
       s.query('');
       s.searchCustomerId(null);
       s.statusFilter('ALL');
-      s.ownershipFilter('ALL');
       s.currencyFilter('ALL');
       s.sortBy('opened-desc');
       resettingFilters = false;
       s.load(0);
     };
+    s.openAccountPage = () => app.go('new-account');
     s.open = async () => {
+      s.openingAccountForm(s.isAccountOpenPage);
       s.editingId(null);
       s.editingAccount(null);
       s.pendingCreatedAccount(null);
       s.pendingFixedDepositContract(null);
       s.error('');
+      s.fdWithdrawalMessage('');
+      s.fdWithdrawalState('idle');
       s.form.accountNumber('');
       s.form.customerId(s.hasActiveCustomer() ? s.activeCustomer().customerId : '');
       s.form.customerCif(s.hasActiveCustomer() ? s.activeCustomer().cifNo : '');
@@ -632,17 +692,27 @@ define([
         const products = (await app.services.products.list()).filter((p) => p.status === 'ACTIVE');
         s.products(products);
         s.form.productId(products.length ? String(products[0].productId) : '');
-        document.getElementById('accountDialog').open();
+        if (!s.isAccountOpenPage) document.getElementById('accountDialog').open();
       } catch (e) {
         app.notify(e.message, 'error');
+      } finally {
+        s.openingAccountForm(false);
       }
     };
+    s.openEditPage = (account) => {
+      app.setActiveAccount(account.accountId);
+      return app.go('edit-account');
+    };
     s.edit = async (x) => {
+      if (!x || !x.accountId) return;
+      if (!x.accountNumber) x = await app.services.accounts.get(x.accountId);
       s.editingId(x.accountId);
       s.editingAccount(x);
       s.pendingCreatedAccount(null);
       s.pendingFixedDepositContract(null);
       s.error('');
+      s.fdWithdrawalMessage('');
+      s.fdWithdrawalState('idle');
       s.submissionState('idle');
       s.submissionMessage('');
       s.form.accountNumber(x.accountNumber);
@@ -674,7 +744,7 @@ define([
         if (contractsResult.status === 'fulfilled') {
           s.fixedDepositContracts(u.list(contractsResult.value));
         }
-        document.getElementById('accountDialog').open();
+        if (!s.isAccountEditPage) document.getElementById('accountDialog').open();
       } catch (e) { app.notify(e.message, 'error'); }
     };
     s.closeAccount = async () => {
@@ -685,8 +755,8 @@ define([
         if (!window.confirm(
           'An FD must be withdrawn through its contract workflow. Select OK to withdraw it now, or Cancel to keep it open.',
         )) return;
-        const closed = await s.withdrawFixedDeposit(account, false);
-        if (closed) document.getElementById('accountDialog').close();
+        const closed = await s.withdrawFixedDeposit(account);
+        if (closed) s.close();
         return;
       }
       try {
@@ -708,7 +778,7 @@ define([
           for (const contract of dependencies) {
             await app.services.fixedDeposits.close(contract.contractId);
           }
-          document.getElementById('accountDialog').close();
+          s.close();
           app.notify('The linked fixed deposit(s) were withdrawn into this account. The account remains open; move or withdraw its full balance before closing it.', 'warning');
           await s.load();
           return;
@@ -822,7 +892,7 @@ s.submissionMessage(s.editingId() ? 'Saving account changes...' : 'Opening accou
 
         app.notify(s.submissionMessage(), 'success'); 
         await s.load();
-        window.setTimeout(() => document.getElementById('accountDialog').close(), 1600);
+        window.setTimeout(() => s.close(), 1600);
       } catch (e) {
 if (savedAccount && !s.editingId()) {
   s.pendingCreatedAccount(savedAccount);
@@ -838,13 +908,22 @@ s.submissionState('failure');
 s.submissionMessage(message);
 s.error(message);
 
-window.setTimeout(() => document.getElementById('accountDialog').close(), 2600);
+if (!s.isAccountPage) window.setTimeout(() => document.getElementById('accountDialog').close(), 2600);
 } finally {
   s.busy(false);
       }
     };
-    s.close = () => document.getElementById('accountDialog').close();
-    s.load();
+    s.close = () => {
+      if (s.isAccountPage) return app.go('accounts');
+      return document.getElementById('accountDialog').close();
+    };
+    if (s.isAccountEditPage) {
+      const accountId = app.activeAccountId();
+      if (accountId) s.edit({ accountId });
+      else app.go('accounts');
+    } else if (s.isAccountOpenPage) {
+      s.open();
+    } else s.load();
   }
   return VM;
 });
