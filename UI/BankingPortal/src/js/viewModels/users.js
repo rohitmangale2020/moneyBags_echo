@@ -54,20 +54,7 @@ define([
     s.editingId = ko.observable(null);
     s.password = ko.observable('');
     s.error = ko.observable('');
-    s.emailValidators = [{
-      validate: (value) => {
-        if (value && !rfc5322Email.test(value.trim())) {
-          throw new Error('Enter a valid RFC 5322 email address.');
-        }
-      },
-    }];
-    s.phoneValidators = [{
-      validate: (value) => {
-        if (value && !e164Phone.test(value.trim())) {
-          throw new Error('Enter a valid international phone number, for example +919876543210.');
-        }
-      },
-    }];
+    s.createFieldErrors = ko.observable({});
     s.detailState = u.state(null);
     s.detailColumns = [
       { headerText: 'Field', field: 'field' },
@@ -101,15 +88,45 @@ define([
           }),
         ),
     );
-    s.validate = (data, needsPassword) => {
-      if (!data.username || data.username.length < 3 || !data.email || !data.profile.firstName || !data.profile.lastName)
-        return 'Username (at least 3 characters), email, first name, and last name are required.';
-      if (!rfc5322Email.test(data.email.trim())) return 'Enter a valid RFC 5322 email address.';
-      if (needsPassword && (!data.password || data.password.length < 8 || data.password.length > 72)) return 'Password must contain 8 to 72 characters.';
-      if (data.profile.phoneNumber && !e164Phone.test(data.profile.phoneNumber.trim())) return 'Enter a valid international phone number, for example +919876543210.';
-      if (data.profile.countryCode && !/^[A-Za-z]{2}$/.test(data.profile.countryCode)) return 'Country code must contain two letters.';
-      if (data.profile.dateOfBirth && new Date(data.profile.dateOfBirth) >= new Date()) return 'Date of birth must be in the past.';
-      return null;
+    s.validationErrors = (data, needsPassword) => {
+      const errors = {};
+      const value = (input) => String(input || '').trim();
+      const username = value(data.username);
+      const email = value(data.email);
+      const firstName = value(data.profile.firstName);
+      const lastName = value(data.profile.lastName);
+      const password = String(data.password || '');
+      const phoneNumber = value(data.profile.phoneNumber);
+      const countryCode = value(data.profile.countryCode);
+      const dateOfBirth = data.profile.dateOfBirth;
+
+      if (!firstName) errors.firstName = 'First name is required.';
+      if (!lastName) errors.lastName = 'Last name is required.';
+      if (!username) errors.username = 'Username is required.';
+      else if (username.length < 3) errors.username = 'Username must contain at least 3 characters.';
+      if (!email) errors.email = 'Email address is required.';
+      else if (!rfc5322Email.test(email)) errors.email = 'Enter a valid email address.';
+      if (needsPassword && !password) errors.password = 'Temporary password is required.';
+      else if (needsPassword && (password.length < 8 || password.length > 72)) errors.password = 'Temporary password must contain 8 to 72 characters.';
+      if (phoneNumber && !e164Phone.test(phoneNumber)) errors.phoneNumber = 'Enter a valid international phone number, for example +919876543210.';
+      if (countryCode && !/^[A-Za-z]{2}$/.test(countryCode)) errors.countryCode = 'Country code must contain exactly two letters.';
+      if (dateOfBirth && Number.isNaN(new Date(dateOfBirth).getTime())) errors.dateOfBirth = 'Enter a valid date of birth.';
+      else if (dateOfBirth && new Date(dateOfBirth) >= new Date()) errors.dateOfBirth = 'Date of birth must be in the past.';
+      return errors;
+    };
+    s.validate = (data, needsPassword) => Object.values(s.validationErrors(data, needsPassword))[0] || null;
+    s.applyCreateServerFieldErrors = (details) => {
+      if (!details || !details.errors || typeof details.errors !== 'object' || Array.isArray(details.errors)) return false;
+      const supportedFields = new Set(['firstName', 'lastName', 'username', 'email', 'password', 'phoneNumber', 'countryCode', 'dateOfBirth']);
+      const errors = {};
+      Object.entries(details.errors).forEach(([field, message]) => {
+        const name = field.split('.').pop();
+        if (supportedFields.has(name)) errors[name] = message;
+      });
+      if (!Object.keys(errors).length) return false;
+      s.createFieldErrors(errors);
+      s.error('');
+      return true;
     };
     s.load = async (requestedPage = s.currentPage()) => {
       const requestId = ++s.directoryRequest;
@@ -158,6 +175,7 @@ define([
       s.editingId(null);
       s.form(blank());
       s.error('');
+      s.createFieldErrors({});
       document.getElementById('userDialog').open();
     };
     s.openDetails = async (user) => {
@@ -226,14 +244,20 @@ define([
     s.close = (id) => document.getElementById(id).close();
     s.save = async () => {
       const d = ko.toJS(s.form());
-      const validation = s.validate(d, true);
-      if (validation) return s.error(validation);
+      const validation = s.validationErrors(d, true);
+      s.createFieldErrors(validation);
+      if (Object.keys(validation).length) {
+        s.error('');
+        return;
+      }
+      s.error('');
       try {
         await app.services.users.create(d);
         document.getElementById('userDialog').close();
         app.notify('User created successfully.');
         s.load();
       } catch (e) {
+        if (s.applyCreateServerFieldErrors(e.details)) return;
         s.error(e.message);
       }
     };

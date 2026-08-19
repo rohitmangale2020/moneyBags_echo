@@ -80,6 +80,17 @@ class UserControllerIntegrationTest {
     }
 
     @Test
+    void create_blankOptionalPhone_returnsCreatedUser() throws Exception {
+        String request = validCreateRequest("no-phone", "no-phone@example.com")
+                .replace("\"profile\":{", "\"profile\":{\"phoneNumber\":\"\",");
+
+        mockMvc.perform(post("/api/v1/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(request))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
     void selfActionsAreRejected_andNonAdminCannotMutateStatusOrDelete() throws Exception {
         String response = mockMvc.perform(post("/api/v1/users")
                         .contentType(MediaType.APPLICATION_JSON)
