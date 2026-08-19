@@ -23,8 +23,12 @@
   <div class="mb-error" data-bind="visible:state.error">
     <span data-bind="text:state.error"></span><button data-bind="click:load">Retry</button>
   </div>
-  <div class="mb-loading" data-bind="visible:state.loading">Loading users…</div>
-  <div class="mb-table">
+  <div class="mb-loading mb-moneybags-loader" data-bind="visible:state.loading" role="status" aria-live="polite">
+    <svg class="mb-moneybags-loader-logo" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><rect width="36" height="36" rx="10" fill="white"/><text x="18" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="800" fill="#355eb8">M</text></svg>
+    <strong>Loading users</strong>
+    <small>Preparing the user directory…</small>
+  </div>
+  <div class="mb-table" data-bind="visible:!state.loading()">
     <table>
       <thead>
         <tr>
@@ -88,7 +92,11 @@
   </div>
   <oj-dialog id="userDetailsDialog" class="mb-dialog mb-dialog-details" dialog-title="User details" cancel-behavior="icon">
     <div slot="body">
-      <div class="mb-loading" data-bind="visible:detailState.loading">Loading user details…</div>
+      <div class="mb-loading mb-moneybags-loader" data-bind="visible:detailState.loading" role="status" aria-live="polite">
+        <svg class="mb-moneybags-loader-logo" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><rect width="36" height="36" rx="10" fill="white"/><text x="18" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="800" fill="#355eb8">M</text></svg>
+        <strong>Loading user details</strong>
+        <small>Preparing the selected user…</small>
+      </div>
       <div class="mb-error" data-bind="visible:detailState.error,text:detailState.error"></div>
       <div class="mb-detail-table" data-bind="visible:detailState.data">
         <oj-table class="mb-user-detail-table" aria-label="User details" data="[[detailDataProvider]]" columns="[[detailColumns]]"></oj-table>
