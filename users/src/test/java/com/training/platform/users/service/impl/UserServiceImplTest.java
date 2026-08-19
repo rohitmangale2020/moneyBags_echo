@@ -196,23 +196,31 @@ class UserServiceImplTest {
     @Test
     void updateStatus_activeStatus_returnsActiveUser() {
         User existingUser = user(1L, "priyansh", "priyansh@example.com");
-        existingUser.setRole("EMPLOYEE");
+        existingUser.setRole("ADMIN");
         when(userRepository.findWithProfileById(1L)).thenReturn(Optional.of(existingUser));
 
-        UserResponse response = userService.updateStatus(1L, UserStatus.ACTIVE);
+        UserResponse response = userService.updateStatus(2L, 1L, UserStatus.ACTIVE);
 
         assertEquals(UserStatus.ACTIVE, existingUser.getStatus());
         assertEquals(UserStatus.ACTIVE, response.status());
     }
 
     @Test
-    void deactivate_existingId_setsDeactivatedStatus() {
+    void delete_otherUser_removesUser() {
         User existingUser = user(1L, "priyansh", "priyansh@example.com");
         when(userRepository.findWithProfileById(1L)).thenReturn(Optional.of(existingUser));
 
-        userService.deactivate(1L);
+        userService.delete(2L, 1L);
 
-        assertEquals(UserStatus.DEACTIVATED, existingUser.getStatus());
+        verify(userRepository).delete(existingUser);
+    }
+
+    @Test
+    void selfStatusChangeAndDeletion_areRejected() {
+        assertThrows(UserConflictException.class,
+                () -> userService.updateStatus(1L, 1L, UserStatus.DEACTIVATED));
+        assertThrows(UserConflictException.class, () -> userService.delete(1L, 1L));
+        verify(userRepository, never()).findWithProfileById(anyLong());
     }
 
     private UserProfileRequest profileRequest() {

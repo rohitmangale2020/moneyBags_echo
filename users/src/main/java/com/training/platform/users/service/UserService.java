@@ -21,7 +21,7 @@ public interface UserService {
 
     void changeOwnPassword(Long id, String currentPassword, String newPassword);
 
-    UserResponse updateStatus(Long id, UserStatus status);
+    UserResponse updateStatus(Long actorId, Long id, UserStatus status);
 
-    void deactivate(Long id);
+    void delete(Long actorId, Long id);
 }

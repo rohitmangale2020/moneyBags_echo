@@ -127,11 +127,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserResponse updateStatus(Long id, UserStatus status) {
+    public UserResponse updateStatus(Long actorId, Long id, UserStatus status) {
+        rejectSelfAction(actorId, id);
         User user = findUser(id);
-        if (!"EMPLOYEE".equalsIgnoreCase(user.getRole())) {
-            throw new UserConflictException("Only employee account statuses can be changed from the admin control.");
-        }
         String previousStatus = user.getStatus().name();
         user.setStatus(status);
         log.info("User status updated id={} status={}", id, status);
@@ -141,13 +139,19 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void deactivate(Long id) {
+    public void delete(Long actorId, Long id) {
+        rejectSelfAction(actorId, id);
         User user = findUser(id);
-        String previousStatus = user.getStatus().name();
-        user.setStatus(UserStatus.DEACTIVATED);
-        log.info("User deactivated id={}", id);
-        auditStatusChange(user, "USER_DEACTIVATED", "User account deactivated",
-                previousStatus, UserStatus.DEACTIVATED.name());
+        Map<String, Object> deletedValues = userValues(user);
+        auditUserChange(user, "USER_DELETED", "User account permanently deleted", deletedValues, Map.of());
+        userRepository.delete(user);
+        log.info("User permanently deleted id={}", id);
+    }
+
+    private void rejectSelfAction(Long actorId, Long targetId) {
+        if (actorId != null && actorId.equals(targetId)) {
+            throw new UserConflictException("Administrators cannot deactivate or delete their own account.");
+        }
     }
 
     private User findUser(Long id) {

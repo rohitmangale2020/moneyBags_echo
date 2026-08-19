@@ -96,16 +96,25 @@ public class UserController {
     @PatchMapping("/{id}/status")
     public UserResponse updateStatus(
             @PathVariable Long id,
-            @Valid @RequestBody UpdateUserStatusRequest request
+            @Valid @RequestBody UpdateUserStatusRequest request,
+            @AuthenticationPrincipal Jwt jwt
     ) {
         log.info("Update status id={}", id);
-        return userService.updateStatus(id, request.status());
+        return userService.updateStatus(authenticatedUserId(jwt), id, request.status());
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deactivate(@PathVariable Long id) {
-        log.info("Deactivate user id={}", id);
-        userService.deactivate(id);
+    public ResponseEntity<Void> delete(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt) {
+        log.info("Delete user id={}", id);
+        userService.delete(authenticatedUserId(jwt), id);
         return ResponseEntity.noContent().build();
+    }
+
+    private long authenticatedUserId(Jwt jwt) {
+        Object claim = jwt.getClaim("userId");
+        if (!(claim instanceof Number userId)) {
+            throw new IllegalArgumentException("JWT does not identify the authenticated user");
+        }
+        return userId.longValue();
     }
 }

@@ -212,11 +212,12 @@ define([
         s.error(e.message);
       }
     };
+    s.canManage = (x) => String(x.id) !== String(app.session.userId());
     s.remove = async (x) => {
-      if (!window.confirm(`Deactivate ${x.username}?`)) return;
+      if (!window.confirm(`Permanently delete ${x.username}? This cannot be undone.`)) return;
       try {
-        await app.services.users.deactivate(x.id);
-        app.notify('User deactivated.');
+        await app.services.users.remove(x.id);
+        app.notify('User permanently deleted.');
         s.load();
       } catch (e) {
         app.notify(e.message, 'error');

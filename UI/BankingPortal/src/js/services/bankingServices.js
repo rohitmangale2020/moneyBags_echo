@@ -20,7 +20,7 @@ define(['services/apiClient'], function (api) {
       password: (id, password) => api.patch(`/api/v1/users/${e(id)}/password`, { password }),
       changeOwnPassword: (currentPassword, newPassword) => api.patch('/api/v1/users/me/password', { currentPassword, newPassword }),
       status: (id, s) => api.patch(`/api/v1/users/${e(id)}/status`, { status: s }),
-      deactivate: (id) => api.delete(`/api/v1/users/${e(id)}`),
+      remove: (id) => api.delete(`/api/v1/users/${e(id)}`),
     },
     customers: {
       list: (page = 0, size = 10, status = '') => api.get(`/api/customers?page=${e(page)}&size=${e(size)}${status ? `&status=${e(status)}` : ''}`),

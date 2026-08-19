@@ -11,12 +11,15 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.Map;
 import java.util.HashMap;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -68,12 +71,50 @@ class UserControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(id));
 
-        mockMvc.perform(delete("/api/v1/users/{id}", id))
+        mockMvc.perform(delete("/api/v1/users/{id}", id)
+                        .with(adminJwt(999L)))
                 .andExpect(status().isNoContent());
 
         mockMvc.perform(get("/api/v1/users/{id}", id))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("DEACTIVATED"));
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void selfActionsAreRejected_andNonAdminCannotMutateStatusOrDelete() throws Exception {
+        String response = mockMvc.perform(post("/api/v1/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(validCreateRequest("target-user", "target@example.com")))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        long id = objectMapper.readTree(response).get("id").asLong();
+
+        mockMvc.perform(delete("/api/v1/users/{id}", id).with(adminJwt(id)))
+                .andExpect(status().isConflict());
+        mockMvc.perform(patch("/api/v1/users/{id}/status", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"status\":\"DEACTIVATED\"}")
+                        .with(adminJwt(id)))
+                .andExpect(status().isConflict());
+        mockMvc.perform(delete("/api/v1/users/{id}", id)
+                        .with(SecurityMockMvcRequestPostProcessors.jwt()
+                                .jwt(jwt -> jwt.claim("userId", 999L))
+                                .authorities(new SimpleGrantedAuthority("ROLE_EMPLOYEE"))))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(patch("/api/v1/users/{id}/status", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"status\":\"DEACTIVATED\"}")
+                        .with(SecurityMockMvcRequestPostProcessors.jwt()
+                                .jwt(jwt -> jwt.claim("userId", 999L))
+                                .authorities(new SimpleGrantedAuthority("ROLE_EMPLOYEE"))))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/v1/users/{id}", id))
+                .andExpect(status().isOk());
+    }
+
+    private static org.springframework.test.web.servlet.request.RequestPostProcessor adminJwt(long userId) {
+        return SecurityMockMvcRequestPostProcessors.jwt()
+                .jwt(jwt -> jwt.claim("userId", userId))
+                .authorities(new SimpleGrantedAuthority("ROLE_ADMIN"));
     }
 
     @Test

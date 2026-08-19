@@ -66,15 +66,15 @@
                 <button class="mb-link" data-bind="click:()=>$parent.openPassword($data),clickBubble:false">Password</button>
                 <button
                   class="mb-link"
-                  data-bind="visible:status!=='ACTIVE',click:()=>$parent.status($data,'ACTIVE'),clickBubble:false"
+                  data-bind="visible:$parent.canManage($data)&&status!=='ACTIVE',click:()=>$parent.status($data,'ACTIVE'),clickBubble:false"
                 >
                   Activate</button
                 ><button
                   class="mb-link danger"
-                  data-bind="visible:status==='ACTIVE',click:()=>$parent.status($data,'DEACTIVATED'),clickBubble:false"
+                  data-bind="visible:$parent.canManage($data)&&status==='ACTIVE',click:()=>$parent.status($data,'DEACTIVATED'),clickBubble:false"
                 >
                   Deactivate
-                </button><button class="mb-link danger" data-bind="click:()=>$parent.remove($data),clickBubble:false">Remove</button>
+                </button><button class="mb-link danger" data-bind="visible:$parent.canManage($data),click:()=>$parent.remove($data),clickBubble:false">Remove</button>
               </div>
             </details>
           </td>
