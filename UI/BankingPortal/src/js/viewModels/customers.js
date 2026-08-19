@@ -4,6 +4,7 @@ define([
   'viewModels/util',
   'viewModels/indiaAddressOptions',
   'ojs/ojinputtext',
+  'ojs/ojdatetimepicker',
   'ojs/ojbutton',
   'ojs/ojdialog',
 ], function (ko, app, u, indiaAddress) {

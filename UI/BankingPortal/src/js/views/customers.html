@@ -96,11 +96,11 @@
     <div slot="footer" class="mb-dialog-actions"><oj-button chroming="callToAction" on-oj-action="[[$data.close.bind(null,'activationRequirementsDialog')]]">OK</oj-button></div>
   </oj-dialog>
 
-  <oj-dialog id="customerEditDialog" class="mb-dialog mb-dialog-wide" dialog-title="Edit customer profile" cancel-behavior="icon"><div slot="body"><div class="mb-error" data-bind="visible:error,text:error"></div><div class="mb-form three"><oj-input-text label-hint="First name" required value="{{form().firstName}}"></oj-input-text><oj-input-text label-hint="Last name" value="{{form().lastName}}"></oj-input-text><label>Date of birth<input type="date" data-bind="value:form().dob" /></label><label>Gender<select data-bind="value:form().gender"><option>MALE</option><option>FEMALE</option><option>OTHER</option></select></label>
+  <oj-dialog id="customerEditDialog" class="mb-dialog mb-dialog-wide" dialog-title="Edit customer profile" cancel-behavior="icon"><div slot="body"><div class="mb-error" data-bind="visible:error,text:error"></div><div class="mb-form three"><oj-input-text label-hint="First name" required value="{{form().firstName}}"></oj-input-text><oj-input-text label-hint="Last name" value="{{form().lastName}}"></oj-input-text><oj-input-date label-hint="Date of birth" required max="[[adultDobMax]]" value="{{form().dob}}"></oj-input-date><label class="mb-managed-field" data-field-label="Gender"><select data-bind="value:form().gender"><option>MALE</option><option>FEMALE</option><option>OTHER</option></select></label>
     <div>
-      <div style="display:grid; grid-template-columns:80px minmax(0,1fr); gap:8px; align-items:flex-end; width:100%;">
+      <div class="mb-phone-pair">
 
-        <div style="width:80px;">
+        <div class="mb-phone-code">
           <oj-input-text
                   label-hint="Code"
                   value="+91"
@@ -109,7 +109,7 @@
           </oj-input-text>
         </div>
 
-        <div style="min-width:0; width:100%;">
+        <div class="mb-phone-number">
           <oj-input-text
                   label-hint="Phone"
                   required
@@ -125,20 +125,20 @@
     </div>
     <oj-input-text label-hint="Email" value="{{form().email}}"></oj-input-text><oj-input-text label-hint="Occupation" value="{{form().occupation}}"></oj-input-text></div></div><div slot="footer" class="mb-dialog-actions"><oj-button on-oj-action="[[$data.close.bind(null,'customerEditDialog')]]">Cancel</oj-button><oj-button chroming="callToAction" on-oj-action="[[saveCustomer]]">Save profile</oj-button></div></oj-dialog>
 
-  <oj-dialog id="addressDialog" class="mb-dialog" dialog-title="Customer address" cancel-behavior="icon"><div slot="body"><div class="mb-error" data-bind="visible:error,text:error"></div><div class="mb-form"><label>Address type<select data-bind="value:addressForm().addressType"><option>CURRENT</option><option>PERMANENT</option><option>OFFICE</option></select></label><oj-input-text label-hint="Address line 1" required value="{{addressForm().line1}}"></oj-input-text><oj-input-text label-hint="Address line 2" value="{{addressForm().line2}}"></oj-input-text><oj-input-text label-hint="City" required value="{{addressForm().city}}"></oj-input-text><oj-input-text label-hint="State" required value="{{addressForm().state}}"></oj-input-text><oj-input-text label-hint="Country" required value="{{addressForm().country}}"></oj-input-text><oj-input-text label-hint="Pincode" required value="{{addressForm().pincode}}"></oj-input-text></div></div><div slot="footer" class="mb-dialog-actions"><oj-button on-oj-action="[[$data.close.bind(null,'addressDialog')]]">Cancel</oj-button><oj-button chroming="callToAction" on-oj-action="[[saveAddress]]">Save address</oj-button></div></oj-dialog>
+  <oj-dialog id="addressDialog" class="mb-dialog" dialog-title="Customer address" cancel-behavior="icon"><div slot="body"><div class="mb-error" data-bind="visible:error,text:error"></div><div class="mb-form"><label class="mb-managed-field" data-field-label="Address type"><select data-bind="value:addressForm().addressType"><option>CURRENT</option><option>PERMANENT</option><option>OFFICE</option></select></label><oj-input-text label-hint="Address line 1" required value="{{addressForm().line1}}"></oj-input-text><oj-input-text label-hint="Address line 2" value="{{addressForm().line2}}"></oj-input-text><oj-input-text label-hint="City" required value="{{addressForm().city}}"></oj-input-text><oj-input-text label-hint="State" required value="{{addressForm().state}}"></oj-input-text><oj-input-text label-hint="Country" required value="{{addressForm().country}}"></oj-input-text><oj-input-text label-hint="Pincode" required value="{{addressForm().pincode}}"></oj-input-text></div></div><div slot="footer" class="mb-dialog-actions"><oj-button on-oj-action="[[$data.close.bind(null,'addressDialog')]]">Cancel</oj-button><oj-button chroming="callToAction" on-oj-action="[[saveAddress]]">Save address</oj-button></div></oj-dialog>
 
-  <oj-dialog id="kycDialog" class="mb-dialog" dialog-title="KYC verification" cancel-behavior="icon"><div slot="body"><div class="mb-error" data-bind="visible:error,text:error"></div><div class="mb-form"><label>KYC status<select data-bind="value:kycForm().kycStatus"><option>NOT_STARTED</option><option>PENDING</option><option>VERIFIED</option><option>REJECTED</option></select></label><label>KYC date<input type="date" data-bind="value:kycForm().kycDate" /></label><label>Expiry date<input type="date" data-bind="value:kycForm().expiryDate" /></label><div><oj-input-text label-hint="Verified by user ID" readonly value="{{kycForm().verifiedBy}}"></oj-input-text><small class="mb-field-hint">Automatically taken from the signed-in employee.</small></div><label class="wide">Remarks<textarea data-bind="value:kycForm().remarks" maxlength="500"></textarea></label></div></div><div slot="footer" class="mb-dialog-actions"><oj-button on-oj-action="[[$data.close.bind(null,'kycDialog')]]">Cancel</oj-button><oj-button chroming="callToAction" on-oj-action="[[saveKyc]]">Save KYC</oj-button></div></oj-dialog>
+  <oj-dialog id="kycDialog" class="mb-dialog" dialog-title="KYC verification" cancel-behavior="icon"><div slot="body"><div class="mb-error" data-bind="visible:error,text:error"></div><div class="mb-form"><label class="mb-managed-field" data-field-label="KYC status"><select data-bind="value:kycForm().kycStatus"><option>NOT_STARTED</option><option>PENDING</option><option>VERIFIED</option><option>REJECTED</option></select></label><oj-input-date label-hint="KYC date" value="{{kycForm().kycDate}}"></oj-input-date><oj-input-date label-hint="Expiry date" value="{{kycForm().expiryDate}}"></oj-input-date><div><oj-input-text label-hint="Verified by user ID" readonly value="{{kycForm().verifiedBy}}"></oj-input-text><small class="mb-field-hint">Automatically taken from the signed-in employee.</small></div><label class="wide mb-managed-field" data-field-label="Remarks"><textarea data-bind="value:kycForm().remarks" maxlength="500"></textarea></label></div></div><div slot="footer" class="mb-dialog-actions"><oj-button on-oj-action="[[$data.close.bind(null,'kycDialog')]]">Cancel</oj-button><oj-button chroming="callToAction" on-oj-action="[[saveKyc]]">Save KYC</oj-button></div></oj-dialog>
 
   <oj-dialog id="customerAccountDialog" class="mb-dialog" dialog-title="Open customer account" cancel-behavior="icon">
     <div slot="body">
       <div class="mb-error" data-bind="visible:error,text:error"></div>
       <div class="mb-info">KYC is verified. Select the banking product to open an active account for this customer.</div>
       <div class="mb-form">
-        <label>Active product<select data-bind="value:accountForm.productId"><option value="">Select product</option><!-- ko foreach:accountProducts --><option data-bind="value:productId,text:`${productName} · ${productCode} · ${currency}`"></option><!-- /ko --></select></label>
-        <label>Ownership<select data-bind="value:accountForm.ownershipType"><option>INDIVIDUAL</option><option>JOINT</option><option>CORPORATE</option><option>TRUST</option></select></label>
+        <label class="mb-managed-field" data-field-label="Active product"><select data-bind="value:accountForm.productId"><option value="">Select product</option><!-- ko foreach:accountProducts --><option data-bind="value:productId,text:`${productName} · ${productCode} · ${currency}`"></option><!-- /ko --></select></label>
+        <label class="mb-managed-field" data-field-label="Ownership"><select data-bind="value:accountForm.ownershipType"><option>INDIVIDUAL</option><option>JOINT</option><option>CORPORATE</option><option>TRUST</option></select></label>
         <div><oj-input-text label-hint="[[isFixedDeposit() ? 'Fixed deposit principal' : 'Opening deposit']]" value="{{accountForm.availableBalance}}"></oj-input-text><small class="mb-field-hint" data-bind="visible:selectedAccountProduct,text:accountProductRule"></small></div>
         <div class="wide mb-info" data-bind="visible:isFixedDeposit">The selected funding account is debited after the zero-balance FD account is created.</div>
-        <label class="wide" data-bind="visible:isFixedDeposit">Fund from customer account<select data-bind="value:accountForm.fundingAccountId,options:eligibleFundingAccounts,optionsText:fixedDepositAccountLabel,optionsValue:'accountId',optionsCaption:'Select funding account'"></select><small class="mb-field-hint">Only active same-currency accounts that retain their minimum balance are shown.</small></label>
+        <label class="wide mb-managed-field" data-field-label="Fund from customer account" data-bind="visible:isFixedDeposit"><select data-bind="value:accountForm.fundingAccountId,options:eligibleFundingAccounts,optionsText:fixedDepositAccountLabel,optionsValue:'accountId',optionsCaption:'Select funding account'"></select><small class="mb-field-hint">Only active same-currency accounts that retain their minimum balance are shown.</small></label>
         <div class="wide mb-info" data-bind="visible:isFixedDeposit() && accountForm.fundingAccountId()">Principal and applicable interest return to this same account at maturity or early withdrawal.</div>
         <div class="wide mb-info" data-bind="visible:isFixedDeposit() && !transactionalAccounts().length">No eligible account is available. Open or activate a savings/current account for this customer first.</div>
       </div>
@@ -146,21 +146,21 @@
     <div slot="footer" class="mb-dialog-actions"><oj-button on-oj-action="[[$data.close.bind(null,'customerAccountDialog')]]">Cancel</oj-button><oj-button chroming="callToAction" on-oj-action="[[createAccount]]">Open account</oj-button></div>
   </oj-dialog>
 
-  <oj-dialog id="documentDialog" class="mb-dialog" dialog-title="Customer document" cancel-behavior="icon"><div slot="body"><div class="mb-error" data-bind="visible:error,text:error"></div><div class="mb-form"><div class="mb-select-field"><label>Document type</label><select data-bind="value:documentForm().documentType,event:{change:onDocumentTypeChange}"><option value="" disabled>Select document type</option><option>PAN</option><option>AADHAAR</option><option>PASSPORT</option><option>DRIVING_LICENSE</option><option>SALARY_SLIP</option><option>PHOTO</option><option>SIGNATURE</option></select></div><oj-input-text data-bind="visible:documentRequiresNumber" label-hint="Document number" required value="{{documentForm().documentNumber}}"></oj-input-text><label data-bind="visible:documentShowsIssueDate">Issue date<input type="date" data-bind="value:documentForm().issueDate" /></label><label data-bind="visible:documentRequiresExpiry">Expiry date<input type="date" data-bind="value:documentForm().expiryDate" /></label><label>Status<select data-bind="value:documentForm().status"><option>UPLOADED</option><option>VERIFIED</option><option>REJECTED</option><option>EXPIRED</option></select></label><label class="wide">File<input type="file" data-bind="attr:{accept:documentFileAccept},event:{change:pickFile}" /></label><label class="wide">Remarks<textarea data-bind="value:documentForm().remarks"></textarea></label><label class="wide">Rejection reason<textarea data-bind="value:documentForm().rejectedReason"></textarea></label></div></div><div slot="footer" class="mb-dialog-actions"><oj-button on-oj-action="[[$data.close.bind(null,'documentDialog')]]">Cancel</oj-button><oj-button chroming="callToAction" on-oj-action="[[saveDocument]]">Save document</oj-button></div></oj-dialog>
+  <oj-dialog id="documentDialog" class="mb-dialog" dialog-title="Customer document" cancel-behavior="icon"><div slot="body"><div class="mb-error" data-bind="visible:error,text:error"></div><div class="mb-form"><div class="mb-select-field"><label>Document type</label><select data-bind="value:documentForm().documentType,event:{change:onDocumentTypeChange}"><option value="" disabled>Select document type</option><option>PAN</option><option>AADHAAR</option><option>PASSPORT</option><option>DRIVING_LICENSE</option><option>SALARY_SLIP</option><option>PHOTO</option><option>SIGNATURE</option></select></div><oj-input-text data-bind="visible:documentRequiresNumber" label-hint="Document number" required value="{{documentForm().documentNumber}}"></oj-input-text><oj-input-date label-hint="Issue date" data-bind="visible:documentShowsIssueDate" value="{{documentForm().issueDate}}"></oj-input-date><oj-input-date label-hint="Expiry date" data-bind="visible:documentRequiresExpiry" value="{{documentForm().expiryDate}}"></oj-input-date><label class="mb-managed-field" data-field-label="Status"><select data-bind="value:documentForm().status"><option>UPLOADED</option><option>VERIFIED</option><option>REJECTED</option><option>EXPIRED</option></select></label><label class="wide">File<input type="file" data-bind="attr:{accept:documentFileAccept},event:{change:pickFile}" /></label><label class="wide">Remarks<textarea data-bind="value:documentForm().remarks"></textarea></label><label class="wide">Rejection reason<textarea data-bind="value:documentForm().rejectedReason"></textarea></label></div></div><div slot="footer" class="mb-dialog-actions"><oj-button on-oj-action="[[$data.close.bind(null,'documentDialog')]]">Cancel</oj-button><oj-button chroming="callToAction" on-oj-action="[[saveDocument]]">Save document</oj-button></div></oj-dialog>
 
   <oj-dialog id="nomineeDialog" class="mb-dialog mb-dialog-wide" dialog-title="Nominee or account relation" cancel-behavior="icon">
     <div slot="body">
       <div class="mb-error" data-bind="visible:error,text:error"></div>
       <div class="mb-form three">
         <oj-input-text label-hint="Name" required value="{{nomineeForm().nomineeName}}"></oj-input-text>
-        <label>Relationship<select data-bind="value:nomineeForm().relationship"><option value="">Select relationship</option><option>Legal guardian</option><option>Parent</option><option>Spouse</option><option>Child</option><option>Sibling</option><option>Other</option></select></label>
-        <label>Relation type<select data-bind="value:nomineeForm().relationType"><option>NOMINEE</option><option>JOIN_HOLDER</option><option>GUARDIAN</option><option>AUTHORIZED_SIGNATORY</option></select></label>
-        <label>Status<select data-bind="value:nomineeForm().status"><option>ACTIVE</option><option>INACTIVE</option><option>PENDING</option><option>CLOSED</option></select></label>
-        <label>Date of birth<input type="date" data-bind="value:nomineeForm().dob,attr:{max:adultDobMax}" /></label>
+        <label class="mb-managed-field" data-field-label="Relationship"><select data-bind="value:nomineeForm().relationship"><option value="">Select relationship</option><option>Legal guardian</option><option>Parent</option><option>Spouse</option><option>Child</option><option>Sibling</option><option>Other</option></select></label>
+        <label class="mb-managed-field" data-field-label="Relation type"><select data-bind="value:nomineeForm().relationType"><option>NOMINEE</option><option>JOIN_HOLDER</option><option>GUARDIAN</option><option>AUTHORIZED_SIGNATORY</option></select></label>
+        <label class="mb-managed-field" data-field-label="Status"><select data-bind="value:nomineeForm().status"><option>ACTIVE</option><option>INACTIVE</option><option>PENDING</option><option>CLOSED</option></select></label>
+        <oj-input-date label-hint="Date of birth" max="[[adultDobMax]]" value="{{nomineeForm().dob}}"></oj-input-date>
         <div>
-          <div style="display:grid; grid-template-columns:80px minmax(0,1fr); gap:8px; align-items:end; width:100%;">
+          <div class="mb-phone-pair">
 
-            <div style="width:80px;">
+            <div class="mb-phone-code">
               <oj-input-text
                       label-hint="Code"
                       value="+91"
@@ -169,7 +169,7 @@
               </oj-input-text>
             </div>
 
-            <div style="min-width:0; width:100%;">
+            <div class="mb-phone-number">
               <oj-input-text
                       label-hint="Phone"
                       inputmode="numeric"
@@ -183,12 +183,12 @@
           </div>
         </div>
         <oj-input-text label-hint="Share percentage" value="{{nomineeForm().sharePercentage}}"></oj-input-text>
-        <label>Start date<input type="date" data-bind="value:nomineeForm().startDate" /></label>
-        <label>End date<input type="date" data-bind="value:nomineeForm().endDate" /></label>
+        <oj-input-date label-hint="Start date" value="{{nomineeForm().startDate}}"></oj-input-date>
+        <oj-input-date label-hint="End date" value="{{nomineeForm().endDate}}"></oj-input-date>
         <label class="wide mb-nominee-address-toggle"><input type="checkbox" data-bind="checked:includeNomineeAddress" /> Add a separate address for this nominee</label>
       </div>
       <div class="mb-form three mb-subsection mb-nominee-address-form" data-bind="visible:includeNomineeAddress">
-        <label>Address type<select data-bind="value:nomineeForm().address.addressType"><option>CURRENT</option><option>PERMANENT</option><option>OFFICE</option></select></label>
+        <label class="mb-managed-field" data-field-label="Address type"><select data-bind="value:nomineeForm().address.addressType"><option>CURRENT</option><option>PERMANENT</option><option>OFFICE</option></select></label>
         <oj-input-text label-hint="Address line 1" value="{{nomineeForm().address.line1}}"></oj-input-text>
         <oj-input-text label-hint="Address line 2" value="{{nomineeForm().address.line2}}"></oj-input-text>
         <div class="mb-select-field">
