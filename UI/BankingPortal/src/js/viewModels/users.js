@@ -47,7 +47,7 @@ define([
     s.currentPage = ko.observable(0);
     s.totalPages = ko.observable(1);
     s.totalUsers = ko.observable(0);
-    s.pageSize = 20;
+    s.pageSize = 10;
     s.directoryRequest = 0;
     s.searchTimer = null;
     s.form = ko.observable(blank());
