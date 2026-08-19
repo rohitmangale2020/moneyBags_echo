@@ -234,9 +234,6 @@
         >
           <span data-bind="text:profileSaved() ? 'Update profile →' : 'Create profile →'"></span>
         </oj-button>
-        <!-- ko if:profileSaved -->
-        <oj-button chroming="callToAction" disabled="[[busy()]]" on-oj-action="[[nextFromProfile]]">Next</oj-button>
-        <!-- /ko -->
       </div>
     </div>
   </article>
@@ -357,14 +354,11 @@
       <div class="mb-action-group">
         <oj-button
                 chroming="callToAction"
-                disabled="[[busy()||addressSaved()]]"
+                disabled="[[busy()]]"
                 on-oj-action="[[saveAddress]]"
         >
-          Save address →
+          <span data-bind="text:addressSaved() ? 'Update address →' : 'Save address →'"></span>
         </oj-button>
-        <!-- ko if:addressSaved -->
-        <oj-button chroming="callToAction" disabled="[[busy()]]" on-oj-action="[[nextFromAddress]]">Next</oj-button>
-        <!-- /ko -->
       </div>
 
     </div>
@@ -477,7 +471,7 @@
         ← Back
       </oj-button>
 
-      <oj-button chroming="callToAction" disabled="[[busy()]]" on-oj-action="[[skipDocuments]]">
+      <oj-button chroming="callToAction" disabled="[[busy()]]" on-oj-action="[[continueFromDocuments]]">
         <span data-bind="text:uploadedDocuments().length ? 'Continue to KYC' : 'Skip for now'"></span>
       </oj-button>
 
@@ -526,18 +520,6 @@
         ></small>
       </div>
 
-      <div>
-        <oj-input-text
-                label-hint="Verified by user ID"
-                readonly
-                value="[[verifiedBy]]"
-        ></oj-input-text>
-
-        <small class="mb-field-hint">
-          Automatically taken from the signed-in employee.
-        </small>
-      </div>
-
       <div class="wide">
         <oj-input-text
                 label-hint="Remarks"
@@ -553,9 +535,13 @@
 
     </div>
 
-    <h3>Optional nominee</h3>
-    <p class="mb-help">Leave every nominee field empty to skip this section. A separate nominee address may be added when available.</p>
+    <label class="mb-check-option">
+      <input type="checkbox" data-bind="checked:addNominee" />
+      <span>Add nominee</span>
+    </label>
+    <p class="mb-help">Select this option to enter nominee details.</p>
 
+    <!-- ko if:addNominee -->
     <div class="mb-form three">
 
       <div>
@@ -656,13 +642,12 @@
 
     </div>
 
-    <h3 class="mb-subsection">
-      Nominee address
-    </h3>
+    <label class="mb-check-option mb-subsection">
+      <input type="checkbox" data-bind="checked:addNomineeAddress" />
+      <span>Add nominee address</span>
+    </label>
 
-    <p class="mb-help">
-      Optional. If you start the nominee address, complete all required address fields.
-    </p>
+    <!-- ko if:addNomineeAddress -->
 
     <div class="mb-form three mb-nominee-address">
 
@@ -746,6 +731,8 @@
       </div>
 
     </div>
+    <!-- /ko -->
+    <!-- /ko -->
 
     <div class="mb-actions">
 
@@ -759,9 +746,9 @@
       <oj-button
               chroming="callToAction"
               disabled="[[busy()]]"
-              on-oj-action="[[saveKyc]]"
+              on-oj-action="[[reviewOnboarding]]"
       >
-        Save assessment →
+        Review details →
       </oj-button>
 
     </div>
@@ -772,43 +759,34 @@
   <!-- ko if:step()===5 -->
   <article class="mb-workflow review">
 
-    <span class="mb-success-mark">✓</span>
+    <span class="mb-success-mark" data-bind="text:kycSaved() ? '✓' : 'Review'"></span>
 
     <small>STEP 5 OF 6</small>
 
-    <h2>Onboarding details saved</h2>
+    <h2 data-bind="text:kycSaved() ? 'Onboarding details saved' : 'Review onboarding details'"></h2>
 
-    <p data-bind="text:canProceedToAccount() ? 'KYC is verified and this customer is active. Continue to account opening when ready.' : 'The customer must now be reviewed and activated from Customer Management. Account opening can be resumed after verified KYC and activation.'"></p>
+    <p data-bind="text:skippedKyc() ? 'Documents and KYC were skipped. The customer remains pending KYC and cannot open an account until verification is completed.' : (kycSaved() ? (canProceedToAccount() ? 'KYC is verified and this customer is active. Continue to account opening when ready.' : 'The customer must now be reviewed and activated from Customer Management. Account opening can be resumed after verified KYC and activation.') : 'Review the entered profile, address, documents, KYC, and nominee details before saving.')"></p>
 
-    <div class="mb-review">
-
-      <div>
-        <small>Customer</small>
-        <strong
-                data-bind="text:`${customer().firstName} ${customer().lastName||''}`"
-        ></strong>
-      </div>
-
-      <div>
-        <small>CIF</small>
-        <strong data-bind="text:customer().cifNo"></strong>
-      </div>
-
-      <div>
-        <small>KYC</small>
-        <strong data-bind="text:kycRecord().kycStatus"></strong>
-      </div>
-
-      <div>
-        <small>Verified by</small>
-        <strong
-                data-bind="text:kycRecord().verifiedBy||verifiedBy()"
-        ></strong>
-      </div>
-
+    <div class="mb-review-sections">
+      <section class="mb-review-section">
+        <header><h3>Customer profile</h3><button class="mb-edit" type="button" data-bind="click:() => editSection(1)" aria-label="Edit customer profile">✎ Edit</button></header>
+        <dl><div><dt>Name</dt><dd data-bind="text:`${profile.firstName()} ${profile.lastName()||''}`"></dd></div><div><dt>Date of birth</dt><dd data-bind="text:profile.dob"></dd></div><div><dt>Gender</dt><dd data-bind="text:profile.gender"></dd></div><div><dt>Occupation</dt><dd data-bind="text:profile.occupation"></dd></div><div><dt>Mobile</dt><dd data-bind="text:profile.phone"></dd></div><div><dt>Email</dt><dd data-bind="text:profile.email"></dd></div><div><dt>CIF</dt><dd data-bind="text:customer().cifNo"></dd></div></dl>
+      </section>
+      <section class="mb-review-section">
+        <header><h3>Residential address</h3><button class="mb-edit" type="button" data-bind="click:() => editSection(2)" aria-label="Edit residential address">✎ Edit</button></header>
+        <dl><div><dt>Type</dt><dd data-bind="text:address.addressType"></dd></div><div><dt>Country</dt><dd data-bind="text:address.country"></dd></div><div class="wide"><dt>Address</dt><dd data-bind="text:`${address.line1()}${address.line2() ? ', ' + address.line2() : ''}`"></dd></div><div><dt>State / district</dt><dd data-bind="text:`${address.state()} / ${address.city()}`"></dd></div><div><dt>Pincode</dt><dd data-bind="text:address.pincode"></dd></div></dl>
+      </section>
+      <section class="mb-review-section">
+        <header><h3>Identity documents</h3><button class="mb-edit" type="button" data-bind="click:() => editSection(3)" aria-label="Edit identity documents">✎ Edit</button></header>
+        <dl><div class="wide"><dt>Uploaded documents</dt><dd data-bind="text:uploadedDocuments().map((document) => document.documentType).join(', ') || 'None'"></dd></div></dl>
+      </section>
+      <section class="mb-review-section">
+        <header><h3>KYC and nominee</h3><button class="mb-edit" type="button" data-bind="click:() => editSection(4)" aria-label="Edit KYC and nominee">✎ Edit</button></header>
+        <dl><div><dt>KYC status</dt><dd data-bind="text:skippedKyc() ? 'PENDING (skipped)' : (kycSaved() ? kycRecord().kycStatus : kyc.kycStatus())"></dd></div><div><dt>KYC date</dt><dd data-bind="text:skippedKyc() ? 'Not assessed' : kyc.kycDate()"></dd></div><div><dt>Nominee</dt><dd data-bind="text:addNominee() ? nominee.nomineeName() : 'Not added'"></dd></div><div><dt>Relationship</dt><dd data-bind="text:addNominee() ? nominee.relationship() : '—'"></dd></div><div><dt>Share</dt><dd data-bind="text:addNominee() ? `${nominee.sharePercentage()}%` : '—'"></dd></div></dl>
+      </section>
     </div>
 
-    <div class="mb-info" data-bind="text:canProceedToAccount() ? 'You may now proceed to account opening, or finish and manage the customer record.' : 'Next: open Customers, manage this CIF, verify the KYC record, and activate the customer. Then return here and use Resume onboarding.'">
+    <div class="mb-info" data-bind="visible:kycSaved,text:canProceedToAccount() ? 'You may now proceed to account opening, or finish and manage the customer record.' : 'Next: open Customers, manage this CIF, verify the KYC record, and activate the customer. Then return here and use Resume onboarding.'">
       Then return here and use “Resume onboarding”.
     </div>
 
@@ -818,16 +796,22 @@
         ← Back
       </oj-button>
 
-      <!-- ko if:canProceedToAccount -->
+      <!-- ko if:!kycSaved() && !skippedKyc() -->
+      <oj-button chroming="callToAction" disabled="[[busy()]]" on-oj-action="[[confirmOnboarding]]">Save customer →</oj-button>
+      <!-- /ko -->
+
+      <!-- ko if:kycSaved() && canProceedToAccount -->
       <oj-button chroming="callToAction" on-oj-action="[[proceedToAccount]]">Proceed to account opening</oj-button>
       <!-- /ko -->
 
+      <!-- ko if:kycSaved() || skippedKyc() -->
       <oj-button
               chroming="callToAction"
               on-oj-action="[[finishOnboarding]]"
       >
-        Finish and manage customer →
+        Finish onboarding →
       </oj-button>
+      <!-- /ko -->
 
     </div>
 
