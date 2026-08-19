@@ -1,85 +1,16 @@
-<section class="mb-stack">
-  <div class="mb-welcome mb-account-intro">
-    <div>
-      <small>TODAY'S WORKSPACE</small>
-      <h1>Welcome back, <oj-bind-text value="[[displayName]]"></oj-bind-text>.</h1>
-      <p>Review live banking operations and move priority work forward.</p>
-    </div>
-    <oj-button
-      chroming="callToAction"
-      on-oj-action="[[openOnboarding]]"
-      :style.display="[[isEmployee()?'inline-flex':'none']]"
-      >Onboard customer</oj-button
-    >
-  </div>
-  <div class="mb-dashboard-body mb-stack">
-    <div class="mb-account-page-loader" data-bind="visible:state.loading()" role="status" aria-live="polite">
-      <span class="mb-account-page-spinner" aria-hidden="true"></span>
-      <strong>Loading dashboard</strong>
-      <small>Preparing live banking data…</small>
-    </div>
-    <div class="mb-metrics" data-bind="foreach:cards">
-    <article>
-      <span class="mb-metric-icon" data-bind="css:tone" aria-hidden="true">
-        <i data-bind="css:iconClass"></i>
-      </span>
-      <div><small data-bind="text:label"></small><strong data-bind="text:value"></strong></div>
-    </article>
-  </div>
-  <div class="mb-error" data-bind="visible:state.error">
-    <strong>Dashboard data could not be loaded</strong><span data-bind="text:state.error"></span
-    ><button data-bind="click:load">Retry</button>
-  </div>
-    <oj-bind-if test="[[isCustomer()]]"
-    ><div class="mb-limitation">
-      <span class="oj-ux-ico-shield"></span>
-      <div>
-        <small>PRIVACY SAFEGUARD</small>
-        <h2>Customer records are protected</h2>
-        <p>
-          The backend does not link your authenticated user ID to a Customer/CIF record. This portal
-          will not guess that relationship or expose another customer's data.
-        </p>
-      </div>
-    </div></oj-bind-if
-  ><oj-bind-if test="[[!isCustomer()]]"
-    ><div class="mb-panels">
-      <article class="mb-panel">
-        <small>CUSTOMER LIFECYCLE</small>
-        <h2>Onboarding activity</h2>
-        <div class="mb-status-grid">
-          <div>
-            <span class="mb-badge pending">KYC pending</span
-            ><strong
-              data-bind="text:state.data().customerTotals.KYC_PENDING||0"
-            ></strong>
-          </div>
-          <div>
-            <span class="mb-badge active">Active</span
-            ><strong
-              data-bind="text:state.data().customerTotals.ACTIVE||0"
-            ></strong>
-          </div>
-          <div>
-            <span class="mb-badge inactive">Inactive</span
-            ><strong
-              data-bind="text:state.data().customerTotals.INACTIVE||0"
-            ></strong>
-          </div>
-        </div>
-      </article>
-      <article class="mb-panel">
-        <small>QUICK ACTIONS</small>
-        <h2>Move work forward</h2>
-        <button class="mb-quick" data-bind="click:openCustomers">
-          Customer directory <span>→</span></button
-        ><button class="mb-quick" data-bind="click:openAccounts">
-          Find account <span>→</span></button
-        ><button class="mb-quick" data-bind="click:openTransactions">
-          Internal transfer <span>→</span>
-        </button>
-      </article>
-    </div></oj-bind-if
-    >
-  </div>
+<section class="mb-operations-dashboard">
+  <div class="mb-loading mb-moneybags-loader mb-dashboard-loader" data-bind="visible:state.loading" role="status" aria-live="polite"><img class="mb-moneybags-loader-logo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Crect width='36' height='36' rx='10' fill='white'/%3E%3Ctext x='18' y='25' text-anchor='middle' font-family='Arial,sans-serif' font-size='20' font-weight='800' fill='%23355eb8'%3EM%3C/text%3E%3C/svg%3E" alt="" aria-hidden="true"><strong>Loading dashboard</strong><small>Preparing live banking data…</small></div>
+  <div class="mb-error" data-bind="visible:state.error"><strong>Dashboard data could not be loaded</strong><span data-bind="text:state.error"></span><button data-bind="click:load">Retry</button></div>
+  <oj-bind-if test="[[!isCustomer()]]">
+    <div class="mb-ops-filters"><div class="mb-date-range" aria-label="Dashboard date range"><span class="mb-date-range-label">Calendar</span><label><span>From</span><input type="date" data-bind="value:startDate,event:{change:applyDateRange}"></label><span class="mb-date-range-divider" aria-hidden="true">→</span><label><span>To</span><input type="date" data-bind="value:endDate,event:{change:applyDateRange}"></label></div><div class="mb-ops-periods" aria-label="Date timeline"><button data-bind="click:()=>setPeriod('TODAY'),css:{selected:period()==='TODAY'}">Today</button><button data-bind="click:()=>setPeriod('7D'),css:{selected:period()==='7D'}">7D</button><button data-bind="click:()=>setPeriod('30D'),css:{selected:period()==='30D'}">30D</button><button data-bind="click:()=>setPeriod('MTD'),css:{selected:period()==='MTD'}">MTD</button><button data-bind="click:()=>setPeriod('YTD'),css:{selected:period()==='YTD'}">YTD</button></div><div class="mb-dashboard-refresh"><small data-bind="text:lastUpdatedLabel"></small><button type="button" data-bind="click:refreshDashboard" aria-label="Refresh dashboard">↻</button></div></div>
+    <div class="mb-ops-kpis" data-bind="foreach:metrics"><article data-bind="css:tone"><small data-bind="text:label"></small><strong data-bind="text:value"></strong><em data-bind="text:note"></em></article></div>
+    <main class="mb-ops-grid">
+      <article class="mb-ops-card mb-ops-pulse"><header><h2>Operational pulse</h2><div><select aria-label="Chart activity" data-bind="value:activityMetric"><option value="TRANSACTIONS">Transactions</option><option value="ACCOUNTS">Accounts opened</option></select><button data-bind="click:toggleComparison,text:showComparison()?'Compared':'Compare'"></button><button data-bind="click:refreshActivity" aria-label="Refresh dashboard">↻</button></div></header><div class="mb-ops-key" data-bind="with:operationalPulse"><span class="primary" data-bind="text:primaryLabel"></span><span class="secondary" data-bind="visible:showComparison,text:secondaryLabel"></span></div><div class="mb-ops-chart-wrap"><svg class="mb-ops-line" viewBox="0 0 680 224" role="img" aria-label="Operational pulse chart" data-bind="with:operationalPulse"><g data-bind="foreach:grid"><line x1="36" x2="640" data-bind="attr:{y1:y,y2:y}"></line><text x="28" data-bind="attr:{y:y+4},text:label"></text></g><polygon class="primary-fill" data-bind="attr:{points:primaryAreaPoints}"></polygon><polyline class="primary" fill="none" data-bind="attr:{points:primaryPoints}"></polyline><polyline class="secondary" fill="none" data-bind="visible:showComparison,attr:{points:secondaryPoints}"></polyline><g data-bind="foreach:primaryDots"><circle class="primary-dot" r="4" data-bind="attr:{cx:x,cy:y}"><title data-bind="text:tooltip"></title></circle></g><g data-bind="foreach:secondaryDots"><circle class="secondary-dot" r="3.5" data-bind="visible:$parent.showComparison,attr:{cx:x,cy:y}"><title data-bind="text:tooltip"></title></circle></g><text class="mb-ops-peak" text-anchor="middle" data-bind="attr:{x:peak.x,y:peak.y},text:peak.value"></text><g data-bind="foreach:labels"><text class="axis" text-anchor="middle" data-bind="attr:{x:x,y:204},text:text"></text></g></svg></div></article>
+      <article class="mb-ops-card mb-ops-status"><header><h2>Customer status</h2><button data-bind="click:openCustomers,text:periodLabel"></button></header><div class="mb-ops-status-list" data-bind="foreach:customerStatus().segments"><div><i data-bind="style:{backgroundColor:background,color:color}"><span class="oj-ux-ico-user"></span></i><p><small data-bind="text:label"></small><strong data-bind="text:value"></strong></p><em data-bind="text:percent+'%',style:{color:color}"></em></div></div><button class="mb-ops-link" data-bind="click:openCustomers">View all customers <b>›</b></button></article>
+      <article class="mb-ops-card mb-ops-composition"><header><h2>Accounts by type</h2><button class="mb-ops-link" data-bind="click:openAccounts">View all</button></header><div class="mb-composition-grid" data-bind="with:accountComposition"><section data-bind="with:number"><h3>By number</h3><div class="mb-mini-donut" data-bind="style:{background:gradient}"><span><strong data-bind="text:total"></strong><small>Total</small></span></div><div class="mb-mini-legend" data-bind="foreach:segments"><div><i data-bind="style:{backgroundColor:color}"></i><span data-bind="text:label"></span><strong data-bind="text:percent+'%'"></strong></div></div></section><section data-bind="with:balance"><h3>By balance</h3><div class="mb-mini-donut" data-bind="style:{background:gradient}"><span><strong data-bind="text:formattedTotal"></strong><small>Total</small></span></div><div class="mb-mini-legend" data-bind="foreach:segments"><div><i data-bind="style:{backgroundColor:color}"></i><span data-bind="text:label"></span><strong data-bind="text:percent+'%'"></strong></div></div></section></div></article>
+      <article class="mb-ops-card mb-ops-transactions"><header><h2>Recent transactions</h2><button class="mb-ops-link" data-bind="click:openTransactions">View all transactions <b>›</b></button></header><div class="mb-ops-table"><table><thead><tr><th>Date / time</th><th>Transaction ID</th><th>Type</th><th>Account</th><th>Amount</th><th>Status</th></tr></thead><tbody data-bind="foreach:recentTransactions"><tr><td data-bind="text:$parent.date(initiatedAt)"></td><td class="reference" data-bind="text:transactionRef"></td><td><span class="mb-transaction-kind" data-bind="text:$parent.transactionKind($data)"></span></td><td data-bind="text:$parent.transactionAccount($data)"></td><td data-bind="text:$parent.money(amount,currencyCode)"></td><td><span class="mb-transaction-status" data-bind="text:transactionStatus,css:String(transactionStatus||'').toLowerCase()"></span></td></tr></tbody></table><div class="mb-mini-empty" data-bind="visible:!recentTransactions().length">No recent transactions yet.</div></div></article>
+      <article class="mb-ops-card mb-ops-queues mb-quick-actions-card"><header><h2>Quick actions</h2></header><div class="mb-queue-actions mb-quick-action-grid"><button data-bind="click:openOnboarding"><span class="mb-quick-icon blue"><span class="oj-ux-ico-add-user"></span></span><span class="mb-quick-label">Onboard customer</span><b aria-hidden="true">›</b></button><button data-bind="click:openAccounts"><span class="mb-quick-icon teal" aria-hidden="true">+</span><span class="mb-quick-label">Open account</span><b aria-hidden="true">›</b></button><button data-bind="click:openTransactions"><span class="mb-quick-icon violet"><span class="oj-ux-ico-transfer"></span></span><span class="mb-quick-label">Initiate transfer</span><b aria-hidden="true">›</b></button><button data-bind="click:openProducts"><span class="mb-quick-icon amber"><span class="oj-ux-ico-bank"></span></span><span class="mb-quick-label">View products</span><b aria-hidden="true">›</b></button></div></article>
+    </main>
+  </oj-bind-if>
+  <oj-bind-if test="[[isCustomer()]]"><div class="mb-limitation"><span class="oj-ux-ico-shield"></span><div><small>PRIVACY SAFEGUARD</small><h2>Customer records are protected</h2><p>The portal does not expose another customer's data.</p></div></div></oj-bind-if>
 </section>
