@@ -270,8 +270,8 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
           else if (values[field].length > 100) e[`${prefix}${field}`] = `${label} ${field} cannot exceed 100 characters.`;
         });
         try {
-          if (!await indiaAddress.validatePincode(values.state, values.city, values.pincode)) e[`${prefix}pincode`] = `Enter a pincode valid for the ${label.toLowerCase()} address state and district.`;
-        } catch (error) { e[`${prefix}pincode`] = 'PIN validation is temporarily unavailable. Please try again.'; }
+          if (!await indiaAddress.validatePincode(values.state, values.city, values.pincode)) e[`${prefix}pincode`] = 'Enter a valid six-digit pincode.';
+        } catch (error) { e[`${prefix}pincode`] = 'Enter a valid six-digit pincode.'; }
       };
       const permanent = valuesFor(s.address, 'PERMANENT');
       const current = s.sameAsPermanentAddress() ? Object.assign({}, permanent, { addressType: 'CURRENT' }) : valuesFor(s.currentAddress, 'CURRENT');
@@ -400,8 +400,8 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
         if (text(s.nominee.line2()).length > 250) e.nomineeLine2 = 'Area cannot exceed 250 characters.';
         if (text(s.nominee.pincode())) {
           try {
-            if (!await indiaAddress.validatePincode(text(s.nominee.state()), text(s.nominee.city()), text(s.nominee.pincode()))) e.nomineePincode = 'Enter a pincode valid for the selected state and district.';
-          } catch (error) { e.nomineePincode = 'PIN validation is temporarily unavailable. Please try again.'; }
+            if (!await indiaAddress.validatePincode(text(s.nominee.state()), text(s.nominee.city()), text(s.nominee.pincode()))) e.nomineePincode = 'Enter a valid six-digit pincode.';
+          } catch (error) { e.nomineePincode = 'Enter a valid six-digit pincode.'; }
         }
       }
       if (!s.setErrors(e)) return;

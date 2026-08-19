@@ -18,7 +18,7 @@ class ResourceServerSecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/audit/**").denyAll()
                         .requestMatchers(HttpMethod.PATCH, "/api/audit/**").denyAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/audit/**").denyAll()
-                        .requestMatchers(HttpMethod.GET, "/api/audit/**").hasAnyRole("ADMIN", "AUDITOR")
+                        .requestMatchers(HttpMethod.GET, "/api/audit/**").hasAnyRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/audit/**").permitAll()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2
