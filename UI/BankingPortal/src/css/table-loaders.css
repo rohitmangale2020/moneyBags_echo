@@ -18,24 +18,19 @@
   text-align: center;
 }
 
-.mb-stack:has(> .mb-moneybags-loader),
-.mb-dialog [slot="body"]:has(> .mb-moneybags-loader) {
-  position: relative;
-}
-
 .mb-moneybags-loader {
-  position: absolute;
-  inset: 0;
-  z-index: 10;
+  position: static;
+  inset: auto;
+  z-index: auto;
   display: grid;
+  min-height: 300px;
   place-content: center;
   justify-items: center;
   gap: 8px;
-  min-height: 260px;
   padding: 32px 16px;
-  background: rgba(237, 243, 250, 0.58);
-  -webkit-backdrop-filter: blur(9px);
-  backdrop-filter: blur(9px);
+  border: 1px solid #d7e5f6;
+  border-radius: 14px;
+  background: rgba(237, 243, 250, 0.88);
   color: #273b60;
   text-align: center;
 }
@@ -44,38 +39,18 @@
   width: 64px;
   height: 64px;
   margin-bottom: 6px;
-  opacity: 0;
-}
-
-.mb-moneybags-loader::before,
-.mb-moneybags-loader::after {
-  position: absolute;
-  top: calc(50% - 25px);
-  left: 50%;
-  pointer-events: none;
-  transform: translate(-50%, -50%);
-}
-
-.mb-moneybags-loader::before {
-  width: 64px;
-  height: 64px;
   border-radius: 18px;
-  background: #fff;
   box-shadow: 0 12px 30px rgba(53, 94, 184, 0.24);
-  content: "";
 }
 
-.mb-moneybags-loader::after {
-  overflow: hidden;
-  width: 42px;
-  color: #355eb8;
-  content: "M";
-  clip-path: inset(0 100% 0 0);
-  font-family: Arial, sans-serif;
-  font-size: 36px;
-  font-weight: 800;
-  line-height: 1;
-  animation: mb-moneybags-loader-draw-m 1.6s ease-in-out infinite;
+.mb-moneybags-loader-logo text {
+  fill: transparent;
+  stroke: #355eb8;
+  stroke-width: 1.2px;
+  stroke-linejoin: round;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: mb-moneybags-loader-draw-m 1.8s ease-in-out infinite;
 }
 
 .mb-moneybags-loader strong {
@@ -88,27 +63,27 @@
 
 @keyframes mb-moneybags-loader-draw-m {
   0%, 10% {
-    opacity: 0;
-    clip-path: inset(0 100% 0 0);
+    fill: transparent;
+    stroke-dashoffset: 100;
   }
-  18% {
-    opacity: 1;
-    clip-path: inset(0 92% 0 0);
+  68% {
+    fill: transparent;
+    stroke-dashoffset: 0;
   }
-  75%, 90% {
-    opacity: 1;
-    clip-path: inset(0);
+  76%, 90% {
+    fill: #355eb8;
+    stroke-dashoffset: 0;
   }
   100% {
-    opacity: 0;
-    clip-path: inset(0 100% 0 0);
+    fill: transparent;
+    stroke-dashoffset: 100;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .mb-moneybags-loader::after {
+  .mb-moneybags-loader-logo text {
     animation: none;
-    opacity: 1;
-    clip-path: inset(0);
+    fill: #355eb8;
+    stroke-dashoffset: 0;
   }
 }

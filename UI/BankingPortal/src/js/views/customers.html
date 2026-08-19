@@ -13,11 +13,11 @@
   </div>
   <div class="mb-error" data-bind="visible:state.error"><span data-bind="text:state.error"></span><button data-bind="click:load">Retry</button></div>
   <div class="mb-loading mb-moneybags-loader" data-bind="visible:!showDetailPage() && state.loading()" role="status" aria-live="polite">
-    <img class="mb-moneybags-loader-logo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Crect width='36' height='36' rx='10' fill='white'/%3E%3Ctext x='18' y='25' text-anchor='middle' font-family='Arial,sans-serif' font-size='20' font-weight='800' fill='%23355eb8'%3EM%3C/text%3E%3C/svg%3E" alt="" aria-hidden="true" />
+    <svg class="mb-moneybags-loader-logo" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><rect width="36" height="36" rx="10" fill="white"/><text x="18" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="800" fill="#355eb8">M</text></svg>
     <strong>Loading customers</strong>
     <small>Fetching the latest customer records…</small>
   </div>
-  <div class="mb-table" data-bind="visible:!showDetailPage() && orderedCustomers().length">
+  <div class="mb-table" data-bind="visible:!showDetailPage() && orderedCustomers().length && !state.loading()">
     <table><thead><tr><th>Customer</th><th>CIF</th><th>Status</th><th>Contact</th><th>Actions</th></tr></thead>
       <tbody data-bind="foreach:orderedCustomers"><tr>
         <td><strong data-bind="text:`${firstName} ${lastName||''}`"></strong><small data-bind="text:occupation||'Occupation not provided'"></small></td>
@@ -27,7 +27,7 @@
         <td><button class="mb-link" data-bind="click:()=>$parent.openDetail($data)">Manage</button><button class="mb-link" data-bind="click:()=>$parent.status($data),text:status==='ACTIVE'?'Deactivate':'Activate'"></button></td>
       </tr></tbody></table>
   </div>
-  <div class="mb-pagination" data-bind="visible:!showDetailPage() && totalCustomers()">
+  <div class="mb-pagination" data-bind="visible:!showDetailPage() && totalCustomers() && !state.loading()">
     <span data-bind="text:`Page ${currentPage() + 1} of ${totalPages()} · ${totalCustomers()} customers`"></span>
     <oj-button on-oj-action="[[previousPage]]" disabled="[[state.loading() || currentPage() === 0]]">Previous</oj-button>
     <oj-button on-oj-action="[[nextPage]]" disabled="[[state.loading() || currentPage() >= totalPages() - 1]]">Next</oj-button>
@@ -42,16 +42,16 @@
     </div>
     <div class="mb-error" data-bind="visible:error,text:error"></div>
     <div class="mb-loading mb-moneybags-loader" data-bind="visible:detailState.loading" role="status" aria-live="polite">
-      <img class="mb-moneybags-loader-logo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Crect width='36' height='36' rx='10' fill='white'/%3E%3Ctext x='18' y='25' text-anchor='middle' font-family='Arial,sans-serif' font-size='20' font-weight='800' fill='%23355eb8'%3EM%3C/text%3E%3C/svg%3E" alt="" aria-hidden="true" />
+      <svg class="mb-moneybags-loader-logo" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><rect width="36" height="36" rx="10" fill="white"/><text x="18" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="800" fill="#355eb8">M</text></svg>
       <strong>Loading customer records</strong>
       <small>Fetching customer details…</small>
     </div>
-    <div data-bind="with:selected">
+    <div data-bind="with:selected,visible:!detailState.loading()">
       <div class="mb-detail-hero"><div><small data-bind="text:cifNo"></small><h2 data-bind="text:`${firstName} ${lastName||''}`"></h2><p data-bind="text:`${email||'No email'} · ${phone}`"></p></div><span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span></div>
       <div class="mb-detail-actions"><button class="mb-link" data-bind="click:$parent.editCustomer">Edit profile</button><button class="mb-link" data-bind="click:()=>$parent.status($data),text:status==='ACTIVE'?'Deactivate':'Activate'"></button><button class="mb-link" data-bind="click:$parent.openAccountForCustomer,text:$parent.accountActionLabel"></button><button class="mb-link danger" data-bind="click:()=>$parent.remove($data)">Delete</button></div>
     </div>
-    <div class="mb-info" data-bind="visible:!kycVerified()">Verify KYC first. An account/product can be added only after KYC is verified.</div>
-    <div class="mb-resource-grid">
+    <div class="mb-info" data-bind="visible:!detailState.loading() && !kycVerified()">Verify KYC first. An account/product can be added only after KYC is verified.</div>
+    <div class="mb-resource-grid" data-bind="visible:!detailState.loading()">
       <section class="mb-resource-card"><div class="mb-resource-head"><div><small>KYC</small><h3>Identity verification</h3></div><button class="mb-link" data-bind="click:openKyc,text:detailState.data().kyc?'Update':'Add KYC'"></button></div><div data-bind="with:detailState.data().kyc"><span class="mb-badge" data-bind="text:kycStatus,css:kycStatus.toLowerCase()"></span><dl class="mb-kv"><div><dt>Verified by</dt><dd data-bind="text:verifiedBy||'—'"></dd></div><div><dt>Expiry</dt><dd data-bind="text:expiryDate||'—'"></dd></div></dl></div><div class="mb-empty compact" data-bind="visible:!detailState.data().kyc">No KYC record.</div></section>
       <section class="mb-resource-card"><div class="mb-resource-head"><div><small>ACCOUNTS</small><h3>List of Accounts</h3></div><button class="mb-link" data-bind="click:openAccountForCustomer,text:accountActionLabel"></button></div><div class="mb-resource-list" data-bind="foreach:detailState.data().accounts"><article><strong data-bind="text:productName"></strong><span data-bind="text:`${accountNumber} · ${currencyCode}`"></span><span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span></article></div><div class="mb-empty compact" data-bind="visible:!detailState.data().accounts.length">No accounts or products added.</div></section>
       <section class="mb-resource-card"><div class="mb-resource-head"><div><small>ADDRESSES</small><h3>Contact locations</h3></div><button class="mb-link" data-bind="click:()=>openAddress(null)">Add address</button></div><div class="mb-resource-list" data-bind="foreach:detailState.data().addresses"><article><strong data-bind="text:addressType"></strong><span data-bind="text:`${line1}, ${city}, ${state} ${pincode}`"></span><div><button class="mb-link" data-bind="click:()=>$parent.openAddress($data)">Update</button><button class="mb-link danger" data-bind="visible:$parent.detailState.data().addresses.length > 1,click:()=>$parent.deleteAddress($data)">Delete</button></div></article></div><div class="mb-empty compact" data-bind="visible:!detailState.data().addresses.length">No addresses.</div></section>
@@ -65,16 +65,16 @@
     <div slot="body">
       <div class="mb-error" data-bind="visible:error,text:error"></div>
       <div class="mb-loading mb-moneybags-loader" data-bind="visible:detailState.loading" role="status" aria-live="polite">
-        <img class="mb-moneybags-loader-logo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Crect width='36' height='36' rx='10' fill='white'/%3E%3Ctext x='18' y='25' text-anchor='middle' font-family='Arial,sans-serif' font-size='20' font-weight='800' fill='%23355eb8'%3EM%3C/text%3E%3C/svg%3E" alt="" aria-hidden="true" />
+        <svg class="mb-moneybags-loader-logo" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><rect width="36" height="36" rx="10" fill="white"/><text x="18" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="800" fill="#355eb8">M</text></svg>
         <strong>Loading customer records</strong>
         <small>Fetching customer details…</small>
       </div>
-      <div data-bind="with:selected">
+      <div data-bind="with:selected,visible:!detailState.loading()">
         <div class="mb-detail-hero"><div><small data-bind="text:cifNo"></small><h2 data-bind="text:`${firstName} ${lastName||''}`"></h2><p data-bind="text:`${email||'No email'} · ${phone}`"></p></div><span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span></div>
         <div class="mb-detail-actions"><button class="mb-link" data-bind="click:$parent.editCustomer">Edit profile</button><button class="mb-link" data-bind="click:()=>$parent.status($data),text:status==='ACTIVE'?'Deactivate':'Activate'"></button><button class="mb-link" data-bind="click:$parent.openAccountForCustomer,text:$parent.accountActionLabel"></button><button class="mb-link danger" data-bind="click:()=>$parent.remove($data)">Delete</button></div>
       </div>
-      <div class="mb-info" data-bind="visible:!kycVerified()">Verify KYC first. An account/product can be added only after KYC is verified.</div>
-      <div class="mb-resource-grid">
+      <div class="mb-info" data-bind="visible:!detailState.loading() && !kycVerified()">Verify KYC first. An account/product can be added only after KYC is verified.</div>
+      <div class="mb-resource-grid" data-bind="visible:!detailState.loading()">
         <section class="mb-resource-card"><div class="mb-resource-head"><div><small>KYC</small><h3>Identity verification</h3></div><button class="mb-link" data-bind="click:openKyc,text:detailState.data().kyc?'Update':'Add KYC'"></button></div>
           <div data-bind="with:detailState.data().kyc"><span class="mb-badge" data-bind="text:kycStatus,css:kycStatus.toLowerCase()"></span><dl class="mb-kv"><div><dt>Verified by</dt><dd data-bind="text:verifiedBy||'—'"></dd></div><div><dt>Expiry</dt><dd data-bind="text:expiryDate||'—'"></dd></div></dl></div><div class="mb-empty compact" data-bind="visible:!detailState.data().kyc">No KYC record.</div>
         </section>
