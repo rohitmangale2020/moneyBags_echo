@@ -252,7 +252,12 @@ public class BankTransactionService {
      * remains the authoritative validator and repeats this check atomically on posting.
      */
     private AccountPostingException postingEligibilityFailure(BankTransaction transaction) {
-        if (!isTransferPosting(transaction.getTransactionType()) && transaction.getTransactionType() != TransactionType.WITHDRAWAL) {
+        TransactionType type = transaction.getTransactionType();
+        if (type == TransactionType.FIXED_DEPOSIT_MATURITY
+                || type == TransactionType.FIXED_DEPOSIT_PREMATURE_CLOSURE) {
+            return null;
+        }
+        if (!isTransferPosting(type) && type != TransactionType.WITHDRAWAL) {
             return null;
         }
         String debitAccountId = transaction.getDebitAccountId();

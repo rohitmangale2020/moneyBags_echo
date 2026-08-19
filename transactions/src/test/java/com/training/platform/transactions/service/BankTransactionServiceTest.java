@@ -5,8 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 
 import com.training.platform.transactions.entity.BankTransaction;
@@ -21,6 +23,8 @@ import com.training.platform.transactions.client.CustomersClient;
 import com.training.platform.transactions.client.RiskServiceClient;
 import com.training.platform.transactions.client.AccountAdjustmentRequest;
 import com.training.platform.transactions.client.AccountAdjustmentResponse;
+import com.training.platform.transactions.client.AccountTransferRequest;
+import com.training.platform.transactions.client.AccountTransferResponse;
 import com.training.platform.transactions.entity.AccountStatement;
 import com.training.platform.transactions.entity.StatementEntryType;
 import com.training.platform.transactions.entity.TransactionEventOutbox;
@@ -211,6 +215,41 @@ class BankTransactionServiceTest {
                 auditDetails.capture());
         org.junit.jupiter.api.Assertions.assertEquals("SYSTEM", auditDetails.getValue().get("actorId"));
         org.junit.jupiter.api.Assertions.assertEquals("SYSTEM", auditDetails.getValue().get("actorType"));
+    }
+
+    @Test void prematureFixedDepositClosureIsNotRejectedByTheFdProductMinimum() {
+        BankTransaction closure = new BankTransaction();
+        closure.setTransactionRef("FD-P-contract-1");
+        closure.setTransactionType(TransactionType.FIXED_DEPOSIT_PREMATURE_CLOSURE);
+        closure.setTransactionStatus(TransactionStatus.INITIATED);
+        closure.setDebitAccountId("fd-1");
+        closure.setCreditAccountId("savings-1");
+        closure.setAmount(new BigDecimal("10000.00"));
+        closure.setFeeAmount(BigDecimal.ZERO);
+        closure.setCurrencyCode("INR");
+        closure.setInitiatedByCustomerId("customer-1");
+        closure.setInitiatedByUserId("employee-1");
+
+        when(transactionRepository.findByTransactionRef("FD-P-contract-1")).thenReturn(Optional.empty());
+        when(transactionRepository.saveAndFlush(closure)).thenReturn(closure);
+        when(transactionRepository.save(closure)).thenReturn(closure);
+        when(accountsClient.transfer(any())).thenReturn(new AccountTransferResponse(
+                "FD-P-contract-1", "fd-1", "savings-1", "FD0001", "SA0001",
+                "customer-1", "customer-1", BigDecimal.ZERO,
+                new BigDecimal("11000.00"), null));
+        when(customersClient.displayName("customer-1")).thenReturn("Test Customer");
+        when(outboxRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        BankTransaction completed = transactionService.initiate(closure);
+
+        assertSame(TransactionStatus.COMPLETED, completed.getTransactionStatus());
+        ArgumentCaptor<AccountTransferRequest> transfer =
+                ArgumentCaptor.forClass(AccountTransferRequest.class);
+        verify(accountsClient).transfer(transfer.capture());
+        assertSame(AccountTransferRequest.TransferPurpose.FIXED_DEPOSIT_PREMATURE_CLOSURE,
+                transfer.getValue().purpose());
+        verify(accountsClient, never()).getAccount(anyString());
+        verify(ledgerService).postCompletedTransaction(closure);
     }
 
     @Test void savingsInterestUsesThePeriodEndInTransactionStatementAndAuditDescriptions() {
