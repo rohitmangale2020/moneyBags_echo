@@ -417,14 +417,15 @@
     </div>
 
     <div class="mb-document-upload-action">
-      <oj-button chroming="callToAction" disabled="[[busy()]]" on-oj-action="[[upload]]"><span data-bind="text:editingDocument() ? 'Update document →' : 'Upload document →'"></span></oj-button>
+      <oj-button chroming="callToAction" disabled="[[busy()]]" on-oj-action="[[upload]]">Upload document →</oj-button>
     </div>
 
     <div class="mb-uploaded-document-list" data-bind="visible:uploadedDocumentCount()">
       <!-- ko foreach:uploadedDocuments -->
-      <article><strong data-bind="text:documentType"></strong><span data-bind="text:documentNumber || 'File uploaded'"></span><button class="mb-edit" type="button" data-bind="click:()=>$parent.editDocument($data)" aria-label="Edit uploaded document">✎ Edit</button></article>
+      <article><strong data-bind="text:documentType"></strong><span data-bind="text:documentNumber || 'File uploaded'"></span><button class="mb-link danger" type="button" data-bind="click:()=>$parent.deleteDocument($data)">Delete</button></article>
       <!-- /ko -->
     </div>
+
 
     <div class="mb-info mb-document-count" data-bind="visible:uploadedDocumentCount()">
       <span>Number of documents uploaded</span>

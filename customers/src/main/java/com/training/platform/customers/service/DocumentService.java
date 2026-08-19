@@ -11,4 +11,5 @@ public interface DocumentService {
     List<DocumentResponse> getDocumentsByCustomerId(Long customerId);
     DocumentResponse getDocumentById(Long customerId, Long docId);
     DocumentResponse updateDocument(Long customerId, Long docId, MultipartFile file, DocumentRequest requestDto);
+    void deleteDocument(Long customerId, Long docId);
 }

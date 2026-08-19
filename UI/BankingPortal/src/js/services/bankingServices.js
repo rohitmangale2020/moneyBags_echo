@@ -57,6 +57,7 @@ define(['services/apiClient'], function (api) {
         b.append('data', new Blob([JSON.stringify(d)], { type: 'application/json' }));
         return api.putForm(`/api/customers/${e(id)}/documents/${e(docId)}`, b);
       },
+      deleteDocument: (id, docId) => api.delete(`/api/customers/${e(id)}/documents/${e(docId)}`),
       nominee: (id, d) => api.post(`/api/customers/${e(id)}/nominees`, d),
       nominees: (id) => api.get(`/api/customers/${e(id)}/nominees`),
       getNominee: (id, nomineeId) => api.get(`/api/customers/${e(id)}/nominees/${e(nomineeId)}`),
