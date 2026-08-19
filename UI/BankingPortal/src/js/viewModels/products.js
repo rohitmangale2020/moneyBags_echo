@@ -118,7 +118,7 @@ define([
     s.isTermDeposit = ko.pureComputed(() => s.isFixedDeposit() || s.isRecurringDeposit());
     s.isCreditCard = ko.pureComputed(() => s.selectedProductType() === 'CREDIT_CARD');
     s.hasProductType = ko.pureComputed(() => !!s.selectedProductType());
-    s.isInterestBearing = ko.pureComputed(() => ['SAVINGS', 'SALARY', 'FD', 'RD'].includes(s.selectedProductType()));
+    s.isInterestBearing = ko.pureComputed(() => ['SAVINGS', 'SALARY', 'FD', 'RD', 'CREDIT_CARD'].includes(s.selectedProductType()));
     s.formType.subscribe((typeCode) => {
       const product = s.form();
       product.productTypeCode = typeCode;

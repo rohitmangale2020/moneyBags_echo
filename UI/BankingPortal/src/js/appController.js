@@ -210,6 +210,10 @@ define([
     });
     self.moduleAdapter = new ModuleRouterAdapter(router);
     self.selection = new KnockoutRouterAdapter(router);
+    self.headerWorkspace = ko.pureComputed(() =>
+      self.selection.path() === 'dashboard' ? 'SERVICE DASHBOARD' : `${session.role()} WORKSPACE`);
+    self.headerTitle = ko.pureComputed(() =>
+      self.selection.path() === 'dashboard' ? 'Core banking performance overview' : 'MoneyBags Banking');
     self.navItems = ko.pureComputed(() =>
       routes.filter(
         (r) =>
