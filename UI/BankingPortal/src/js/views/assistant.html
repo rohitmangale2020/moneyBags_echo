@@ -30,7 +30,11 @@
     </div>
   </div>
 
-  <div class="mb-loading" data-bind="visible:loading">Reviewing approved banking data…</div>
+  <div class="mb-loading mb-moneybags-loader" data-bind="visible:loading" role="status" aria-live="polite">
+    <svg class="mb-moneybags-loader-logo" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><rect width="36" height="36" rx="10" fill="white"/><text x="18" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="800" fill="#355eb8">M</text></svg>
+    <strong>Reviewing banking data</strong>
+    <small>Preparing the requested response…</small>
+  </div>
   <div class="mb-error" data-bind="visible:error"><span data-bind="text:error"></span></div>
   <section class="mb-alert-stack" data-bind="visible:alerts().length, foreach:alerts">
     <article class="mb-risk-alert" data-bind="css:level"><strong data-bind="text:title"></strong><span data-bind="text:message"></span></article>
