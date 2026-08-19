@@ -82,7 +82,7 @@
       </tbody>
     </table>
     <div class="mb-pagination" data-bind="visible:totalUsers()">
-      <span data-bind="text:`Page ${currentPage() + 1} of ${totalPages()} · ${totalUsers()} users`"></span>
+      <span data-bind="text:`Page ${currentPage() + 1} of ${totalPages()}`"></span>
       <oj-button on-oj-action="[[previousPage]]" disabled="[[state.loading() || currentPage() === 0]]">Previous</oj-button>
       <oj-button on-oj-action="[[nextPage]]" disabled="[[state.loading() || currentPage() >= totalPages() - 1]]">Next</oj-button>
     </div>
