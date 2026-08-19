@@ -13,19 +13,19 @@
     </div>
   </div>
   <div class="mb-error" data-bind="visible:state.error,text:state.error"></div>
-  <div class="mb-loading mb-moneybags-loader" data-bind="visible:state.loading" role="status" aria-live="polite">
-    <svg class="mb-moneybags-loader-logo" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><rect width="36" height="36" rx="10" fill="white"/><text x="18" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="800" fill="#355eb8">M</text></svg>
-    <strong>Loading products</strong>
-    <small>Fetching the latest product catalogue…</small>
-  </div>
-  <section class="mb-product-section" aria-labelledby="active-products-heading" data-bind="visible:!state.loading()">
+  <section class="mb-product-section" aria-labelledby="active-products-heading">
     <div class="mb-product-section-heading"><div><small>AVAILABLE NOW</small><h2 id="active-products-heading">Active products</h2><p>Products currently available for customers.</p></div><div class="mb-product-heading-actions"><oj-button class="mb-product-refresh" on-oj-action="[[refreshProducts]]">Refresh</oj-button><button type="button" class="mb-view-toggle" data-bind="click:toggleActiveCompact,text:activeCompact()?'Card view':'Compact view',attr:{'aria-pressed':activeCompact}"></button><span class="mb-product-count" data-bind="text:activeCountLabel"></span></div></div>
     <div class="mb-search-panel mb-product-filter-panel">
       <label>Search active products<oj-input-text aria-label="Search active products" placeholder="Name, code, or description" value="{{activeSearch}}" clear-icon="conditional"></oj-input-text></label>
       <label>Product type<select data-bind="value:activeType"><option value="">All active product types</option><!-- ko foreach:activeTypeOptions --><option data-bind="value:code,text:name"></option><!-- /ko --></select></label>
       <oj-button on-oj-action="[[clearActiveFilters]]" disabled="[[!activeFiltersApplied()]]">Clear filters</oj-button>
     </div>
-  <div class="mb-card-grid" data-bind="visible:!activeCompact(),foreach:filteredActiveProducts">
+  <div class="mb-loading mb-moneybags-loader" data-bind="visible:state.loading" role="status" aria-live="polite">
+    <svg class="mb-moneybags-loader-logo" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><rect width="36" height="36" rx="10" fill="white"/><text x="18" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="800" fill="#355eb8">M</text></svg>
+    <strong>Loading active products</strong>
+    <small>Fetching available products…</small>
+  </div>
+  <div class="mb-card-grid" data-bind="visible:!state.loading() && !activeCompact(),foreach:filteredActiveProducts">
     <article class="mb-card">
       <div class="mb-card-top">
         <span class="mb-card-icon mb-product-icon" data-bind="css:$parent.productIcon($data)" aria-hidden="true"></span
@@ -53,7 +53,7 @@
       >View and manage</button>
     </article>
   </div>
-  <div class="mb-product-list" data-bind="visible:activeCompact,foreach:filteredActiveProducts">
+  <div class="mb-product-list" data-bind="visible:!state.loading() && activeCompact(),foreach:filteredActiveProducts">
     <article class="mb-product-row">
       <div class="mb-product-row-identity">
         <span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span>
@@ -67,19 +67,24 @@
       <button class="mb-link" data-bind="click:()=>$parent.manage($data)">View and manage</button>
     </article>
   </div>
-  <div class="mb-empty mb-product-empty" data-bind="visible:filteredActiveProducts().length===0,text:activeFiltersApplied()?'No active products match these filters.':'No active products are available.'"></div>
+  <div class="mb-empty mb-product-empty" data-bind="visible:!state.loading() && filteredActiveProducts().length===0,text:activeFiltersApplied()?'No active products match these filters.':'No active products are available.'"></div>
   </section>
-  <section class="mb-product-section mb-product-section-retired" aria-labelledby="retired-products-heading" data-bind="visible:!state.loading()">
+  <section class="mb-product-section mb-product-section-retired" aria-labelledby="retired-products-heading">
     <div class="mb-product-section-heading"><div><small>ARCHIVED CATALOGUE</small><h2 id="retired-products-heading">Retired products</h2><p>Products retained for staff reference and history.</p></div><div class="mb-product-heading-actions"><button type="button" class="mb-view-toggle" data-bind="click:toggleRetiredCompact,text:retiredCompact()?'Card view':'Compact view',attr:{'aria-pressed':retiredCompact}"></button><span class="mb-product-count retired" data-bind="text:retiredCountLabel"></span></div></div>
     <div class="mb-search-panel mb-product-filter-panel">
       <label>Search retired products<oj-input-text aria-label="Search retired products" placeholder="Name, code, or description" value="{{retiredSearch}}" clear-icon="conditional"></oj-input-text></label>
       <label>Product type<select data-bind="value:retiredType"><option value="">All retired product types</option><!-- ko foreach:retiredTypeOptions --><option data-bind="value:code,text:name"></option><!-- /ko --></select></label>
       <oj-button on-oj-action="[[clearRetiredFilters]]" disabled="[[!retiredFiltersApplied()]]">Clear filters</oj-button>
     </div>
-    <div class="mb-card-grid" data-bind="visible:!retiredCompact(),foreach:filteredRetiredProducts">
+    <div class="mb-loading mb-moneybags-loader" data-bind="visible:state.loading" role="status" aria-live="polite">
+      <svg class="mb-moneybags-loader-logo" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><rect width="36" height="36" rx="10" fill="white"/><text x="18" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="800" fill="#355eb8">M</text></svg>
+      <strong>Loading retired products</strong>
+      <small>Fetching archived products…</small>
+    </div>
+    <div class="mb-card-grid" data-bind="visible:!state.loading() && !retiredCompact(),foreach:filteredRetiredProducts">
       <article class="mb-card mb-card-retired"><div class="mb-card-top"><span class="mb-card-icon mb-product-icon" data-bind="css:$parent.productIcon($data)" aria-hidden="true"></span><span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span></div><small data-bind="text:productTypeName||productTypeCode"></small><h2 data-bind="text:$parent.productHeading($data)"></h2><code data-bind="text:$parent.productSubheading($data)"></code><div class="mb-card-stats"><div><small>Interest</small><strong data-bind="text:`${rate&&rate.interestRate||0}%`"></strong></div><div><small>Min balance</small><strong data-bind="text:$parent.money(minimumBalance,currency)"></strong></div><div><small>Annual fee</small><strong data-bind="text:$parent.money(fee&&fee.annualMaintenanceFee,currency)"></strong></div></div><button class="mb-link" data-bind="click:()=>$parent.manage($data)">View details</button></article>
     </div>
-    <div class="mb-product-list" data-bind="visible:retiredCompact,foreach:filteredRetiredProducts">
+    <div class="mb-product-list" data-bind="visible:!state.loading() && retiredCompact(),foreach:filteredRetiredProducts">
       <article class="mb-product-row mb-card-retired">
         <div class="mb-product-row-identity">
           <span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span>
@@ -93,7 +98,7 @@
         <button class="mb-link" data-bind="click:()=>$parent.manage($data)">View details</button>
       </article>
     </div>
-    <div class="mb-empty mb-product-empty" data-bind="visible:filteredRetiredProducts().length===0,text:retiredFiltersApplied()?'No retired products match these filters.':'No retired products.'"></div>
+    <div class="mb-empty mb-product-empty" data-bind="visible:!state.loading() && filteredRetiredProducts().length===0,text:retiredFiltersApplied()?'No retired products match these filters.':'No retired products.'"></div>
   </section>
   <oj-dialog
     id="productDialog"

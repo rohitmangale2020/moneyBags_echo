@@ -63,9 +63,13 @@
     <span data-bind="text:`${fromDate()} to ${toDate()}`"></span>
   </div>
   <div class="mb-error" data-bind="visible:state.error,text:state.error"></div>
-  <div class="mb-loading" data-bind="visible:state.loading">Loading statement...</div>
+  <div class="mb-loading mb-moneybags-loader" data-bind="visible:state.loading" role="status" aria-live="polite">
+    <svg class="mb-moneybags-loader-logo" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><rect width="36" height="36" rx="10" fill="white"/><text x="18" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="800" fill="#355eb8">M</text></svg>
+    <strong>Loading statement</strong>
+    <small>Preparing account activity…</small>
+  </div>
 
-  <div class="mb-table mb-statements-table" data-bind="visible:filteredStatements().length">
+  <div class="mb-table mb-statements-table" data-bind="visible:filteredStatements().length && !state.loading()">
     <table>
       <thead>
         <tr>
