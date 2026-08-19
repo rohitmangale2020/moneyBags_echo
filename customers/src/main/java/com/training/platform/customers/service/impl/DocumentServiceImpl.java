@@ -16,6 +16,7 @@ import com.training.platform.customers.service.DocumentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -132,6 +133,21 @@ public class DocumentServiceImpl implements DocumentService {
         return toResponse(updated);
     }
 
+    @Override
+    @Transactional
+    public void deleteDocument(Long customerId, Long docId) {
+        DocumentEntity document = documentRepository.findByDocIdAndCustomerCustomerId(docId, customerId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Document not found with id " + docId + " for customer " + customerId));
+        Map<String, Object> previousValues = documentValues(document);
+        String filePath = document.getFilePath();
+
+        documentRepository.delete(document);
+        deleteStoredFile(filePath);
+        auditDocumentChange(customerId, document, "DOCUMENT_DELETED", "Customer document deleted",
+                previousValues, Map.of());
+    }
+
     private String saveFile(Long customerId, MultipartFile file) {
         try {
             Path baseDir = Paths.get(uploadDir, String.valueOf(customerId));
@@ -150,6 +166,15 @@ public class DocumentServiceImpl implements DocumentService {
             return targetLocation.toString().replace("\\", "/");
         } catch (IOException e) {
             throw new BadRequestException("Failed to store document file: " + e.getMessage());
+        }
+    }
+
+    private void deleteStoredFile(String filePath) {
+        if (filePath == null || filePath.isBlank()) return;
+        try {
+            Files.deleteIfExists(Paths.get(filePath));
+        } catch (IOException e) {
+            throw new BadRequestException("Failed to delete the document file: " + e.getMessage());
         }
     }
 

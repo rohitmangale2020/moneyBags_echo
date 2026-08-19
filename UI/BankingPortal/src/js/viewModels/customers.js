@@ -70,6 +70,7 @@ define([
     s.documentRequiresNumber = ko.observable(false);
     s.documentShowsIssueDate = ko.observable(false);
     s.documentFileAccept = ko.observable('application/pdf,.pdf');
+    s.documentType = ko.observable('');
     s.setDocumentExpiryRequirement = (type) => {
       const documentType = String(type || '');
       const needsExpiry = ['PASSPORT', 'DRIVING_LICENSE'].includes(documentType);
@@ -83,15 +84,17 @@ define([
       if (!showsIssueDate && s.documentForm()) s.documentForm().issueDate = '';
       if (!needsExpiry && s.documentForm()) s.documentForm().expiryDate = '';
     };
-    s.onDocumentTypeChange = (_, event) => {
-      s.setDocumentExpiryRequirement(event.target.value);
-      s.documentForm.valueHasMutated();
-    };
     s.kycForm = ko.observable(kycBlank());
     s.documentForm = ko.observable(documentBlank());
+    s.documentType.subscribe((type) => {
+      const form = s.documentForm();
+      form.documentType = type;
+      s.setDocumentExpiryRequirement(type);
+      s.documentForm.valueHasMutated();
+    });
     s.availableDocumentTypes = ko.pureComputed(() => {
       const usedTypes = new Set((s.detailState.data().documents || []).map((document) => document.documentType));
-      const currentType = s.documentForm().documentType;
+      const currentType = s.documentType();
       return documentTypes.filter((type) => type === currentType || !usedTypes.has(type));
     });
     s.nomineeForm = ko.observable(nomineeBlank());
@@ -467,7 +470,19 @@ define([
       try { s.detailState.data().kyc ? await app.services.customers.updateKyc(id, d) : await app.services.customers.createKyc(id, d); document.getElementById('kycDialog').close(); app.notify('KYC record saved.'); await s.loadDetail(s.selected()); }
       catch (e) { s.error(e.message); }
     };
-    s.openDocument = async (x) => { s.error(''); try { const value = x ? await app.services.customers.getDocument(s.selected().customerId, x.docId) : null; const form = Object.assign(documentBlank(), value || {}); s.documentForm(form); s.setDocumentExpiryRequirement(form.documentType); s.documentFile(null); document.getElementById('documentDialog').open(); } catch (e) { app.notify(e.message, 'error'); } };
+    s.openDocument = async (x) => { s.error(''); try { const value = x ? await app.services.customers.getDocument(s.selected().customerId, x.docId) : null; const form = Object.assign(documentBlank(), value || {}); s.documentForm(form); s.documentType(form.documentType || ''); s.documentFile(null); document.getElementById('documentDialog').open(); } catch (e) { app.notify(e.message, 'error'); } };
+    s.deleteDocument = async (record) => {
+      const form = record && record.docId ? record : s.documentForm();
+      if (!form || !form.docId) return;
+      if (!window.confirm(`Delete the ${form.documentType} document? This cannot be undone.`)) return;
+      try {
+        await app.services.customers.deleteDocument(s.selected().customerId, form.docId);
+        const dialog = document.getElementById('documentDialog');
+        if (dialog.isOpen && dialog.isOpen()) dialog.close();
+        app.notify('Document deleted.');
+        await s.loadDetail(s.selected());
+      } catch (e) { s.error(e.message); }
+    };
     s.pickFile = (_, event) => {
       const file = event.target.files && event.target.files[0];
       const imageDocument = ['PHOTO', 'SIGNATURE'].includes(s.documentForm().documentType);

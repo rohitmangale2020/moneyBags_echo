@@ -42,7 +42,6 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
     s.sameAsPermanentAddress = ko.observable(true);
     s.uploadedDocuments = ko.observableArray([]);
     s.uploadedDocumentCount = ko.pureComputed(() => s.uploadedDocuments().length);
-    s.editingDocument = ko.observable(null);
     s.availableDocumentTypes = ko.pureComputed(() => {
       const usedTypes = new Set(s.uploadedDocuments().map((document) => document.documentType));
       const currentType = s.document.documentType();
@@ -305,16 +304,15 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
       if (selected && !valid) s.fieldErrors(Object.assign({}, s.fieldErrors(), { file: imageDocument ? 'Upload a PNG or JPEG image.' : 'Upload a PDF file.' }));
       if (s.file()) s.fieldErrors(Object.assign({}, s.fieldErrors(), { file: '' }));
     };
-    s.editDocument = async (document) => {
-      const result = await s.run(() => app.services.customers.getDocument(s.customer().customerId, document.docId));
-      if (!result) return;
-      s.editingDocument(result);
-      s.document.documentType(result.documentType || '');
-      s.document.documentNumber(result.documentNumber || '');
-      s.document.issueDate(result.issueDate || '');
-      s.document.expiryDate(result.expiryDate || '');
-      s.file(null);
-      s.step(3);
+    s.deleteDocument = async (record) => {
+      if (!record || !record.docId) return;
+      if (!window.confirm(`Delete the ${record.documentType} document? This cannot be undone.`)) return;
+      await s.run(
+        () => app.services.customers.deleteDocument(s.customer().customerId, record.docId),
+        'Document deleted.',
+      );
+      if (s.error()) return;
+      s.uploadedDocuments.remove((document) => document.docId === record.docId);
     };
     s.upload = async () => {
       const e = {};
@@ -325,7 +323,7 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
       else if (number.length > 100) e.documentNumber = 'Document number cannot exceed 100 characters.';
       else if (type === 'PAN' && !/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(number)) e.documentNumber = 'Enter a PAN in the format AAAAA0000A.';
       else if (type === 'AADHAAR' && !/^[2-9][0-9]{3}[0-9]{4}[0-9]{4}$/.test(number)) e.documentNumber = 'Enter a valid 12-digit Aadhaar number.';
-      if (!s.editingDocument() && !s.file()) e.file = 'Choose a PDF or image to upload.';
+      if (!s.file()) e.file = 'Choose a PDF or image to upload.';
       if (s.documentShowsIssueDate() && s.document.issueDate() && !dateValue(s.document.issueDate())) e.issueDate = 'Enter a valid issue date.';
       else if (s.documentShowsIssueDate() && s.document.issueDate() > today()) e.issueDate = 'Issue date cannot be in the future.';
       if (s.documentRequiresExpiry() && !s.document.expiryDate()) e.expiryDate = 'Expiry date is required for this document type.';
@@ -345,18 +343,11 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
         updatedBy: s.verifiedBy(),
       };
       const result = await s.run(
-        () => s.editingDocument()
-          ? app.services.customers.updateDocument(s.customer().customerId, s.editingDocument().docId, s.file(), payload)
-          : app.services.customers.document(s.customer().customerId, s.file(), payload),
-        s.editingDocument() ? 'Document updated.' : 'Document uploaded.',
+        () => app.services.customers.document(s.customer().customerId, s.file(), payload),
+        'Document uploaded.',
       );
       if (result) {
-        const editingDocument = s.editingDocument();
-        if (editingDocument) {
-          const position = s.uploadedDocuments().findIndex((document) => document.docId === editingDocument.docId);
-          if (position >= 0) s.uploadedDocuments.splice(position, 1, result);
-        } else s.uploadedDocuments.push(result);
-        s.editingDocument(null);
+        s.uploadedDocuments.push(result);
         s.document.documentType('');
         s.document.documentNumber('');
         s.document.issueDate('');
