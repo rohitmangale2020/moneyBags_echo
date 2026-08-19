@@ -18,8 +18,6 @@ define([
     s.pageSize = ko.observable(10);
     s.pageSizeOptions = [5, 10, 20];
     s.currentPage = ko.observable(0);
-    s.totalTransactions = ko.observable(0);
-    s.totalPages = ko.observable(0);
     s.query = ko.observable('');
     s.typeFilter = ko.observable('ALL');
     s.statusFilter = ko.observable('ALL');
@@ -41,6 +39,7 @@ define([
     s.activeCustomer = app.activeCustomer;
     s.hasActiveCustomer = app.hasActiveCustomer;
     s.contextAccounts = ko.observableArray([]);
+    s.contextCustomerId = ko.observable('');
     s.customerId = ko.observable('');
 
     s.form = {
@@ -119,24 +118,54 @@ define([
       };
       return transactions.slice().sort(sorters[s.sortBy()] || sorters['initiated-desc']);
     });
+    s.pagedTransactions = ko.pureComputed(() => {
+      const size = Number(s.pageSize());
+      const start = s.currentPage() * size;
+      return s.filteredTransactions().slice(start, start + size);
+    });
+    s.filteredTransactionCount = ko.pureComputed(() => s.filteredTransactions().length);
+    s.pageCount = ko.pureComputed(() => {
+      const count = s.filteredTransactionCount();
+      return count ? Math.ceil(count / Number(s.pageSize())) : 0;
+    });
+    s.updatePagination = () => {
+      const pages = s.pageCount();
+      const safePage = pages ? Math.min(s.currentPage(), pages - 1) : 0;
+      if (s.currentPage() !== safePage) s.currentPage(safePage);
+    };
     s.resultSummary = ko.pureComputed(() => {
-      const shown = s.filteredTransactions().length;
-      const total = s.totalTransactions();
-      return shown === total
-        ? `${total} transaction${total === 1 ? '' : 's'}`
-        : `${shown} of ${total} transactions`;
+      const shown = s.filteredTransactionCount();
+      const filtersApplied = Boolean(
+        String(s.query() || '').trim()
+        || s.typeFilter() !== 'ALL'
+        || s.statusFilter() !== 'ALL'
+        || s.currencyFilter() !== 'ALL'
+        || s.dateFrom()
+        || s.dateTo(),
+      );
+      if (filtersApplied) return `Showing ${shown} matching transaction${shown === 1 ? '' : 's'}`;
+      return `${shown} transaction${shown === 1 ? '' : 's'}`;
     });
     s.statusClass = (status) => String(status || '').toLowerCase();
     s.loadContextAccounts = async () => {
       if (!s.hasActiveCustomer()) {
         s.contextAccounts([]);
-        return;
+        s.contextCustomerId('');
+        return [];
       }
+      const customerId = String(s.activeCustomer().customerId);
       try {
-        const accounts = u.list(await app.services.accounts.customer(s.activeCustomer().customerId));
+        const accounts = u.list(await app.services.accounts.customer(customerId));
+        if (!s.hasActiveCustomer() || String(s.activeCustomer().customerId) !== customerId) return [];
         s.contextAccounts(accounts);
+        s.contextCustomerId(customerId);
+        return accounts;
       } catch (_) {
-        s.contextAccounts([]);
+        if (!s.hasActiveCustomer() || String(s.activeCustomer().customerId) === customerId) {
+          s.contextAccounts([]);
+          s.contextCustomerId('');
+        }
+        return [];
       }
     };
     s.load = (requestedPage) => s.state.run(async () => {
@@ -146,8 +175,6 @@ define([
         const accounts = u.list(await app.services.accounts.number(accountNumber));
         if (!accounts.length) {
           s.currentPage(0);
-          s.totalTransactions(0);
-          s.totalPages(0);
           return [];
         }
         const accountId = String(accounts[0].accountId);
@@ -159,30 +186,21 @@ define([
         const uniqueTransactions = Array.from(
           new Map(transactions.map((transaction) => [transaction.transactionId, transaction])).values(),
         );
-        const totalPages = Math.max(1, Math.ceil(uniqueTransactions.length / Number(s.pageSize())));
-        const safePage = Math.min(Math.max(0, page), totalPages - 1);
-        s.currentPage(safePage);
-        s.totalTransactions(uniqueTransactions.length);
-        s.totalPages(totalPages);
-        return uniqueTransactions.slice(safePage * Number(s.pageSize()), (safePage + 1) * Number(s.pageSize()));
+        s.currentPage(Math.max(0, page));
+        return uniqueTransactions;
       }
       if (accountNumber) {
         const transactions = u.list(await app.services.transactions.list()).filter((transaction) =>
           String(transaction.description || '').toLowerCase().includes(accountNumber.toLowerCase()),
         );
-        const totalPages = Math.max(1, Math.ceil(transactions.length / Number(s.pageSize())));
-        const safePage = Math.min(Math.max(0, page), totalPages - 1);
-        s.currentPage(safePage);
-        s.totalTransactions(transactions.length);
-        s.totalPages(totalPages);
-        return transactions.slice(safePage * Number(s.pageSize()), (safePage + 1) * Number(s.pageSize()));
+        s.currentPage(Math.max(0, page));
+        return transactions;
       }
       if (s.hasActiveCustomer()) {
         const customerId = String(s.activeCustomer().customerId);
-        const accounts = s.contextAccounts().length
+        const accounts = s.contextCustomerId() === customerId
           ? s.contextAccounts()
-          : u.list(await app.services.accounts.customer(customerId));
-        s.contextAccounts(accounts);
+          : await s.loadContextAccounts();
         const accountIds = accounts.map((account) => String(account.accountId));
         const responses = await Promise.all(accountIds.flatMap((accountId) => [
           app.services.transactions.find('debitAccountId', accountId),
@@ -190,26 +208,23 @@ define([
         ]));
         const transactions = Array.from(new Map(responses.flatMap(u.list)
           .map((transaction) => [transaction.transactionId, transaction])).values());
-        const totalPages = Math.max(1, Math.ceil(transactions.length / Number(s.pageSize())));
-        const safePage = Math.min(Math.max(0, page), totalPages - 1);
-        s.currentPage(safePage);
-        s.totalTransactions(transactions.length);
-        s.totalPages(totalPages);
-        return transactions.slice(safePage * Number(s.pageSize()), (safePage + 1) * Number(s.pageSize()));
+        s.currentPage(Math.max(0, page));
+        return transactions;
       }
-      const response = await app.services.transactions.list(page, Number(s.pageSize()));
-      s.currentPage(Number(response.number || 0));
-      s.totalTransactions(Number(response.totalElements === undefined ? u.list(response).length : response.totalElements));
-      s.totalPages(Number(response.totalPages === undefined ? 1 : response.totalPages));
-      return u.list(response);
+      const transactions = u.list(await app.services.transactions.list());
+      s.currentPage(Math.max(0, page));
+      return transactions;
     }).catch(() => null);
     s.previousPage = () => {
-      if (s.currentPage() > 0) s.load(s.currentPage() - 1);
+      if (s.currentPage() > 0) s.currentPage(s.currentPage() - 1);
     };
     s.nextPage = () => {
-      if (s.currentPage() < s.totalPages() - 1) s.load(s.currentPage() + 1);
+      if (s.currentPage() < s.pageCount() - 1) s.currentPage(s.currentPage() + 1);
     };
-    s.pageSize.subscribe(() => s.load(0));
+    s.state.data.subscribe(() => s.updatePagination());
+    [s.pageSize, s.typeFilter, s.statusFilter, s.currencyFilter, s.dateFrom, s.dateTo, s.sortBy]
+      .forEach((filter) => filter.subscribe(() => s.updatePagination()));
+    s.pageSize.subscribe(() => s.currentPage(0));
     s.clearFilters = () => {
       s.query('');
       s.typeFilter('ALL');
@@ -225,9 +240,12 @@ define([
       if (transactionSearchTimer) window.clearTimeout(transactionSearchTimer);
       transactionSearchTimer = window.setTimeout(() => s.load(0), 300);
     });
-    s.activeCustomer.subscribe(() => {
+    s.activeCustomer.subscribe(async () => {
       s.query('');
-      s.loadContextAccounts();
+      s.currentPage(0);
+      s.contextAccounts([]);
+      s.contextCustomerId('');
+      await s.loadContextAccounts();
       s.load(0);
     });
     if (app.activeAccountId) app.activeAccountId.subscribe(() => s.loadContextAccounts());
@@ -546,8 +564,7 @@ define([
     };
     if (s.isTransactionPage) s.open();
     else {
-      s.loadContextAccounts();
-      s.load();
+      s.loadContextAccounts().then(() => s.load());
     }
   }
   return VM;

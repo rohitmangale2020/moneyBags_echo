@@ -58,7 +58,7 @@
     </div>
   </div>
 
-  <div class="mb-list-meta"><strong data-bind="text:resultSummary"></strong><span>Use Search to look up an account number</span></div>
+  <div class="mb-list-meta"><strong data-bind="text:resultSummary"></strong><span>Filters update instantly</span></div>
   <div class="mb-error" data-bind="visible:state.error"><span data-bind="text:state.error"></span><button data-bind="click:load">Retry</button></div>
   <div class="mb-account-page-loader mb-table-loader mb-moneybags-loader" data-bind="visible:state.loading" role="status" aria-live="polite">
     <svg class="mb-moneybags-loader-logo" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><rect width="36" height="36" rx="10" fill="white"/><text x="18" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="800" fill="#355eb8">M</text></svg>
@@ -76,7 +76,7 @@
           <th>Status</th>
         </tr>
       </thead>
-      <tbody data-bind="foreach:filteredTransactions">
+      <tbody data-bind="foreach:pagedTransactions">
         <tr>
           <td data-bind="text:$parent.date(initiatedAt)"></td>
           <td data-bind="text:description || ''"></td>
@@ -88,11 +88,11 @@
     </table>
   </div>
 
-  <div class="mb-pagination" role="navigation" aria-label="Transactions pagination" data-bind="visible:totalTransactions() > 0">
+  <div class="mb-pagination" role="navigation" aria-label="Transactions pagination" data-bind="visible:filteredTransactionCount() > 0">
     <label class="mb-page-size">Rows per page<select data-bind="value:pageSize,options:pageSizeOptions"></select></label>
     <oj-button chroming="outlined" on-oj-action="[[previousPage]]" disabled="[[state.loading() || currentPage() === 0]]">Previous</oj-button>
-    <span class="mb-page-status" data-bind="text:`Page ${currentPage() + 1} of ${totalPages()}`"></span>
-    <oj-button chroming="outlined" on-oj-action="[[nextPage]]" disabled="[[state.loading() || currentPage() >= totalPages() - 1]]">Next</oj-button>
+    <span class="mb-page-status" data-bind="text:`Page ${currentPage() + 1} of ${pageCount()}`"></span>
+    <oj-button chroming="outlined" on-oj-action="[[nextPage]]" disabled="[[state.loading() || currentPage() >= pageCount() - 1]]">Next</oj-button>
   </div>
 
   <div class="mb-empty" data-bind="visible:!filteredTransactions().length && !state.loading()">

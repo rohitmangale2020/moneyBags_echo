@@ -89,6 +89,7 @@ define([
     });
     s.busy = ko.observable(false);
     s.openingAccountForm = ko.observable(false);
+    s.loadingAccountEdit = ko.observable(false);
     s.submissionState = ko.observable('idle');
     s.submissionMessage = ko.observable('');
     s.closingAccount = ko.observable(false);
@@ -223,6 +224,7 @@ define([
     });
     s.money = u.money;
     s.date = u.date;
+    s.preventNumberWheel = (_, event) => event.preventDefault();
     s.currencies = ko.pureComputed(() =>
       Array.from(new Set(['INR', 'USD', ...s.state.data()
         .map((account) => account.currencyCode)
@@ -705,6 +707,8 @@ define([
     };
     s.edit = async (x) => {
       if (!x || !x.accountId) return;
+      s.loadingAccountEdit(s.isAccountEditPage);
+      try {
       if (!x.accountNumber) x = await app.services.accounts.get(x.accountId);
       s.editingId(x.accountId);
       s.editingAccount(x);
@@ -725,7 +729,6 @@ define([
       s.form.currencyCode(x.currencyCode);
       s.form.closedAt(x.closedAt ? String(x.closedAt).slice(0, 10) : '');
       s.closingAccount(x.status === 'CLOSED');
-      try {
         const [productsResult, customerResult, contractsResult] = await Promise.allSettled([
           app.services.products.list(),
           app.services.customers.get(x.customerId),
@@ -746,6 +749,7 @@ define([
         }
         if (!s.isAccountEditPage) document.getElementById('accountDialog').open();
       } catch (e) { app.notify(e.message, 'error'); }
+      finally { s.loadingAccountEdit(false); }
     };
     s.closeAccount = async () => {
       s.error('');
