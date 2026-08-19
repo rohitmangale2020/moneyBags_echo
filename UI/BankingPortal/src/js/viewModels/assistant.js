@@ -59,10 +59,25 @@ define(['knockout', 'appController'], function (ko, app) {
       line1: ko.observable(''), line2: ko.observable(''), city: ko.observable(''), state: ko.observable(''), pincode: ko.observable('')
     };
     const indianStates = new Set([
-      'andhra pradesh', 'arunachal pradesh', 'assam', 'bihar', 'chhattisgarh', 'goa', 'gujarat', 'haryana', 'himachal pradesh', 'jharkhand', 'karnataka', 'kerala', 'madhya pradesh', 'maharashtra', 'manipur', 'meghalaya', 'mizoram', 'nagaland', 'odisha', 'punjab', 'rajasthan', 'sikkim', 'tamil nadu', 'telangana', 'tripura', 'uttar pradesh', 'uttarakhand', 'west bengal', 'andaman and nicobar islands', 'chandigarh', 'dadra and nagar haveli and daman and diu', 'delhi', 'jammu and kashmir', 'ladakh', 'lakshadweep', 'puducherry'
+      'andhra pradesh', 'arunachal pradesh', 'assam', 'bihar', 'chhattisgarh', 'goa', 'gujarat', 'haryana', 'himachal pradesh', 'jharkhand', 'karnataka', 'kerala', 'madhya pradesh', 'maharashtra', 'manipur', 'meghalaya', 'mizoram', 'nagaland', 'odisha', 'punjab', 'rajasthan', 'sikkim', 'tamil nadu', 'telangana', 'tripura', 'uttar pradesh', 'uttarakhand', 'west bengal', 'andaman and nicobar islands', 'chandigarh', 'dadra and nagar haveli and daman and diu', 'delhi', 'national capital territory of delhi', 'jammu and kashmir', 'ladakh', 'lakshadweep', 'puducherry'
     ]);
     const isCityOrDistrict = (value) => !indianStates.has(String(value).trim().toLocaleLowerCase('en-IN'))
       || 'Enter a city or district here, not a state.';
+    const isPlausibleCityOrDistrict = (value) => {
+      const city = String(value).trim();
+      const letters = city.toLocaleLowerCase('en-IN').replace(/[^a-z]/g, '');
+      if (letters.length < 2 || !/^[a-z][a-z .'-]*$/i.test(city) || new Set(letters).size < 2 || !/[aeiou]/i.test(letters)) {
+        return 'Enter a valid city or district name.';
+      }
+      return isCityOrDistrict(city);
+    };
+    const isIndianState = (value) => indianStates.has(String(value).trim().toLocaleLowerCase('en-IN'))
+      || 'Enter a valid Indian state or union territory.';
+    const normalizeLocation = (value) => String(value).trim().toLocaleLowerCase('en-IN').replace(/[^a-z0-9]/g, '');
+    const sameState = (left, right) => {
+      const aliases = { delhi: 'nationalcapitalterritoryofdelhi', nctdelhi: 'nationalcapitalterritoryofdelhi' };
+      return (aliases[normalizeLocation(left)] || normalizeLocation(left)) === (aliases[normalizeLocation(right)] || normalizeLocation(right));
+    };
     const onboardingQuestions = [
       { key: 'firstName', prompt: 'What is the customer’s first name?', valid: (value) => value.length <= 100 || 'First name must be 100 characters or fewer.' },
       { key: 'lastName', prompt: 'What is the customer’s last name?', valid: (value) => value.length <= 100 || 'Last name must be 100 characters or fewer.' },
@@ -73,8 +88,8 @@ define(['knockout', 'appController'], function (ko, app) {
       { key: 'occupation', prompt: 'What is the customer’s occupation?', valid: (value) => value.length <= 100 || 'Occupation must be 100 characters or fewer.' },
       { key: 'addressType', prompt: 'Is this the Current, Permanent, or Office address?', valid: (value) => ['CURRENT', 'PERMANENT', 'OFFICE'].includes(value.toUpperCase()) || 'Reply Current, Permanent, or Office.', transform: (value) => value.toUpperCase() },
       { key: 'line1', prompt: 'What is address line 1?', valid: (value) => value.length <= 250 || 'Address line 1 must be 250 characters or fewer.' },
-      { key: 'city', prompt: 'What is the city or district?', valid: (value) => value.length > 100 ? 'City must be 100 characters or fewer.' : isCityOrDistrict(value) },
-      { key: 'state', prompt: 'What is the state?', valid: (value) => value.length <= 100 || 'State must be 100 characters or fewer.' },
+      { key: 'state', prompt: 'What is the state?', valid: (value) => value.length > 100 ? 'State must be 100 characters or fewer.' : isIndianState(value) },
+      { key: 'city', prompt: 'What is the city or district?', valid: (value) => value.length > 100 ? 'City must be 100 characters or fewer.' : isPlausibleCityOrDistrict(value) },
       { key: 'pincode', prompt: 'What is the six-digit PIN code?', valid: (value) => /^[1-9]\d{5}$/.test(value) || 'Enter a valid six-digit PIN code.' }
     ];
     self.onboardingReady = ko.pureComputed(() => self.onboardingActive() && self.onboardingStep() >= onboardingQuestions.length);
@@ -195,6 +210,18 @@ define(['knockout', 'appController'], function (ko, app) {
       const primary = offices[0];
       const names = offices.flatMap((office) => [office.Name, office.District]).filter(Boolean);
       return { city: primary.District || primary.Name, state: primary.State, names };
+    };
+    const lookupCity = async (city) => {
+      let response;
+      try {
+        response = await fetch(`https://api.postalpincode.in/postoffice/${encodeURIComponent(city)}`);
+      } catch (_) {
+        throw new Error('Unable to validate the city right now. Check the connection and try again.');
+      }
+      if (!response.ok) throw new Error('Unable to validate the city right now. Please try again.');
+      const result = await response.json();
+      const offices = result && result[0] && result[0].PostOffice;
+      return Array.isArray(offices) && offices.length ? offices : null;
     };
     const requestError = (error, fallback) => {
       if (error && error.status === 403) {
@@ -509,6 +536,16 @@ define(['knockout', 'appController'], function (ko, app) {
           if (availability !== true) { addOnboardingMessage('assistant', `${availability} ${question.prompt}`); return; }
         }
 
+        if (question.key === 'city') {
+          const offices = await lookupCity(value);
+          if (!self.onboardingActive() || session !== onboardingSession) return;
+          const stateMatchesCity = offices && offices.some((office) => sameState(office.State, self.onboarding.state()));
+          if (!stateMatchesCity) {
+            addOnboardingMessage('assistant', `${value} is not a valid city or locality in ${self.onboarding.state()}. Enter a valid city or district for the stated state.`);
+            return;
+          }
+        }
+
         if (question.key === 'pincode') {
           const location = await lookupPincode(value);
           if (!self.onboardingActive() || session !== onboardingSession) return;
@@ -517,13 +554,17 @@ define(['knockout', 'appController'], function (ko, app) {
             return;
           }
           const enteredCity = String(self.onboarding.city()).trim().toLocaleLowerCase('en-IN');
+          const enteredState = String(self.onboarding.state()).trim();
           const validCities = location.names.map((name) => String(name).trim().toLocaleLowerCase('en-IN'));
           const cityMatchesPincode = validCities.some((name) => name === enteredCity || name.includes(enteredCity) || enteredCity.includes(name));
           if (!cityMatchesPincode) {
             addOnboardingMessage('assistant', `PIN code ${value} belongs to ${location.city}, ${location.state}, not ${self.onboarding.city()}. Enter a PIN code for the stated city.`);
             return;
           }
-          self.onboarding.state(location.state);
+          if (!sameState(enteredState, location.state)) {
+            addOnboardingMessage('assistant', `PIN code ${value} belongs to ${location.state}, not ${enteredState}. Enter the state that matches ${self.onboarding.city()} and this PIN code.`);
+            return;
+          }
           addOnboardingMessage('assistant', `PIN code verified for ${self.onboarding.city()}, ${location.state}.`);
         }
 
