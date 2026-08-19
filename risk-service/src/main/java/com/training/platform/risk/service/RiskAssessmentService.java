@@ -41,7 +41,7 @@ public class RiskAssessmentService {
         RecipientRiskProfile recipient = recipientKey == null ? null : recipients.findById(recipientKey).orElse(null);
         try {
             ModelScoreResponse score = modelScoringClient.score(new ModelScoreRequest(
-                    request.transactionRef(), request.transactionType(), request.amount(), request.oldBalanceOrg(),
+                    request.transactionRef(), modelTransactionType(request.transactionType()), request.amount(), request.oldBalanceOrg(),
                     request.oldBalanceDest(), recipient == null ? 0 : recipient.getApprovedTransactionCount(),
                     recipient == null ? BigDecimal.ZERO : recipient.getApprovedTotalAmount(),
                     DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(
@@ -104,6 +104,14 @@ public class RiskAssessmentService {
     private RiskLevel toRiskLevel(String value) {
         try { return RiskLevel.valueOf(value); }
         catch (Exception ignored) { return RiskLevel.RISK_UNAVAILABLE; }
+    }
+
+    /**
+     * The banking domain keeps opening deposits distinct for statements, ledgers and audit logs.
+     * The PaySim model has only the broader DEPOSIT category, so translate only at the model boundary.
+     */
+    private String modelTransactionType(String transactionType) {
+        return "OPENING_DEPOSIT".equalsIgnoreCase(transactionType) ? "DEPOSIT" : transactionType;
     }
 
     private String recipientKey(String creditAccountId, String externalBeneficiary) {

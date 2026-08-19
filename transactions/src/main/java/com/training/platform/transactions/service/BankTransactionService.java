@@ -163,10 +163,12 @@ public class BankTransactionService {
             fail(transaction, eligibilityFailure);
             return transactionRepository.save(transaction);
         }
-        assessAndStoreRisk(transaction);
-        if ("RISK_UNAVAILABLE".equals(transaction.getRiskLevel())) {
-            transaction.setTransactionStatus(TransactionStatus.PENDING_APPROVAL);
-            return transactionRepository.save(transaction);
+        if (requiresRiskScreening(transaction)) {
+            assessAndStoreRisk(transaction);
+            if ("RISK_UNAVAILABLE".equals(transaction.getRiskLevel())) {
+                transaction.setTransactionStatus(TransactionStatus.PENDING_APPROVAL);
+                return transactionRepository.save(transaction);
+            }
         }
         transaction.setTransactionStatus(TransactionStatus.PROCESSING);
         transaction.setFailureCode(null);
@@ -236,7 +238,6 @@ public class BankTransactionService {
 
     private boolean requiresRiskScreening(BankTransaction transaction) {
         return transaction.getTransactionType() == TransactionType.TRANSFER
-                || transaction.getTransactionType() == TransactionType.OPENING_DEPOSIT
                 || transaction.getTransactionType() == TransactionType.DEPOSIT
                 || transaction.getTransactionType() == TransactionType.WITHDRAWAL;
     }

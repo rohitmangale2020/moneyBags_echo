@@ -4,6 +4,7 @@ import com.training.platform.auditclient.AuditClient;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -121,7 +122,37 @@ class BankTransactionServiceTest {
         assertSame(StatementEntryType.CREDIT, statement.getValue().getEntryType());
         assertEqualsMoney("1000.00", statement.getValue().getDepositAmount());
         assertEqualsMoney("1000.00", statement.getValue().getBalanceAfter());
+        verifyNoInteractions(riskServiceClient);
         verify(ledgerService).postCompletedTransaction(openingDeposit);
+    }
+
+    @Test void previouslyHeldOpeningDepositPostsAfterApprovalWithoutCallingRiskAgain() {
+        BankTransaction openingDeposit = new BankTransaction();
+        openingDeposit.setTransactionRef("OPEN-account-1");
+        openingDeposit.setTransactionType(TransactionType.OPENING_DEPOSIT);
+        openingDeposit.setTransactionStatus(TransactionStatus.PENDING_APPROVAL);
+        openingDeposit.setCreditAccountId("account-1");
+        openingDeposit.setAmount(new BigDecimal("1000.00"));
+        openingDeposit.setFeeAmount(BigDecimal.ZERO);
+        openingDeposit.setCurrencyCode("INR");
+        openingDeposit.setInitiatedByCustomerId("customer-1");
+
+        when(transactionRepository.findById("transaction-opening-1")).thenReturn(Optional.of(openingDeposit));
+        when(transactionRepository.save(openingDeposit)).thenReturn(openingDeposit);
+        when(accountsClient.adjust(eq("account-1"), any())).thenReturn(new AccountAdjustmentResponse(
+                "OPEN-account-1", "account-1", "123456789012", "customer-1",
+                AccountAdjustmentRequest.AdjustmentType.OPENING_DEPOSIT,
+                new BigDecimal("1000.00"), null));
+        when(customersClient.displayName("customer-1")).thenReturn("Test Customer");
+        when(statementRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(outboxRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        BankTransaction completed = transactionService.decidePendingApproval(
+                "transaction-opening-1", true, "Release opening deposit", "admin-1");
+
+        assertSame(TransactionStatus.COMPLETED, completed.getTransactionStatus());
+        verify(accountsClient).adjust(eq("account-1"), any());
+        verifyNoInteractions(riskServiceClient);
     }
 
     @Test void annualFeeDebitsAccountAndCreatesStatementLedgerAndOutboxRecords() {
