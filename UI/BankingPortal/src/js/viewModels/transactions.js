@@ -56,6 +56,9 @@ define([
       () => s.operation() === 'DEPOSIT' || s.operation() === 'WITHDRAWAL',
     );
     s.hasCustomerAccounts = ko.pureComputed(() => s.accounts().length > 0);
+    s.eligibleAccounts = ko.pureComputed(() => s.accounts().filter((account) =>
+      ['SAVINGS', 'SALARY', 'CURRENT'].includes(String(account.productTypeCode || '').toUpperCase()),
+    ));
     s.operationTitle = ko.pureComputed(() => ({
       TRANSFER: 'Internal transfer',
       DEPOSIT: 'Deposit',
@@ -64,7 +67,7 @@ define([
     })[s.operation()]);
 
     s.accountLabel = (account) =>
-      `${account.accountNumber} · ${account.currencyCode} · ${u.money(account.availableBalance, account.currencyCode)}`;
+      `${account.accountNumber} · ${account.productTypeCode || 'ACCOUNT'} · ${account.currencyCode} · ${u.money(account.availableBalance, account.currencyCode)}`;
 
     s.currencies = ko.pureComputed(() =>
       Array.from(new Set(s.state.data().map((transaction) => transaction.currencyCode).filter(Boolean))).sort(),
@@ -199,17 +202,22 @@ define([
         if (app.setTransactionCustomerId) app.setTransactionCustomerId(customerId);
         const accounts = (await app.services.accounts.customer(customerId))
           .filter((account) => account.status === 'ACTIVE');
+        const eligibleAccounts = accounts.filter((account) =>
+          ['SAVINGS', 'SALARY', 'CURRENT'].includes(String(account.productTypeCode || '').toUpperCase()),
+        );
         s.customerId(customerId);
         s.accounts(accounts);
-        const firstAccountId = accounts[0] ? String(accounts[0].accountId) : '';
-        const secondAccountId = accounts[1] ? String(accounts[1].accountId) : '';
+        const firstAccountId = eligibleAccounts[0] ? String(eligibleAccounts[0].accountId) : '';
+        const secondAccountId = eligibleAccounts[1] ? String(eligibleAccounts[1].accountId) : '';
         s.form.fromAccountId(firstAccountId);
         s.form.toAccountId(secondAccountId);
         s.form.debitAccountId(firstAccountId);
         s.form.accountId(firstAccountId);
-        if (accounts[0]) s.form.currencyCode(accounts[0].currencyCode);
-        if (s.isSelfTransfer() && accounts.length < 2) {
-          s.error('This customer needs at least two active accounts for a self transfer.');
+        if (eligibleAccounts[0]) s.form.currencyCode(eligibleAccounts[0].currencyCode);
+        if (!eligibleAccounts.length) {
+          s.error('This customer has no eligible Savings, Salary, or Current account for a normal transaction.');
+        } else if (s.isSelfTransfer() && eligibleAccounts.length < 2) {
+          s.error('This customer needs at least two eligible Savings, Salary, or Current accounts for a self transfer.');
         }
       } catch (error) {
         s.customerId('');
@@ -247,7 +255,6 @@ define([
       return {
         transactionRef: s.form.transactionRef(),
         transactionType: type,
-        transactionStatus: null,
         debitAccountId,
         creditAccountId,
         externalBeneficiary: null,
@@ -269,6 +276,9 @@ define([
       const accounts = u.list(await app.services.accounts.number(accountNumber));
       const account = accounts.find((item) => String(item.accountNumber) === accountNumber) || accounts[0];
       if (!account) throw new Error('No account was found for that recipient account number.');
+      if (!['SAVINGS', 'SALARY', 'CURRENT'].includes(String(account.productTypeCode || '').toUpperCase())) {
+        throw new Error('Use a Savings, Salary, or Current recipient account. Fixed deposits and credit cards require their dedicated workflows.');
+      }
       if (String(account.accountId) === payload.debitAccountId) {
         throw new Error('Recipient account must be different from the debit account.');
       }
@@ -314,10 +324,14 @@ define([
         app.setActiveAccount(payload.debitAccountId || payload.creditAccountId);
         s.state.data([transaction].concat(s.state.data().filter((item) => item.transactionId !== transaction.transactionId)));
 
-        s.submissionState('success');
-        s.submissionMessage(`${s.operationTitle()} completed successfully.`);
-        app.notify(`${s.operationTitle()} completed.`, 'success');
-        closeAfter(1400);
+        const held = transaction.transactionStatus === 'PENDING_APPROVAL';
+        s.submissionState(held ? 'pending' : 'success');
+        s.submissionMessage(held
+          ? `${s.operationTitle()} is awaiting administrator approval (${transaction.riskLevel || 'RISK_UNAVAILABLE'}).`
+          : `${s.operationTitle()} completed successfully.`);
+        app.notify(held ? `${s.operationTitle()} is awaiting administrator approval.` : `${s.operationTitle()} completed.`, held ? 'warning' : 'success');
+        if (held) app.refreshRiskApprovals();
+        closeAfter(held ? 2600 : 1400);
       } catch (error) {
         if (error.details && error.details.transactionId) {
           await s.load(0);
