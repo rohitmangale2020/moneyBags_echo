@@ -11,8 +11,7 @@ C:\Project\moneyBags_echo\
 ├── AnomalyDetection\
 │   ├── model_service\
 │   │   ├── app.py
-│   │   ├── requirements.txt
-│   │   └── run_model_service.ps1
+│   │   └── requirements.txt
 │   └── model_artifacts\
 │       └── paysim_lightgbm_calibrated_v4.joblib
 └── risk-service\
@@ -30,27 +29,23 @@ Open a PowerShell window:
 
 ```powershell
 cd C:\Project\moneyBags_echo\AnomalyDetection\model_service
-.\run_model_service.ps1
+py -3.14 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m uvicorn app:app --host 127.0.0.1 --port 8001
 ```
 
 Leave this window running. The model starts at `http://localhost:8001`.
 
 ## Start the Java risk service
 
-Open a second PowerShell window:
-
-```powershell
-cd C:\Project\moneyBags_echo
-mvn -pl risk-service spring-boot:run
-```
-
-Leave this window running. The risk service starts at `http://localhost:8089`.
+just start the spring boot risk-service app as you are used to opening everything else
 
 ## Verify
 
+In a separate PowerShell window, run:
+
 ```powershell
-cd C:\Project\moneyBags_echo\AnomalyDetection\model_service
-.\run_model_service.ps1 -Action Health
+Invoke-RestMethod http://127.0.0.1:8001/health
 ```
 
 The response must contain:
