@@ -37,7 +37,7 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "STATUS", nullable = false, length = 30)
-    private UserStatus status = UserStatus.PENDING_VERIFICATION;
+    private UserStatus status = UserStatus.ACTIVE;
 
     @Column(name = "USER_ROLE", nullable = false, length = 50)
     private String role;

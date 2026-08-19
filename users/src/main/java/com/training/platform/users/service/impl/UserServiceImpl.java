@@ -49,7 +49,7 @@ public class UserServiceImpl implements UserService {
         user.setRole(normalizeRole(request.role()));
         // Credentials supplied at creation are temporary for every platform user.
         user.setPasswordChangeRequired(true);
-        user.setStatus(UserStatus.PENDING_VERIFICATION);
+        user.setStatus(UserStatus.ACTIVE);
         user.attachProfile(toProfile(request.profile()));
 
         User savedUser = userRepository.save(user);

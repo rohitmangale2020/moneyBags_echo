@@ -79,9 +79,9 @@ define([
       }),
     );
     s.canViewDetails = (user) =>
-      ['ACTIVE', 'PENDING_VERIFICATION'].includes(user.status);
+      user.status === 'ACTIVE';
     s.statusRank = (status) =>
-      ({ ACTIVE: 0, PENDING_VERIFICATION: 1, DEACTIVATED: 2 }[status] ?? 3);
+      ({ ACTIVE: 0, DEACTIVATED: 1 }[status] ?? 2);
     s.toDetailRow = (user) => {
       const profile = user.profile || {};
       const display = (value) => (value === null || value === undefined || value === '' ? 'Not provided' : value);

@@ -75,7 +75,7 @@ class UserServiceImplTest {
         assertEquals("priyansh@example.com", capturedUser.getEmail());
         assertEquals("encoded-password", capturedUser.getPasswordHash());
         assertEquals("CUSTOMER", capturedUser.getRole());
-        assertEquals(UserStatus.PENDING_VERIFICATION, capturedUser.getStatus());
+        assertEquals(UserStatus.ACTIVE, capturedUser.getStatus());
         assertEquals(true, capturedUser.isPasswordChangeRequired());
         assertEquals("priyansh", response.username());
     }
@@ -196,6 +196,7 @@ class UserServiceImplTest {
     @Test
     void updateStatus_activeStatus_returnsActiveUser() {
         User existingUser = user(1L, "priyansh", "priyansh@example.com");
+        existingUser.setRole("EMPLOYEE");
         when(userRepository.findWithProfileById(1L)).thenReturn(Optional.of(existingUser));
 
         UserResponse response = userService.updateStatus(1L, UserStatus.ACTIVE);
@@ -228,7 +229,7 @@ class UserServiceImplTest {
         user.setEmail(email);
         user.setPasswordHash("encoded-password");
         user.setRole("CUSTOMER");
-        user.setStatus(UserStatus.PENDING_VERIFICATION);
+        user.setStatus(UserStatus.ACTIVE);
         UserProfile profile = new UserProfile();
         profile.setFirstName("Priyansh");
         profile.setLastName("Pachauri");
