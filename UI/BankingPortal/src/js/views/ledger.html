@@ -62,19 +62,25 @@
   </div>
   <div class="mb-table mb-ledger-table" data-bind="visible:filteredEntries().length && !entryState.loading()">
     <table>
-      <thead><tr><th>Date</th><th>Ledger account</th><th>Customer account</th><th>Description</th><th>Debit</th><th>Credit</th><th>Status</th></tr></thead>
-      <tbody data-bind="foreach:filteredEntries">
+      <thead><tr><th>Date</th><th>Ledger account</th><th>Customer account</th><th>Description</th><th class="mb-amount">Debit</th><th class="mb-amount">Credit</th><th>Status</th></tr></thead>
+      <tbody data-bind="foreach:pagedEntries">
         <tr>
           <td data-bind="text:$parent.date(createdAt)"></td>
           <td><code data-bind="text:ledgerAccountCode"></code></td>
           <td data-bind="text:customerAccountId || '—'"></td>
           <td data-bind="text:description || '—'"></td>
-          <td class="debit" data-bind="text:entryType === 'DEBIT' ? $parent.money(amount,currencyCode) : '—'"></td>
-          <td class="credit" data-bind="text:entryType === 'CREDIT' ? $parent.money(amount,currencyCode) : '—'"></td>
+          <td class="debit mb-amount" data-bind="text:entryType === 'DEBIT' ? $parent.money(amount,currencyCode) : '—'"></td>
+          <td class="credit mb-amount" data-bind="text:entryType === 'CREDIT' ? $parent.money(amount,currencyCode) : '—'"></td>
           <td><span class="mb-badge" data-bind="text:status,css:$parent.entryClass(entryType)"></span></td>
         </tr>
       </tbody>
     </table>
+  </div>
+  <div class="mb-pagination" role="navigation" aria-label="Ledger pagination" data-bind="visible:filteredEntries().length">
+    <label class="mb-page-size">Rows per page<select data-bind="value:pageSize,options:pageSizeOptions"></select></label>
+    <oj-button chroming="outlined" on-oj-action="[[previousPage]]" disabled="[[entryState.loading() || currentPage() === 0]]">Previous</oj-button>
+    <span class="mb-page-status" data-bind="text:pageSummary"></span>
+    <oj-button chroming="outlined" on-oj-action="[[nextPage]]" disabled="[[entryState.loading() || currentPage() >= totalPages() - 1]]">Next</oj-button>
   </div>
   <div class="mb-empty" data-bind="visible:!entryState.loading()&&!entryState.error()&&!filteredEntries().length">
     Select a ledger account or enter a transaction reference to review postings.

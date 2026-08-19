@@ -3,12 +3,16 @@ define(['knockout', 'appController'], function (ko, app) {
 
   function VM() {
     const self = this;
-    self.message = ko.observable('Prepare a customer 360 briefing');
+    let onboardingSession = 0;
+    self.message = ko.observable('');
     self.customerId = ko.observable((app.activeCustomer() || {}).customerId || '');
+    self.customerCif = ko.observable((app.activeCustomer() || {}).cifNo || '');
     self.transactionId = ko.observable('');
     self.accountId = ko.observable(app.activeAccountId() || '');
     self.module = ko.pureComputed(() => app.assistantContext() || 'platform');
     self.history = ko.observableArray([]);
+    self.chatMessages = ko.observableArray([]);
+    self.referencedCustomer = ko.observable(null);
     self.loading = ko.observable(false);
     self.error = ko.observable('');
     self.response = ko.observable(null);
@@ -18,9 +22,97 @@ define(['knockout', 'appController'], function (ko, app) {
     self.employeeId = ko.observable('');
     self.employeeStatus = ko.observable('ACTIVE');
     self.employeeAction = ko.observable('');
+    self.statusChangeConfirmationOpen = ko.observable(false);
     self.riskFinding = ko.observable(null);
     self.fraudFinding = ko.observable(null);
     self.alerts = ko.observableArray([]);
+    self.selectedTool = ko.observable(null);
+    self.toolSelectionId = ko.observable('');
+    self.toolInput = ko.observable('');
+    self.toolOptions = ko.observableArray([
+      { id: 'customer360', label: 'Customer 360', input: 'cif', prompt: 'Enter the customer CIF', placeholder: 'For example: CIF1234567890', action: 'useCustomerBriefing', staff: true },
+      { id: 'transactionReview', label: 'Review transaction', input: 'transaction', prompt: 'Enter the transaction ID', placeholder: 'Transaction ID', action: 'useTransactionReview', staff: true },
+      { id: 'products', label: 'Recommend products', input: 'cif', prompt: 'Enter the customer CIF', placeholder: 'For example: CIF1234567890', action: 'useProductRecommendation' },
+      { id: 'accountOverview', label: 'Account overview', input: 'account', prompt: 'Enter the account ID or 12-digit account number', placeholder: 'Account ID or 12-digit number', action: 'useAccountOverview', staff: true },
+      { id: 'accountRisk', label: 'Account risk review', input: 'account', prompt: 'Enter the account ID or 12-digit account number', placeholder: 'Account ID or 12-digit number', action: 'reviewAccountRisk', staff: true },
+      { id: 'fraud', label: 'Inspect fraud', input: 'transaction', prompt: 'Enter the transaction ID', placeholder: 'Transaction ID', action: 'inspectFraud', staff: true },
+      { id: 'onboarding', label: 'Onboard new customer', input: null, action: 'startOnboarding', staff: true }
+    ]);
+    self.availableToolOptions = ko.pureComputed(() => self.toolOptions().filter((tool) => !tool.staff || self.isStaff()));
+    self.toolNeedsInput = ko.pureComputed(() => !!(self.selectedTool() && self.selectedTool().input));
+    self.composerPlaceholder = ko.pureComputed(() => {
+      const tool = self.selectedTool();
+      return tool && tool.input ? tool.placeholder : 'Type your message…';
+    });
+    self.onboardingActive = ko.observable(false);
+    self.onboardingBusy = ko.observable(false);
+    self.onboardingReply = ko.observable('');
+    self.onboardingError = ko.observable('');
+    self.onboardingReviewOpen = ko.observable(false);
+    self.onboardedCustomer = ko.observable(null);
+    self.onboardingPrompt = ko.observable('I’ll create the customer profile and residential address, then start a pending KYC assessment. Complete document upload and verification in the onboarding workspace.');
+    self.onboardingMessages = ko.observableArray([]);
+    self.onboardingStep = ko.observable(0);
+    self.onboarding = {
+      firstName: ko.observable(''), lastName: ko.observable(''), dob: ko.observable(''), gender: ko.observable(''),
+      phone: ko.observable(''), email: ko.observable(''), occupation: ko.observable(''), addressType: ko.observable(''),
+      line1: ko.observable(''), line2: ko.observable(''), city: ko.observable(''), state: ko.observable(''), pincode: ko.observable('')
+    };
+    const indianStates = new Set([
+      'andhra pradesh', 'arunachal pradesh', 'assam', 'bihar', 'chhattisgarh', 'goa', 'gujarat', 'haryana', 'himachal pradesh', 'jharkhand', 'karnataka', 'kerala', 'madhya pradesh', 'maharashtra', 'manipur', 'meghalaya', 'mizoram', 'nagaland', 'odisha', 'punjab', 'rajasthan', 'sikkim', 'tamil nadu', 'telangana', 'tripura', 'uttar pradesh', 'uttarakhand', 'west bengal', 'andaman and nicobar islands', 'chandigarh', 'dadra and nagar haveli and daman and diu', 'delhi', 'national capital territory of delhi', 'jammu and kashmir', 'ladakh', 'lakshadweep', 'puducherry'
+    ]);
+    const isCityOrDistrict = (value) => !indianStates.has(String(value).trim().toLocaleLowerCase('en-IN'))
+      || 'Enter a city or district here, not a state.';
+    const isPlausibleCityOrDistrict = (value) => {
+      const city = String(value).trim();
+      const letters = city.toLocaleLowerCase('en-IN').replace(/[^a-z]/g, '');
+      if (letters.length < 2 || !/^[a-z][a-z .'-]*$/i.test(city) || new Set(letters).size < 2 || !/[aeiou]/i.test(letters)) {
+        return 'Enter a valid city or district name.';
+      }
+      return isCityOrDistrict(city);
+    };
+    const isIndianState = (value) => indianStates.has(String(value).trim().toLocaleLowerCase('en-IN'))
+      || 'Enter a valid Indian state or union territory.';
+    const normalizeLocation = (value) => String(value).trim().toLocaleLowerCase('en-IN').replace(/[^a-z0-9]/g, '');
+    const sameState = (left, right) => {
+      const aliases = { delhi: 'nationalcapitalterritoryofdelhi', nctdelhi: 'nationalcapitalterritoryofdelhi' };
+      return (aliases[normalizeLocation(left)] || normalizeLocation(left)) === (aliases[normalizeLocation(right)] || normalizeLocation(right));
+    };
+    const onboardingQuestions = [
+      { key: 'firstName', prompt: 'What is the customer’s first name?', valid: (value) => value.length <= 100 || 'First name must be 100 characters or fewer.' },
+      { key: 'lastName', prompt: 'What is the customer’s last name?', valid: (value) => value.length <= 100 || 'Last name must be 100 characters or fewer.' },
+      { key: 'dob', prompt: 'What is the date of birth? Use YYYY-MM-DD.', valid: (value) => isAdultDateOfBirth(value) || 'The customer must be at least 18 years old. Enter a valid date in YYYY-MM-DD format.' },
+      { key: 'gender', prompt: 'What is the gender? Reply Male, Female, or Other.', valid: (value) => ['MALE', 'FEMALE', 'OTHER'].includes(value.toUpperCase()) || 'Reply Male, Female, or Other.', transform: (value) => value.toUpperCase() },
+      { key: 'phone', prompt: 'What is the 10-digit Indian mobile number?', valid: (value) => /^[6-9]\d{9}$/.test(value) || 'Enter a valid 10-digit Indian mobile number.' },
+      { key: 'email', prompt: 'What is the email address?', valid: (value) => /^\S+@\S+\.\S+$/.test(value) || 'Enter a valid email address.' },
+      { key: 'occupation', prompt: 'What is the customer’s occupation?', valid: (value) => value.length <= 100 || 'Occupation must be 100 characters or fewer.' },
+      { key: 'addressType', prompt: 'Is this the Current, Permanent, or Office address?', valid: (value) => ['CURRENT', 'PERMANENT', 'OFFICE'].includes(value.toUpperCase()) || 'Reply Current, Permanent, or Office.', transform: (value) => value.toUpperCase() },
+      { key: 'line1', prompt: 'What is address line 1?', valid: (value) => value.length <= 250 || 'Address line 1 must be 250 characters or fewer.' },
+      { key: 'state', prompt: 'What is the state?', valid: (value) => value.length > 100 ? 'State must be 100 characters or fewer.' : isIndianState(value) },
+      { key: 'city', prompt: 'What is the city or district?', valid: (value) => value.length > 100 ? 'City must be 100 characters or fewer.' : isPlausibleCityOrDistrict(value) },
+      { key: 'pincode', prompt: 'What is the six-digit PIN code?', valid: (value) => /^[1-9]\d{5}$/.test(value) || 'Enter a valid six-digit PIN code.' }
+    ];
+    self.onboardingReady = ko.pureComputed(() => self.onboardingActive() && self.onboardingStep() >= onboardingQuestions.length);
+    self.onboardingSummary = ko.pureComputed(() => {
+      const value = (key) => String(self.onboarding[key]()).trim();
+      return `${value('firstName')} ${value('lastName')} · ${value('phone')} · ${value('city')}, ${value('state')} ${value('pincode')}`;
+    });
+    const addOnboardingMessage = (role, text) => {
+      self.onboardingMessages.push({ role, text });
+      addChatMessage(role === 'employee' ? 'employee' : 'assistant', text);
+      window.setTimeout(() => {
+        const transcript = document.querySelector('.mb-chat-onboarding .mb-chat-transcript');
+        if (transcript) transcript.scrollTop = transcript.scrollHeight;
+      }, 0);
+    };
+    const askOnboardingQuestion = () => {
+      const question = onboardingQuestions[self.onboardingStep()];
+      if (question) addOnboardingMessage('assistant', question.prompt);
+      else {
+        self.onboardingReviewOpen(true);
+        addOnboardingMessage('assistant', 'All details are collected. Review and confirm the customer information to continue.');
+      }
+    };
 
     const bankingTerms = [
       'account', 'balance', 'bank', 'banking', 'beneficiary', 'card', 'cash', 'credit', 'customer',
@@ -30,48 +122,534 @@ define(['knockout', 'appController'], function (ko, app) {
     ];
 
     const isBankingQuestion = (message) => bankingTerms.some((term) => message.toLowerCase().includes(term));
-    const requestError = (error, fallback) => error && error.status === 403
-      ? 'Your current sign-in is not authorized for this feature. Sign out, sign in again, and retry as an employee or admin.'
-      : (error.message || fallback);
+    const rows = (value) => Array.isArray(value) ? value : (value && (value.content || value.items || value.data)) || [];
+    const currency = (amount, code) => `${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 }).format(Number(amount || 0))} ${code || 'INR'}`;
+    const customerStatusName = (message) => {
+      const match = message.match(/\bstatus\s+(?:for|of)\s+([a-z][a-z .'-]*)\??\s*$/i)
+        || message.match(/\bstatus\s+([a-z][a-z .'-]*)\??\s*$/i);
+      return match ? match[1].trim().replace(/^(?:the\s+)?customer\s+/i, '') : '';
+    };
+    const answerCustomerStatus = async (name) => {
+      const firstName = name.split(/\s+/)[0];
+      self.loading(true);
+      self.error('');
+      self.response(null);
+      try {
+        const matches = rows(await app.services.customers.byFirstName(firstName));
+        const normalizedName = name.toLowerCase();
+        const exactMatches = matches.filter((customer) =>
+          `${customer.firstName || ''} ${customer.lastName || ''}`.trim().toLowerCase() === normalizedName,
+        );
+        const customers = exactMatches.length ? exactMatches : matches;
+        if (!customers.length) {
+          self.response({ intent: 'CUSTOMER_STATUS', answer: `No customer named ${name} was found in the bank records.`, evidence: [], nextSteps: [], recommendations: [] });
+        } else if (customers.length > 1) {
+          self.response({ intent: 'CUSTOMER_STATUS', answer: `I found multiple customers named ${name}. Please provide the Customer CIF to check the correct status.`, evidence: [], nextSteps: [], recommendations: [] });
+        } else {
+          const customer = customers[0];
+          const fullName = `${customer.firstName || ''} ${customer.lastName || ''}`.trim();
+          self.referencedCustomer({ customerId: customer.customerId, fullName, cifNo: customer.cifNo });
+          self.response({ intent: 'CUSTOMER_STATUS', answer: `${fullName}'s customer status is ${String(customer.status || 'NOT_RECORDED').replace(/_/g, ' ')}.`, evidence: [], nextSteps: [], recommendations: [] });
+        }
+      } catch (error) {
+        self.error(requestError(error, `Unable to find the customer named ${name}.`));
+      } finally {
+        self.loading(false);
+      }
+    };
+    const isReferencedKycQuestion = (message) => /\bkyc\b.*\bstatus\b|\bstatus\b.*\bkyc\b/i.test(message)
+      && /\b(her|his|their|this customer|that customer)\b/i.test(message);
+    const answerReferencedKycStatus = async () => {
+      const customer = self.referencedCustomer();
+      if (!customer) return false;
+      self.loading(true);
+      self.error('');
+      self.response(null);
+      try {
+        const kyc = await app.services.customers.kyc(customer.customerId);
+        const status = String((kyc && kyc.kycStatus) || 'NOT_AVAILABLE').replace(/_/g, ' ');
+        const risk = String((kyc && kyc.riskLevel) || 'NOT_AVAILABLE').replace(/_/g, ' ');
+        self.response({ intent: 'CUSTOMER_KYC_STATUS', answer: `${customer.fullName}'s KYC status is ${status}. Current risk level: ${risk}.`, evidence: [], nextSteps: [], recommendations: [] });
+      } catch (error) {
+        self.error(requestError(error, `Unable to retrieve ${customer.fullName}'s KYC status.`));
+      } finally {
+        self.loading(false);
+      }
+      return true;
+    };
+    function isAdultDateOfBirth(value) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+      const [year, month, day] = value.split('-').map(Number);
+      const dob = new Date(year, month - 1, day);
+      if (Number.isNaN(dob.getTime()) || dob.getFullYear() !== year || dob.getMonth() !== month - 1 || dob.getDate() !== day) return false;
+      const today = new Date();
+      const adultDate = new Date(dob.getFullYear() + 18, dob.getMonth(), dob.getDate());
+      return adultDate <= new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    }
+    const isNotFound = (error) => error && error.status === 404;
+    const ensureContactIsAvailable = async (field, value) => {
+      try {
+        await (field === 'phone' ? app.services.customers.byPhone(value) : app.services.customers.byEmail(value));
+        return `${field === 'phone' ? 'Phone number' : 'Email address'} already exists. Enter a different ${field === 'phone' ? 'mobile number' : 'email address'}.`;
+      } catch (error) {
+        if (isNotFound(error)) return true;
+        throw error;
+      }
+    };
+    const lookupPincode = async (pincode) => {
+      let response;
+      try {
+        response = await fetch(`https://api.postalpincode.in/pincode/${encodeURIComponent(pincode)}`);
+      } catch (_) {
+        throw new Error('Unable to validate the PIN code right now. Check the connection and try again.');
+      }
+      if (!response.ok) throw new Error('Unable to validate the PIN code right now. Please try again.');
+      const result = await response.json();
+      const offices = result && result[0] && result[0].PostOffice;
+      if (!Array.isArray(offices) || !offices.length) return null;
+      const primary = offices[0];
+      const names = offices.flatMap((office) => [office.Name, office.District]).filter(Boolean);
+      return { city: primary.District || primary.Name, state: primary.State, names };
+    };
+    const lookupCity = async (city) => {
+      let response;
+      try {
+        response = await fetch(`https://api.postalpincode.in/postoffice/${encodeURIComponent(city)}`);
+      } catch (_) {
+        throw new Error('Unable to validate the city right now. Check the connection and try again.');
+      }
+      if (!response.ok) throw new Error('Unable to validate the city right now. Please try again.');
+      const result = await response.json();
+      const offices = result && result[0] && result[0].PostOffice;
+      return Array.isArray(offices) && offices.length ? offices : null;
+    };
+    const requestError = (error, fallback) => {
+      if (error && error.status === 403) {
+        const detail = error.message && error.message !== 'Request failed (403).' ? ` ${error.message}` : '';
+        return `Access was denied by ${error.path || 'the server'} (HTTP 403).${detail}`;
+      }
+      if (error && error.status === 401 && error.path === '/auth/gpt-oss/chat') {
+        return 'The GPT-OSS assistant endpoint rejected the request. Your banking session is still active; check the assistant service configuration.';
+      }
+      if (error && error.status === 503 && error.path === '/auth/gpt-oss/chat') {
+        return 'GPT-OSS is unavailable. Start the configured OpenAI-compatible runtime and verify GPT_OSS_BASE_URL and GPT_OSS_MODEL.';
+      }
+      return (error && error.message) || fallback;
+    };
+    const scrollAssistantChat = () => {
+      const moveToLatest = () => {
+        const thread = document.querySelector('.mb-assistant-message-list');
+        if (!thread) return;
+        thread.scrollTop = thread.scrollHeight;
+      };
+      window.requestAnimationFrame(() => window.requestAnimationFrame(moveToLatest));
+      window.setTimeout(moveToLatest, 120);
+    };
+    const addChatMessage = (role, text, customer360, transactionReview, productOptions, accountOverview, riskFinding, fraudFinding) => {
+      self.chatMessages.push({ role, text, customer360: customer360 || null, transactionReview: transactionReview || null, productOptions: productOptions || null, accountOverview: accountOverview || null, riskFinding: riskFinding || null, fraudFinding: fraudFinding || null });
+      scrollAssistantChat();
+    };
+    self.response.subscribe((response) => {
+      if (!response) return;
+      if (response.customer360) {
+        addChatMessage('assistant', 'Here is the customer profile and account summary.', response.customer360);
+      } else if (response.transactionReview) {
+        addChatMessage('assistant', 'Here is the transaction review.', null, response.transactionReview);
+      } else if (response.productOptions) {
+        addChatMessage('assistant', 'Here are the available product options.', null, null, response.productOptions);
+      } else if (response.accountOverview) {
+        addChatMessage('assistant', 'Here is the account overview.', null, null, null, response.accountOverview);
+      } else if (response.answer) addChatMessage('assistant', response.answer);
+    });
+    self.loading.subscribe(() => scrollAssistantChat());
 
-    self.useCustomerBriefing = () => {
-      self.message('Prepare a customer 360 briefing');
-      self.transactionId('');
+    const retainContext = (kind) => {
+      if (kind !== 'cif') self.customerCif('');
+      if (kind !== 'transaction') self.transactionId('');
+      if (kind !== 'account') self.accountId('');
     };
-    self.useCustomerLookup = () => {
-      self.message('What is the status for customer Rishabh Singh?');
-      self.customerId('');
-      self.transactionId('');
-      self.accountId('');
+    self.selectAssistantTool = (tool) => {
+      // A new tool replaces an unfinished onboarding conversation. Otherwise
+      // the composer continues routing replies to the onboarding questions.
+      if (self.onboardingActive() && tool.id !== 'onboarding') self.discardOnboarding();
+      self.selectedTool(tool);
+      self.toolSelectionId(tool.id);
+      self.toolInput('');
+      self.message('');
+      self.error('');
+      if (tool.input) {
+        addChatMessage('assistant', `${tool.label}: ${tool.prompt}`);
+      } else {
+        self[tool.action]();
+      }
     };
-    self.useTransactionReview = () => {
-      self.message('Review this transaction and explain the result');
-      self.customerId('');
+    self.toolSelectionChanged = () => {
+      const tool = self.toolOptions().find((item) => item.id === self.toolSelectionId());
+      if (tool) self.selectAssistantTool(tool);
     };
-    self.useProductRecommendation = () => {
-      if (!self.customerId()) {
-        self.error('Enter a Customer ID to receive recommendations based on that customer’s balance and transaction history.');
+    self.runSelectedTool = (providedInput) => {
+      const tool = self.selectedTool();
+      const input = String(providedInput === undefined ? self.toolInput() : providedInput).trim();
+      if (!tool) return;
+      if (!input) { self.error(tool.prompt); return; }
+      if (tool.input === 'cif' && !/^CIF[A-Z0-9]+$/i.test(input)) {
+        self.error('Enter a valid Customer CIF, beginning with CIF.');
+        addChatMessage('assistant', 'Please enter a valid Customer CIF (for example, CIF1234567890).');
         return;
       }
-      self.message('Recommend suitable active banking products');
-      self.transactionId('');
-      self.accountId('');
-      self.send();
+      if (tool.input === 'cif') self.customerCif(input);
+      if (tool.input === 'transaction') self.transactionId(input);
+      if (tool.input === 'account') self.accountId(input);
+      addChatMessage('employee', `${tool.label}: ${input}`);
+      self.selectedTool(null);
+      self.toolSelectionId('');
+      self.toolInput('');
+      self[tool.action]();
     };
-    self.useAccountOverview = () => {
-      self.message('Show the account overview and balance');
-      self.customerId('');
-      self.transactionId('');
+    self.useCustomerBriefing = () => {
+      retainContext('cif');
+      self.message('');
+      if (self.customerCif().trim()) self.prepareCustomer360();
+    };
+    self.prepareCustomer360 = async () => {
+      const cif = self.customerCif().trim();
+      if (!cif) {
+        self.error('Enter a Customer CIF to prepare a factual Customer 360 summary.');
+        return;
+      }
+      self.loading(true); self.error(''); self.response(null);
+      try {
+        const customer = await app.services.customers.byCif(cif);
+        self.referencedCustomer({ customerId: customer.customerId, fullName: `${customer.firstName} ${customer.lastName || ''}`.trim(), cifNo: customer.cifNo });
+        const [accountsResult, kycResult] = await Promise.allSettled([
+          app.services.accounts.customer(customer.customerId),
+          app.services.customers.kyc(customer.customerId),
+        ]);
+        const accounts = accountsResult.status === 'fulfilled' ? rows(accountsResult.value) : [];
+        const kyc = kycResult.status === 'fulfilled' ? kycResult.value : null;
+        const total = accounts.reduce((sum, account) => sum + Number(account.availableBalance ?? account.balance ?? 0), 0);
+        const accountLines = accounts.length
+          ? accounts.slice(0, 4).map((account) => `- ${account.accountType || 'Account'} ending ${String(account.accountNumber || '').slice(-4)}: ${currency(account.availableBalance ?? account.balance, account.currencyCode)}`).join('\n')
+          : '- No accounts are available for this customer.';
+        const answer = [
+          `Customer 360 summary for ${customer.firstName} ${customer.lastName || ''} (CIF ${customer.cifNo})`, '',
+          'Profile',
+          `- Status: ${customer.status || 'Not recorded'}`,
+          `- Contact: ${customer.phone || 'Not recorded'}${customer.email ? ` · ${customer.email}` : ''}`,
+          `- Occupation: ${customer.occupation || 'Not recorded'}`, '',
+          'Accounts',
+          `- ${accounts.length} account${accounts.length === 1 ? '' : 's'}; total available balance: ${currency(total, accounts[0] && accounts[0].currencyCode)}`,
+          accountLines, '', 'Compliance',
+          `- KYC status: ${(kyc && kyc.kycStatus) || 'Not available'}`,
+          `- Risk level: ${(kyc && kyc.riskLevel) || 'Not available'}`,
+        ].join('\n');
+        const response = {
+          intent: 'CUSTOMER_360', answer, evidence: [], recommendations: [],
+          customer360: {
+            fullName: `${customer.firstName} ${customer.lastName || ''}`.trim(), cifNo: customer.cifNo,
+            status: customer.status || 'NOT_RECORDED', phone: customer.phone || 'Not recorded',
+            email: customer.email || 'Not recorded', occupation: customer.occupation || 'Not recorded',
+            accounts: accounts.map((account) => Object.assign({}, account, {
+              displayType: account.accountType || account.type || 'Account',
+              displayNumber: String(account.accountNumber || account.number || account.accountId || 'Not recorded'),
+              displayBalance: currency(account.availableBalance ?? account.balance, account.currencyCode)
+            })),
+            accountCount: accounts.length, totalBalance: currency(total, accounts[0] && accounts[0].currencyCode),
+            kycStatus: (kyc && kyc.kycStatus) || 'NOT_AVAILABLE', riskLevel: (kyc && kyc.riskLevel) || 'NOT_AVAILABLE'
+          },
+          nextSteps: [kyc && String(kyc.kycStatus).toUpperCase() !== 'VERIFIED'
+            ? 'Complete or verify KYC before enabling restricted services.'
+            : 'Review recent account activity and discuss relevant approved products.'],
+          policy: { decision: 'FACTUAL_SUMMARY', rationale: 'Built from approved customer, account, and KYC records for the entered CIF.' },
+        };
+        self.response(response);
+        self.history.unshift({ message: `Customer 360 for CIF ${customer.cifNo}`, intent: response.intent, answer: response.answer });
+      } catch (error) {
+        self.error(requestError(error, 'Unable to find the customer or prepare the Customer 360 summary for this CIF.'));
+      } finally { self.loading(false); }
+    };
+    const publish = (intent, message, answer, nextSteps = [], details = {}) => {
+      const response = { intent, answer, evidence: [], recommendations: [], nextSteps,
+        policy: { decision: 'FACTUAL_SUMMARY', rationale: 'Built from approved MoneyBags records.' }, ...details };
+      self.response(response);
+      self.history.unshift({ message, intent, answer });
+    };
+    const resolveAccount = async (reference) => {
+      const result = /^\d{12}$/.test(reference)
+        ? await app.services.accounts.number(reference)
+        : await app.services.accounts.get(reference);
+      return rows(result)[0] || result;
+    };
+    self.useCustomerLookup = () => { retainContext('cif'); self.prepareCustomer360(); };
+    self.useTransactionReview = async () => {
+      const transactionId = self.transactionId().trim();
+      retainContext('transaction');
+      if (!transactionId) { self.error('Enter a Transaction ID to review it.'); return; }
+      self.loading(true); self.error(''); self.response(null);
+      try {
+        const tx = await app.services.transactions.get(transactionId);
+        publish('TRANSACTION_REVIEW', `Transaction review for ${tx.transactionRef || tx.transactionId}`,
+          [`Transaction ${tx.transactionRef || tx.transactionId}`, '', 'Details',
+            `- Status: ${tx.transactionStatus || 'Not recorded'}`,
+            `- Type: ${tx.transactionType || 'Not recorded'}`,
+            `- Amount: ${currency(tx.amount, tx.currencyCode)}`,
+            `- Initiated: ${tx.initiatedAt || 'Not recorded'}`,
+            '', 'Review',
+            `- Description: ${tx.description || 'Not recorded'}`,
+            `- Failure reason: ${tx.failureReason || 'None recorded'}`].join('\n'),
+          [tx.transactionStatus === 'FAILED' ? 'Review the failure reason and retry only through the approved workflow.' : 'No additional action is required unless the customer disputes this transaction.'],
+          { transactionReview: {
+            reference: tx.transactionRef || tx.transactionId || 'Not recorded', status: tx.transactionStatus || 'NOT_RECORDED',
+            type: tx.transactionType || 'Transaction', amount: currency(tx.amount, tx.currencyCode),
+            initiatedAt: tx.initiatedAt ? String(tx.initiatedAt).replace('T', ' ').slice(0, 16) : 'Not recorded',
+            description: tx.description || 'No description recorded', failureReason: tx.failureReason || 'No failure reason recorded'
+          }});
+      } catch (error) { self.error(requestError(error, 'Unable to retrieve this transaction.')); }
+      finally { self.loading(false); }
+    };
+    self.useProductRecommendation = async () => {
+      const cif = self.customerCif().trim();
+      retainContext('cif');
+      if (!cif) { self.error('Enter a Customer CIF to receive product options.'); return; }
+      self.loading(true); self.error(''); self.response(null);
+      try {
+        const customer = await app.services.customers.byCif(cif);
+        self.referencedCustomer({ customerId: customer.customerId, fullName: `${customer.firstName} ${customer.lastName || ''}`.trim(), cifNo: customer.cifNo });
+        const [accountsResult, productsResult] = await Promise.allSettled([app.services.accounts.customer(customer.customerId), app.services.products.list()]);
+        const accounts = accountsResult.status === 'fulfilled' ? rows(accountsResult.value) : [];
+        const products = productsResult.status === 'fulfilled' ? rows(productsResult.value).filter((product) => String(product.status || 'ACTIVE').toUpperCase() === 'ACTIVE').slice(0, 3) : [];
+        publish('PRODUCT_OPTIONS', `Product options for CIF ${customer.cifNo}`,
+          [`Product options for ${customer.firstName} ${customer.lastName || ''}`, '', 'Current relationship',
+            `- Active accounts found: ${accounts.filter((account) => String(account.status) === 'ACTIVE').length}`,
+            `- Available balance across records: ${currency(accounts.reduce((sum, account) => sum + Number(account.availableBalance || 0), 0), accounts[0] && accounts[0].currencyCode)}`,
+            '', 'Available products',
+            ...(products.length ? products.map((product) => `- ${product.productName || product.name || product.productCode}: review eligibility and fees.`) : ['- No active product catalogue entries are available.'])].join('\n'),
+          ['Discuss only products for which the customer is eligible; obtain consent before starting an application.'],
+          { productOptions: (() => {
+            const totalBalance = accounts.reduce((sum, account) => sum + Number(account.availableBalance || 0), 0);
+            const productOptions = {
+            fullName: `${customer.firstName} ${customer.lastName || ''}`.trim(), cifNo: customer.cifNo,
+            activeAccountCount: accounts.filter((account) => String(account.status).toUpperCase() === 'ACTIVE').length,
+            totalBalance: currency(totalBalance, accounts[0] && accounts[0].currencyCode), eligibility: ko.observable(null),
+            products: products.map((product) => {
+              const interestRate = product.rate?.interestRate ?? product.interestRate;
+              return {
+                name: product.productName || product.name || product.productCode || 'Banking product',
+                code: product.productCode || 'PRODUCT', type: product.productType || 'Product',
+                minimumBalanceValue: Number(product.minimumBalance || 0),
+                minimumBalance: product.minimumBalance === null || product.minimumBalance === undefined ? 'Not specified' : currency(product.minimumBalance, product.currency),
+                interestRate: interestRate === null || interestRate === undefined ? 'Rate on request' : `${interestRate}% p.a.`
+              };
+            })
+            };
+            productOptions.reviewEligibility = (product) => {
+              const hasRequiredBalance = totalBalance >= product.minimumBalanceValue;
+              const hasRelationship = productOptions.activeAccountCount > 0;
+              productOptions.eligibility({
+                productName: product.name,
+                level: hasRequiredBalance && hasRelationship ? 'PRELIMINARY MATCH' : 'REVIEW REQUIRED',
+                message: hasRequiredBalance && hasRelationship
+                  ? `The available balance meets the displayed minimum balance for ${product.name}. Confirm product-specific rules, KYC, and customer consent before applying.`
+                  : `The current relationship does not meet all displayed criteria for ${product.name}. Review the minimum balance, KYC, and product-specific rules with an employee.`,
+                checks: [
+                  `Available balance: ${productOptions.totalBalance}`,
+                  `Required minimum balance: ${product.minimumBalance}`,
+                  hasRelationship ? `${productOptions.activeAccountCount} active account record(s) found.` : 'No active account record was found.'
+                ]
+              });
+            };
+            return productOptions;
+          })() });
+      } catch (error) { self.error(requestError(error, 'Unable to prepare product options for this CIF.')); }
+      finally { self.loading(false); }
+    };
+    self.useAccountOverview = async () => {
+      const reference = self.accountId().trim();
+      retainContext('account');
+      if (!reference) { self.error('Enter an Account ID or 12-digit account number.'); return; }
+      self.loading(true); self.error(''); self.response(null);
+      try {
+        const account = await resolveAccount(reference);
+        if (!account) throw new Error('No account matched the supplied reference.');
+        publish('ACCOUNT_OVERVIEW', `Account overview for ${account.accountNumber || account.accountId}`,
+          [`Account overview`, '', 'Account details', `- Account number: ${account.accountNumber || 'Not recorded'}`,
+            `- Status: ${account.status || 'Not recorded'}`, `- Ownership: ${account.ownershipType || 'Not recorded'}`,
+            `- Available balance: ${currency(account.availableBalance, account.currencyCode)}`, `- Opened: ${account.openedAt || 'Not recorded'}`].join('\n'),
+          [String(account.status).toUpperCase() === 'ACTIVE' ? 'Account is active; continue with the requested approved service.' : 'Review account status before performing any service request.'],
+          { accountOverview: {
+            accountNumber: account.accountNumber || account.accountId || 'Not recorded', status: account.status || 'NOT_RECORDED',
+            ownershipType: account.ownershipType || 'Not recorded', balance: currency(account.availableBalance, account.currencyCode),
+            currencyCode: account.currencyCode || 'INR', openedAt: account.openedAt ? String(account.openedAt).replace('T', ' ').slice(0, 16) : 'Not recorded',
+            accountType: account.accountType || 'Bank account'
+          }});
+      } catch (error) { self.error(requestError(error, 'Unable to retrieve this account.')); }
+      finally { self.loading(false); }
     };
     self.usePolicyHelp = () => {
-      self.message('What policy controls apply to this operation?');
-      self.customerId('');
-      self.transactionId('');
-      self.accountId('');
+      const reference = self.transactionId().trim() || self.accountId().trim() || self.customerCif().trim();
+      publish('POLICY_HELP', 'Policy help', ['Policy guidance', '', '- Verify the employee role and customer consent before viewing records.', '- Mask sensitive information outside approved screens.', '- Route KYC, account changes, and product applications through their approved workflows.', `- Reference supplied: ${reference || 'None'}`].join('\n'), ['Use the relevant Customer 360, Transaction review, or Account overview action to see factual details.']);
     };
-    self.changeEmployeeStatus = async () => {
+    self.startOnboarding = () => {
+      onboardingSession += 1;
+      retainContext('none');
+      self.onboardingActive(true);
+      self.onboardingError('');
+      self.onboardingReviewOpen(false);
+      self.onboardedCustomer(null);
+      self.onboardingStep(0);
+      self.onboardingReply('');
+      self.onboardingMessages([]);
+      Object.keys(self.onboarding).forEach((key) => self.onboarding[key](''));
+      addOnboardingMessage('assistant', 'Let’s onboard a new customer. I’ll collect one detail at a time.');
+      askOnboardingQuestion();
+      self.history.unshift({ message: 'Start customer onboarding', intent: 'CUSTOMER_ONBOARDING', answer: 'The onboarding chatbot is collecting the customer profile and address.' });
+    };
+    self.cancelOnboarding = () => {
+      onboardingSession += 1;
+      self.onboardingActive(false);
+      self.onboardingBusy(false);
+      self.onboardingError('');
+      self.onboardingReviewOpen(false);
+    };
+    self.discardOnboarding = () => {
+      self.cancelOnboarding();
+      self.onboardingStep(0);
+      self.onboardingReply('');
+      self.onboardingMessages([]);
+      self.onboardedCustomer(null);
+      Object.keys(self.onboarding).forEach((key) => self.onboarding[key](''));
+    };
+    self.captureOnboardingReply = async (reply) => {
+      const session = onboardingSession;
+      const question = onboardingQuestions[self.onboardingStep()];
+      if (!question) return;
+      const value = reply.trim();
+      addOnboardingMessage('employee', value);
+      if (!value) { addOnboardingMessage('assistant', `Please provide a value. ${question.prompt}`); return; }
+      const result = question.valid(value);
+      if (result !== true) { addOnboardingMessage('assistant', `${result} ${question.prompt}`); return; }
+      self.onboardingBusy(true);
+      try {
+        if (question.key === 'phone' || question.key === 'email') {
+          const availability = await ensureContactIsAvailable(question.key, value);
+          if (!self.onboardingActive() || session !== onboardingSession) return;
+          if (availability !== true) { addOnboardingMessage('assistant', `${availability} ${question.prompt}`); return; }
+        }
+
+        if (question.key === 'city') {
+          const offices = await lookupCity(value);
+          if (!self.onboardingActive() || session !== onboardingSession) return;
+          const stateMatchesCity = offices && offices.some((office) => sameState(office.State, self.onboarding.state()));
+          if (!stateMatchesCity) {
+            addOnboardingMessage('assistant', `${value} is not a valid city or locality in ${self.onboarding.state()}. Enter a valid city or district for the stated state.`);
+            return;
+          }
+        }
+
+        if (question.key === 'pincode') {
+          const location = await lookupPincode(value);
+          if (!self.onboardingActive() || session !== onboardingSession) return;
+          if (!location) {
+            addOnboardingMessage('assistant', `This PIN code could not be mapped to an Indian city. ${question.prompt}`);
+            return;
+          }
+          const enteredCity = String(self.onboarding.city()).trim().toLocaleLowerCase('en-IN');
+          const enteredState = String(self.onboarding.state()).trim();
+          const validCities = location.names.map((name) => String(name).trim().toLocaleLowerCase('en-IN'));
+          const cityMatchesPincode = validCities.some((name) => name === enteredCity || name.includes(enteredCity) || enteredCity.includes(name));
+          if (!cityMatchesPincode) {
+            addOnboardingMessage('assistant', `PIN code ${value} belongs to ${location.city}, ${location.state}, not ${self.onboarding.city()}. Enter a PIN code for the stated city.`);
+            return;
+          }
+          if (!sameState(enteredState, location.state)) {
+            addOnboardingMessage('assistant', `PIN code ${value} belongs to ${location.state}, not ${enteredState}. Enter the state that matches ${self.onboarding.city()} and this PIN code.`);
+            return;
+          }
+          addOnboardingMessage('assistant', `PIN code verified for ${self.onboarding.city()}, ${location.state}.`);
+        }
+
+        self.onboarding[question.key](question.transform ? question.transform(value) : value);
+        self.onboardingStep(self.onboardingStep() + 1);
+        askOnboardingQuestion();
+      } catch (error) {
+        addOnboardingMessage('assistant', `${requestError(error, 'Unable to validate this detail. Please try again.')} ${question.prompt}`);
+      } finally {
+        self.onboardingBusy(false);
+      }
+    };
+    self.sendOnboardingReply = (reply) => {
+      if (self.onboardingBusy()) return;
+      self.captureOnboardingReply(reply === undefined ? self.onboardingReply() : String(reply));
+      self.onboardingReply('');
+    };
+    self.onboardingReplyKeypress = (_, event) => {
+      if (event.key === 'Enter' || event.keyCode === 13) {
+        event.preventDefault();
+        self.sendOnboardingReply(event.target.value);
+        event.target.value = '';
+        return false;
+      }
+      return true;
+    };
+    self.continueOnboarding = () => {
+      const customer = self.onboardedCustomer();
+      if (!customer) return;
+      app.setActiveCustomer(customer);
+      sessionStorage.setItem('moneybags.resumeOnboardingCustomerId', String(customer.customerId));
+      app.go('onboarding');
+    };
+    const completeOnboarding = async (continueWithKyc) => {
+      const data = self.onboarding;
+      const value = (key) => String(data[key]()).trim();
+      const required = ['firstName', 'lastName', 'dob', 'gender', 'phone', 'email', 'occupation', 'addressType', 'line1', 'city', 'state', 'pincode'];
+      const missing = required.find((key) => !value(key));
+      if (missing) { self.onboardingError(`Please provide ${missing.replace(/([A-Z])/g, ' $1').toLowerCase()}.`); return; }
+      if (!/^[6-9]\d{9}$/.test(value('phone'))) { self.onboardingError('Enter a valid 10-digit Indian mobile number.'); return; }
+      if (!/^\S+@\S+\.\S+$/.test(value('email'))) { self.onboardingError('Enter a valid email address.'); return; }
+      if (!isAdultDateOfBirth(value('dob'))) { self.onboardingError('Customer must be at least 18 years old.'); return; }
+      if (!/^[1-9]\d{5}$/.test(value('pincode'))) { self.onboardingError('Enter a valid six-digit PIN code.'); return; }
+      self.onboardingBusy(true); self.onboardingError('');
+      try {
+        const customer = await app.services.customers.create({
+          firstName: value('firstName'), lastName: value('lastName'), dob: value('dob'), gender: value('gender'),
+          phone: value('phone'), email: value('email'), occupation: value('occupation')
+        });
+        await app.services.customers.address(customer.customerId, {
+          addressType: value('addressType'), line1: value('line1'), line2: value('line2') || null,
+          city: value('city'), state: value('state'), country: 'India', pincode: value('pincode')
+        });
+        await app.services.customers.createKyc(customer.customerId, {
+          kycStatus: 'PENDING', kycDate: new Date().toISOString().slice(0, 10), verifiedBy: String(app.session.userId() || ''),
+          riskLevel: 'LOW', riskScore: 0, expiryDate: null, remarks: 'Started through Banking Assistant.', updatedBy: String(app.session.userId() || '')
+        });
+        self.onboardedCustomer(customer);
+        app.setActiveCustomer(customer);
+        self.history.unshift({ message: 'Create customer onboarding', intent: 'ONBOARDING_STARTED', answer: `Created ${customer.firstName} ${customer.lastName} with CIF ${customer.cifNo}. KYC is pending document upload and verification.` });
+        self.onboardingPrompt('Customer profile and address were saved. KYC is pending; continue to upload identity documents and complete verification.');
+        addChatMessage('assistant', `Customer ${customer.firstName} ${customer.lastName} was created with CIF ${customer.cifNo}. KYC is pending document upload and verification.`);
+        self.onboardingActive(false);
+        self.onboardingReviewOpen(false);
+        if (continueWithKyc) {
+          sessionStorage.setItem('moneybags.resumeOnboardingCustomerId', String(customer.customerId));
+          app.go('onboarding');
+        }
+      } catch (error) {
+        self.onboardingError(requestError(error, 'Unable to start customer onboarding. Check the details and try again.'));
+      } finally { self.onboardingBusy(false); }
+    };
+    self.submitOnboarding = () => completeOnboarding(false);
+    self.continueWithKyc = () => completeOnboarding(true);
+    self.requestEmployeeStatusChange = () => {
       const employeeId = self.employeeId().trim();
       if (!employeeId) { self.error('Enter the employee User ID before changing a status.'); return; }
+      self.error('');
+      self.statusChangeConfirmationOpen(true);
+    };
+    self.cancelEmployeeStatusChange = () => self.statusChangeConfirmationOpen(false);
+    self.changeEmployeeStatus = async () => {
+      const employeeId = self.employeeId().trim();
+      if (!employeeId) { self.statusChangeConfirmationOpen(false); self.error('Enter the employee User ID before changing a status.'); return; }
+      self.statusChangeConfirmationOpen(false);
       self.employeeAction('Updating employee status…');
       self.error('');
       try {
@@ -82,6 +660,7 @@ define(['knockout', 'appController'], function (ko, app) {
     };
     self.reviewAccountRisk = async () => {
       const accountReference = self.accountId().trim();
+      retainContext('account');
       if (!accountReference) { self.error('Enter an Account ID or 12-digit account number to run a risk review.'); return; }
       self.loading(true); self.error(''); self.riskFinding(null);
       try {
@@ -107,12 +686,15 @@ define(['knockout', 'appController'], function (ko, app) {
         const level = issues.some((issue) => issue.includes('negative') || issue.includes('FROZEN')) ? 'HIGH' : issues.length ? 'MEDIUM' : 'LOW';
         const finding = { level, accountNumber: resolvedAccount.accountNumber, balance: `${resolvedAccount.availableBalance} ${resolvedAccount.currencyCode}`, transactionCount: transactions.length, issues: issues.length ? issues : ['No risk indicators detected from account status and transaction history.'] };
         self.riskFinding(finding);
+        addChatMessage('assistant', 'Here is the account risk assessment.', null, null, null, null, finding);
+        self.response(null);
         if (level !== 'LOW') self.alerts.unshift({ level: level.toLowerCase(), title: `Account risk: ${level}`, message: `Account ${resolvedAccount.accountNumber} requires review.` });
       } catch (error) { self.error(requestError(error, 'Unable to complete the account risk review.')); }
       finally { self.loading(false); }
     };
     self.inspectFraud = async () => {
       const transactionId = self.transactionId().trim();
+      retainContext('transaction');
       if (!transactionId) { self.error('Enter a Transaction ID to inspect for fraud indicators.'); return; }
       self.loading(true); self.error(''); self.fraudFinding(null);
       try {
@@ -123,23 +705,60 @@ define(['knockout', 'appController'], function (ko, app) {
         if (transaction.externalBeneficiary) indicators.push('External beneficiary involved');
         if (transaction.failureCode || /fraud|suspicious|urgent/i.test(transaction.description || '')) indicators.push('Transaction metadata requires manual review');
         const level = indicators.length >= 3 ? 'HIGH' : indicators.length ? 'MEDIUM' : 'LOW';
-        self.fraudFinding({ level, reference: transaction.transactionRef, amount: `${transaction.amount} ${transaction.currencyCode}`, indicators: indicators.length ? indicators : ['No fraud indicators detected by the current rules.'] });
+        const finding = { level, reference: transaction.transactionRef, amount: `${transaction.amount} ${transaction.currencyCode}`, indicators: indicators.length ? indicators : ['No fraud indicators detected by the current rules.'] };
+        self.fraudFinding(finding);
+        addChatMessage('assistant', 'Here is the fraud inspection result.', null, null, null, null, null, finding);
+        self.response(null);
         if (level !== 'LOW') self.alerts.unshift({ level: level.toLowerCase(), title: `Fraud review: ${level}`, message: `Transaction ${transaction.transactionRef} needs employee review.` });
       } catch (error) { self.error(requestError(error, 'Unable to inspect the transaction.')); }
       finally { self.loading(false); }
     };
+    self.messageKeypress = (_, event) => {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        self.send();
+        return false;
+      }
+      return true;
+    };
     self.send = async () => {
       const message = self.message().trim();
       if (!message) {
-        self.error('Enter a question for the assistant.');
+        self.error('');
         return;
       }
-      if (!isBankingQuestion(message) && !self.customerId()) {
+      if (self.onboardingActive()) {
+        self.message('');
+        if (self.onboardingReady()) {
+          self.onboardingReviewOpen(true);
+          return;
+        }
+        self.sendOnboardingReply(message);
+        return;
+      }
+      if (self.selectedTool() && self.selectedTool().input) {
+        self.runSelectedTool(message);
+        self.message('');
+        return;
+      }
+      addChatMessage('employee', message);
+      self.message('');
+      const statusName = customerStatusName(message);
+      if (statusName) {
+        await answerCustomerStatus(statusName);
+        return;
+      }
+      if (isReferencedKycQuestion(message) && await answerReferencedKycStatus()) return;
+      if (self.isStaff() && /\b(onboard|onboarding|create)\b.*\b(customer|client)\b|\b(customer|client)\b.*\b(onboard|onboarding)\b/i.test(message)) {
+        self.startOnboarding();
+        return;
+      }
+      if (!isBankingQuestion(message)) {
         const response = {
           intent: 'OUT_OF_SCOPE',
-          answer: 'I can help only with banking questions, or customer-specific questions when a Customer ID is provided.',
+          answer: 'I can help only with banking questions, or customer-specific questions when a Customer CIF is provided.',
           evidence: [],
-          nextSteps: ['Please ask a banking-related question or provide a Customer ID for a customer question.'],
+          nextSteps: ['Please ask a banking-related question or provide a Customer CIF for a customer question.'],
           recommendations: [],
           policy: { decision: 'RESTRICTED', rationale: 'This assistant is limited to banking support.' }
         };
@@ -148,11 +767,17 @@ define(['knockout', 'appController'], function (ko, app) {
         self.history.unshift({ message, intent: response.intent, answer: response.answer, customerProfile: response.customerProfile });
         return;
       }
+      if (/customer\s*360|360\s*(briefing|summary)|prepare.*customer/i.test(message)) {
+        await self.prepareCustomer360();
+        return;
+      }
       self.loading(true);
+      scrollAssistantChat();
       self.error('');
       self.response(null);
       try {
-        const response = await app.services.assistant.chat(message, self.customerId(), self.transactionId().trim(), self.accountId().trim(), self.module());
+        const referencedCustomer = self.referencedCustomer();
+        const response = await app.services.assistant.chat(message, referencedCustomer && referencedCustomer.customerId, self.transactionId().trim(), self.accountId().trim(), self.module());
         self.response(response);
         self.history.unshift({ message, intent: response.intent, answer: response.answer });
       } catch (error) {

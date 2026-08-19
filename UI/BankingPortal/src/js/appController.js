@@ -90,7 +90,7 @@ define([
         detail: {
           label: "Onboard customer",
           iconClass: "oj-ux-ico-add-user",
-          roles: ["EMPLOYEE"],
+          roles: ["ADMIN", "EMPLOYEE"],
         },
       },
       {
@@ -116,6 +116,18 @@ define([
           iconClass: "oj-ux-ico-transfer",
           roles: ["ADMIN", "EMPLOYEE"],
         },
+      },
+      {
+        path: "edit-account",
+        detail: { hidden: true, roles: ["ADMIN", "EMPLOYEE"] },
+      },
+      {
+        path: "new-account",
+        detail: { hidden: true, roles: ["ADMIN", "EMPLOYEE"] },
+      },
+      {
+        path: "new-transaction",
+        detail: { hidden: true, roles: ["ADMIN", "EMPLOYEE"] },
       },
       {
         path: "statements",

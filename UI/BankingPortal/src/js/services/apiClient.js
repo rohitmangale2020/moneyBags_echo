@@ -27,16 +27,26 @@ define([], function () {
 
   async function request(path, o) {
     const c = Object.assign({}, o || {});
+    const noAuth = Boolean(c.noAuth);
+    delete c.noAuth;
     c.headers = new Headers(c.headers || {});
     const t = sessionStorage.getItem('moneybags.token');
-    if (t) c.headers.set('Authorization', `Bearer ${t}`);
+    if (t && !noAuth) c.headers.set('Authorization', `Bearer ${t}`);
     if (c.body && !(c.body instanceof FormData)) c.headers.set('Content-Type', 'application/json');
     c.headers.set('Accept', 'application/json');
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), path.startsWith('/auth/gpt-oss/') ? 180000 : 30000);
+    c.signal = controller.signal;
     let r;
     try {
       r = await fetch(base + path, c);
-    } catch (_) {
+    } catch (error) {
+      if (error && error.name === 'AbortError') {
+        throw new Error('The assistant took too long to respond. GPT-OSS can take several minutes on a CPU-only machine; check available memory or use GPU acceleration, then retry.');
+      }
       throw new Error('The banking gateway is unavailable. Start the platform services and retry.');
+    } finally {
+      window.clearTimeout(timeout);
     }
     const type = r.headers.get('content-type') || '';
     const p =
@@ -46,10 +56,15 @@ define([], function () {
           ? await r.json().catch(() => null)
           : await r.text();
     if (!r.ok) {
-      if (r.status === 401 && t) window.dispatchEvent(new CustomEvent('moneybags-session-expired'));
+      // GPT-OSS is an optional guidance integration. Its provider/configuration failures must not
+      // invalidate the employee's banking session or force a sign-out.
+      if (r.status === 401 && t && !path.startsWith('/auth/gpt-oss/')) {
+        window.dispatchEvent(new CustomEvent('moneybags-session-expired'));
+      }
       const e = new Error(errorMessage(p, r.status));
       e.status = r.status;
       e.details = p;
+      e.path = path;
       throw e;
     }
     return p;
@@ -58,6 +73,8 @@ define([], function () {
     get: (p) => request(p),
     post: (p, b) =>
       request(p, { method: 'POST', body: b instanceof FormData ? b : JSON.stringify(b) }),
+    postPublic: (p, b) =>
+      request(p, { method: 'POST', noAuth: true, body: b instanceof FormData ? b : JSON.stringify(b) }),
     put: (p, b) => request(p, { method: 'PUT', body: JSON.stringify(b) }),
     putForm: (p, b) => request(p, { method: 'PUT', body: b }),
     patch: (p, b) =>
