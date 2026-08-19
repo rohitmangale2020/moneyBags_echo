@@ -121,7 +121,7 @@
           config="[[moduleAdapter.koObservableConfig]]"
         ></oj-module>
       </div>
-      <button type="button" class="mb-ai-fab" data-bind="click:openAssistant" aria-label="Open banking assistant">
+      <button type="button" class="mb-ai-fab" data-bind="click:openAssistant, visible:selection.path() !== 'assistant'" aria-label="Open banking assistant">
         <span class="oj-ux-ico-chat" aria-hidden="true"></span><span>Ask AI</span>
       </button>
       <div class="mb-toasts" aria-live="polite">

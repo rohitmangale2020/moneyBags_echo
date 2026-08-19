@@ -10,6 +10,7 @@ define(['knockout', 'appController'], function (ko, app) {
     self.accountId = ko.observable(app.activeAccountId() || '');
     self.module = ko.pureComputed(() => app.assistantContext() || 'platform');
     self.history = ko.observableArray([]);
+    self.chatMessages = ko.observableArray([]);
     self.loading = ko.observable(false);
     self.error = ko.observable('');
     self.response = ko.observable(null);
@@ -23,6 +24,24 @@ define(['knockout', 'appController'], function (ko, app) {
     self.riskFinding = ko.observable(null);
     self.fraudFinding = ko.observable(null);
     self.alerts = ko.observableArray([]);
+    self.selectedTool = ko.observable(null);
+    self.toolSelectionId = ko.observable('');
+    self.toolInput = ko.observable('');
+    self.toolOptions = ko.observableArray([
+      { id: 'customer360', label: 'Customer 360', input: 'cif', prompt: 'Enter the customer CIF', placeholder: 'For example: CIF1234567890', action: 'useCustomerBriefing', staff: true },
+      { id: 'transactionReview', label: 'Review transaction', input: 'transaction', prompt: 'Enter the transaction ID', placeholder: 'Transaction ID', action: 'useTransactionReview', staff: true },
+      { id: 'products', label: 'Recommend products', input: 'cif', prompt: 'Enter the customer CIF', placeholder: 'For example: CIF1234567890', action: 'useProductRecommendation' },
+      { id: 'accountOverview', label: 'Account overview', input: 'account', prompt: 'Enter the account ID or 12-digit account number', placeholder: 'Account ID or 12-digit number', action: 'useAccountOverview', staff: true },
+      { id: 'accountRisk', label: 'Account risk review', input: 'account', prompt: 'Enter the account ID or 12-digit account number', placeholder: 'Account ID or 12-digit number', action: 'reviewAccountRisk', staff: true },
+      { id: 'fraud', label: 'Inspect fraud', input: 'transaction', prompt: 'Enter the transaction ID', placeholder: 'Transaction ID', action: 'inspectFraud', staff: true },
+      { id: 'onboarding', label: 'Onboard new customer', input: null, action: 'startOnboarding', staff: true }
+    ]);
+    self.availableToolOptions = ko.pureComputed(() => self.toolOptions().filter((tool) => !tool.staff || self.isStaff()));
+    self.toolNeedsInput = ko.pureComputed(() => !!(self.selectedTool() && self.selectedTool().input));
+    self.composerPlaceholder = ko.pureComputed(() => {
+      const tool = self.selectedTool();
+      return tool && tool.input ? tool.placeholder : 'Type your message…';
+    });
     self.onboardingActive = ko.observable(false);
     self.onboardingBusy = ko.observable(false);
     self.onboardingReply = ko.observable('');
@@ -57,6 +76,7 @@ define(['knockout', 'appController'], function (ko, app) {
     });
     const addOnboardingMessage = (role, text) => {
       self.onboardingMessages.push({ role, text });
+      addChatMessage(role === 'employee' ? 'employee' : 'assistant', text);
       window.setTimeout(() => {
         const transcript = document.querySelector('.mb-chat-onboarding .mb-chat-transcript');
         if (transcript) transcript.scrollTop = transcript.scrollHeight;
@@ -65,7 +85,7 @@ define(['knockout', 'appController'], function (ko, app) {
     const askOnboardingQuestion = () => {
       const question = onboardingQuestions[self.onboardingStep()];
       if (question) addOnboardingMessage('assistant', question.prompt);
-      else addOnboardingMessage('assistant', 'All required details are collected. Review the summary, then select “Create customer and start KYC”.');
+      else addOnboardingMessage('assistant', 'All required details are collected. Type “Create customer” to save the record and start KYC.');
     };
 
     const bankingTerms = [
@@ -125,11 +145,72 @@ define(['knockout', 'appController'], function (ko, app) {
       }
       return (error && error.message) || fallback;
     };
+    const scrollAssistantChat = () => {
+      const moveToLatest = () => {
+        const thread = document.querySelector('.mb-assistant-message-list');
+        if (!thread) return;
+        thread.scrollTop = thread.scrollHeight;
+      };
+      window.requestAnimationFrame(() => window.requestAnimationFrame(moveToLatest));
+      window.setTimeout(moveToLatest, 120);
+    };
+    const addChatMessage = (role, text, customer360, transactionReview, productOptions, accountOverview, riskFinding, fraudFinding) => {
+      self.chatMessages.push({ role, text, customer360: customer360 || null, transactionReview: transactionReview || null, productOptions: productOptions || null, accountOverview: accountOverview || null, riskFinding: riskFinding || null, fraudFinding: fraudFinding || null });
+      scrollAssistantChat();
+    };
+    self.response.subscribe((response) => {
+      if (!response) return;
+      if (response.customer360) {
+        addChatMessage('assistant', 'Here is the customer profile and account summary.', response.customer360);
+      } else if (response.transactionReview) {
+        addChatMessage('assistant', 'Here is the transaction review.', null, response.transactionReview);
+      } else if (response.productOptions) {
+        addChatMessage('assistant', 'Here are the available product options.', null, null, response.productOptions);
+      } else if (response.accountOverview) {
+        addChatMessage('assistant', 'Here is the account overview.', null, null, null, response.accountOverview);
+      } else if (response.answer) addChatMessage('assistant', response.answer);
+    });
+    self.loading.subscribe(() => scrollAssistantChat());
 
     const retainContext = (kind) => {
       if (kind !== 'cif') self.customerCif('');
       if (kind !== 'transaction') self.transactionId('');
       if (kind !== 'account') self.accountId('');
+    };
+    self.selectAssistantTool = (tool) => {
+      self.selectedTool(tool);
+      self.toolSelectionId(tool.id);
+      self.toolInput('');
+      self.message('');
+      self.error('');
+      if (tool.input) {
+        addChatMessage('assistant', `${tool.label}: ${tool.prompt}`);
+      } else {
+        self[tool.action]();
+      }
+    };
+    self.toolSelectionChanged = () => {
+      const tool = self.toolOptions().find((item) => item.id === self.toolSelectionId());
+      if (tool) self.selectAssistantTool(tool);
+    };
+    self.runSelectedTool = (providedInput) => {
+      const tool = self.selectedTool();
+      const input = String(providedInput === undefined ? self.toolInput() : providedInput).trim();
+      if (!tool) return;
+      if (!input) { self.error(tool.prompt); return; }
+      if (tool.input === 'cif' && !/^CIF[A-Z0-9]+$/i.test(input)) {
+        self.error('Enter a valid Customer CIF, beginning with CIF.');
+        addChatMessage('assistant', 'Please enter a valid Customer CIF (for example, CIF1234567890).');
+        return;
+      }
+      if (tool.input === 'cif') self.customerCif(input);
+      if (tool.input === 'transaction') self.transactionId(input);
+      if (tool.input === 'account') self.accountId(input);
+      addChatMessage('employee', `${tool.label}: ${input}`);
+      self.selectedTool(null);
+      self.toolSelectionId('');
+      self.toolInput('');
+      self[tool.action]();
     };
     self.useCustomerBriefing = () => {
       retainContext('cif');
@@ -424,6 +505,8 @@ define(['knockout', 'appController'], function (ko, app) {
         app.setActiveCustomer(customer);
         self.history.unshift({ message: 'Create customer onboarding', intent: 'ONBOARDING_STARTED', answer: `Created ${customer.firstName} ${customer.lastName} with CIF ${customer.cifNo}. KYC is pending document upload and verification.` });
         self.onboardingPrompt('Customer profile and address were saved. KYC is pending; continue to upload identity documents and complete verification.');
+        addChatMessage('assistant', `Customer ${customer.firstName} ${customer.lastName} was created with CIF ${customer.cifNo}. KYC is pending document upload and verification.`);
+        self.onboardingActive(false);
       } catch (error) {
         self.onboardingError(requestError(error, 'Unable to start customer onboarding. Check the details and try again.'));
       } finally { self.onboardingBusy(false); }
@@ -475,6 +558,7 @@ define(['knockout', 'appController'], function (ko, app) {
         const level = issues.some((issue) => issue.includes('negative') || issue.includes('FROZEN')) ? 'HIGH' : issues.length ? 'MEDIUM' : 'LOW';
         const finding = { level, accountNumber: resolvedAccount.accountNumber, balance: `${resolvedAccount.availableBalance} ${resolvedAccount.currencyCode}`, transactionCount: transactions.length, issues: issues.length ? issues : ['No risk indicators detected from account status and transaction history.'] };
         self.riskFinding(finding);
+        addChatMessage('assistant', 'Here is the account risk assessment.', null, null, null, null, finding);
         self.response(null);
         if (level !== 'LOW') self.alerts.unshift({ level: level.toLowerCase(), title: `Account risk: ${level}`, message: `Account ${resolvedAccount.accountNumber} requires review.` });
       } catch (error) { self.error(requestError(error, 'Unable to complete the account risk review.')); }
@@ -493,11 +577,21 @@ define(['knockout', 'appController'], function (ko, app) {
         if (transaction.externalBeneficiary) indicators.push('External beneficiary involved');
         if (transaction.failureCode || /fraud|suspicious|urgent/i.test(transaction.description || '')) indicators.push('Transaction metadata requires manual review');
         const level = indicators.length >= 3 ? 'HIGH' : indicators.length ? 'MEDIUM' : 'LOW';
-        self.fraudFinding({ level, reference: transaction.transactionRef, amount: `${transaction.amount} ${transaction.currencyCode}`, indicators: indicators.length ? indicators : ['No fraud indicators detected by the current rules.'] });
+        const finding = { level, reference: transaction.transactionRef, amount: `${transaction.amount} ${transaction.currencyCode}`, indicators: indicators.length ? indicators : ['No fraud indicators detected by the current rules.'] };
+        self.fraudFinding(finding);
+        addChatMessage('assistant', 'Here is the fraud inspection result.', null, null, null, null, null, finding);
         self.response(null);
         if (level !== 'LOW') self.alerts.unshift({ level: level.toLowerCase(), title: `Fraud review: ${level}`, message: `Transaction ${transaction.transactionRef} needs employee review.` });
       } catch (error) { self.error(requestError(error, 'Unable to inspect the transaction.')); }
       finally { self.loading(false); }
+    };
+    self.messageKeypress = (_, event) => {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        self.send();
+        return false;
+      }
+      return true;
     };
     self.send = async () => {
       const message = self.message().trim();
@@ -505,11 +599,35 @@ define(['knockout', 'appController'], function (ko, app) {
         self.error('Enter a question for the assistant.');
         return;
       }
+      if (self.onboardingActive()) {
+        self.message('');
+        if (self.onboardingReady()) {
+          addOnboardingMessage('employee', message);
+          if (/^cancel$/i.test(message)) {
+            self.discardOnboarding();
+            addChatMessage('assistant', 'Customer onboarding was discarded.');
+          } else if (/^(create|create customer|confirm)$/i.test(message)) {
+            await self.submitOnboarding();
+          } else {
+            addOnboardingMessage('assistant', 'All details are collected. Type “Create customer” to create the record and start KYC, or type “Cancel” to discard it.');
+          }
+          return;
+        }
+        self.sendOnboardingReply(message);
+        return;
+      }
+      if (self.selectedTool() && self.selectedTool().input) {
+        self.runSelectedTool(message);
+        self.message('');
+        return;
+      }
+      addChatMessage('employee', message);
+      self.message('');
       if (self.isStaff() && /\b(onboard|onboarding|create)\b.*\b(customer|client)\b|\b(customer|client)\b.*\b(onboard|onboarding)\b/i.test(message)) {
         self.startOnboarding();
         return;
       }
-      if (!isBankingQuestion(message) && !self.customerCif()) {
+      if (!isBankingQuestion(message)) {
         const response = {
           intent: 'OUT_OF_SCOPE',
           answer: 'I can help only with banking questions, or customer-specific questions when a Customer CIF is provided.',
@@ -528,6 +646,7 @@ define(['knockout', 'appController'], function (ko, app) {
         return;
       }
       self.loading(true);
+      scrollAssistantChat();
       self.error('');
       self.response(null);
       try {

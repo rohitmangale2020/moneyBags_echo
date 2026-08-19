@@ -9,23 +9,78 @@
     </div>
   </div>
 
-  <div class="mb-panel">
-    <div class="mb-info">The assistant answers banking questions and employee-authorized customer questions. Employees can create a new customer record through the guided onboarding conversation. It cannot move money, reveal passwords, or bypass approval controls.</div>
-    <div class="mb-form three">
-      <label class="wide">Ask the assistant<textarea rows="3" maxlength="1000" data-bind="value:message"></textarea></label>
-      <label data-bind="visible:isStaff">Customer CIF <input type="text" maxlength="20" placeholder="Enter CIF for Customer 360" data-bind="value:customerCif" /></label>
-      <label data-bind="visible:isStaff">Transaction ID <input type="text" placeholder="Required for review" data-bind="value:transactionId" /></label>
-      <label data-bind="visible:isStaff">Account ID or number <input type="text" placeholder="ID or 12-digit account number" data-bind="value:accountId" /></label>
+  <div class="mb-panel mb-assistant-chat">
+    <header class="mb-ai-chat-header">
+      <div><h1>AI Assistant</h1><p>Your intelligent banking assistant</p></div>
+      <span aria-label="AI Assistant">AI</span>
+    </header>
+    <div class="mb-assistant-tools">
+      <!-- ko foreach:availableToolOptions -->
+      <button type="button" class="mb-link" data-bind="text:label, click:$parent.selectAssistantTool, css:{active:$parent.selectedTool() && $parent.selectedTool().id === id}"></button>
+      <!-- /ko -->
     </div>
-    <div class="mb-dialog-actions">
-      <button type="button" class="mb-link" data-bind="click:useCustomerBriefing,visible:isStaff">Customer 360</button>
-      <button type="button" class="mb-link" data-bind="click:useTransactionReview,visible:isStaff">Review transaction</button>
-      <button type="button" class="mb-link" data-bind="click:useProductRecommendation">Recommend products</button>
-      <button type="button" class="mb-link" data-bind="click:useAccountOverview,visible:isStaff">Account overview</button>
-      <button type="button" class="mb-link" data-bind="click:reviewAccountRisk,visible:isStaff">Account risk review</button>
-      <button type="button" class="mb-link" data-bind="click:inspectFraud,visible:isStaff">Inspect fraud</button>
-      <button type="button" class="mb-link" data-bind="click:startOnboarding,visible:isStaff">Onboard new customer</button>
-      <oj-button chroming="callToAction" on-oj-action="[[send]]" disabled="[[loading]]">Ask assistant</oj-button>
+    <div class="mb-info">The assistant answers banking questions and employee-authorized customer questions. It cannot move money, reveal passwords, or bypass approval controls.</div>
+    <div class="mb-assistant-message-list" data-bind="foreach:chatMessages">
+      <article class="mb-chat-bubble" data-bind="css:role">
+        <strong data-bind="text:role === 'assistant' ? 'AI Assistant' : 'You'"></strong>
+        <span data-bind="text:text"></span>
+        <!-- ko if:customer360 -->
+        <section class="mb-chat-customer-card" data-bind="with:customer360">
+          <header><div><strong data-bind="text:fullName"></strong><small data-bind="text:'CIF: ' + cifNo"></small></div><span>›</span></header>
+          <div class="mb-chat-account-activity">
+            <strong>Account summary</strong>
+            <div data-bind="foreach:accounts">
+              <p><span data-bind="text:displayType + ' · Ending ' + displayNumber.slice(-4)"></span><b data-bind="text:displayBalance"></b></p>
+            </div>
+            <small data-bind="text:'KYC: ' + kycStatus + ' · Risk: ' + riskLevel"></small>
+          </div>
+        </section>
+        <!-- /ko -->
+        <!-- ko if:transactionReview -->
+        <section class="mb-chat-transaction-card" data-bind="with:transactionReview">
+          <header><div><small>TRANSACTION REVIEW</small><strong data-bind="text:type"></strong><span data-bind="text:reference"></span></div><b data-bind="text:status, css:status.toLowerCase()"></b></header>
+          <div class="mb-chat-transaction-amount"><small>AMOUNT</small><strong data-bind="text:amount"></strong></div>
+          <dl><div><dt>Initiated</dt><dd data-bind="text:initiatedAt"></dd></div><div><dt>Reference</dt><dd data-bind="text:reference"></dd></div></dl>
+          <p data-bind="text:description"></p>
+        </section>
+        <!-- /ko -->
+        <!-- ko if:productOptions -->
+        <section class="mb-chat-products-card" data-bind="with:productOptions">
+          <header><div><small>PRODUCT OPTIONS</small><strong data-bind="text:'Recommended for ' + fullName"></strong><span data-bind="text:'CIF: ' + cifNo"></span></div><b>✦</b></header>
+          <div class="mb-chat-product-summary"><span data-bind="text:activeAccountCount + ' active account(s)'"></span><strong data-bind="text:totalBalance"></strong></div>
+          <div class="mb-chat-product-list" data-bind="foreach:products">
+            <article><div><strong data-bind="text:name"></strong><small data-bind="text:type"></small></div><span data-bind="text:interestRate"></span></article>
+          </div>
+          <p data-bind="visible:!products.length">No active product options are currently available.</p>
+        </section>
+        <!-- /ko -->
+        <!-- ko if:accountOverview -->
+        <section class="mb-chat-account-card" data-bind="with:accountOverview">
+          <header><div><small>ACCOUNT OVERVIEW</small><strong data-bind="text:accountType"></strong><span data-bind="text:accountNumber"></span></div><b data-bind="text:status, css:status.toLowerCase()"></b></header>
+          <div class="mb-chat-account-balance"><small>AVAILABLE BALANCE</small><strong data-bind="text:balance"></strong></div>
+          <dl><div><dt>Ownership</dt><dd data-bind="text:ownershipType"></dd></div><div><dt>Opened</dt><dd data-bind="text:openedAt"></dd></div></dl>
+        </section>
+        <!-- /ko -->
+        <!-- ko if:riskFinding -->
+        <section class="mb-chat-assessment-card" data-bind="with:riskFinding">
+          <header><div><small>ACCOUNT RISK REVIEW</small><strong data-bind="text:'Account ' + accountNumber"></strong></div><b data-bind="text:level, css:level.toLowerCase()"></b></header>
+          <div class="mb-chat-assessment-metrics"><span><small>Available balance</small><strong data-bind="text:balance"></strong></span><span><small>Transactions reviewed</small><strong data-bind="text:transactionCount"></strong></span></div>
+          <ul data-bind="foreach:issues"><li data-bind="text:$data"></li></ul>
+        </section>
+        <!-- /ko -->
+        <!-- ko if:fraudFinding -->
+        <section class="mb-chat-assessment-card fraud" data-bind="with:fraudFinding">
+          <header><div><small>FRAUD INSPECTION</small><strong data-bind="text:reference"></strong></div><b data-bind="text:level, css:level.toLowerCase()"></b></header>
+          <div class="mb-chat-assessment-metrics"><span><small>Transaction amount</small><strong data-bind="text:amount"></strong></span></div>
+          <ul data-bind="foreach:indicators"><li data-bind="text:$data"></li></ul>
+        </section>
+        <!-- /ko -->
+      </article>
+    </div>
+    <article class="mb-chat-bubble assistant mb-chat-typing" data-bind="visible:loading"><strong>AI Assistant</strong><span>Thinking…</span></article>
+    <div class="mb-assistant-composer">
+      <label>Ask a banking question<textarea rows="2" maxlength="1000" data-bind="value:message, attr:{placeholder:composerPlaceholder}, event:{keydown:messageKeypress}"></textarea></label>
+      <button type="button" class="mb-send-button" data-bind="click:send, disable:loading" aria-label="Send message"><span aria-hidden="true">➤</span> Send</button>
     </div>
   </div>
 
@@ -67,19 +122,17 @@
   <section class="mb-assistant-operations" data-bind="visible:isStaff">
     <article class="mb-operation-card" data-bind="visible:riskFinding, with:riskFinding"><small>ACCOUNT RISK REVIEW</small><div class="mb-operation-title"><h3>Account <span data-bind="text:accountNumber"></span></h3><span class="mb-badge" data-bind="text:level, css:level.toLowerCase()"></span></div><dl><div><dt>Available balance</dt><dd data-bind="text:balance"></dd></div><div><dt>Transactions reviewed</dt><dd data-bind="text:transactionCount"></dd></div></dl><ul data-bind="foreach:issues"><li data-bind="text:$data"></li></ul></article>
     <article class="mb-operation-card" data-bind="visible:fraudFinding, with:fraudFinding"><small>FRAUD INSPECTION</small><div class="mb-operation-title"><h3 data-bind="text:reference"></h3><span class="mb-badge" data-bind="text:level, css:level.toLowerCase()"></span></div><dl><div><dt>Transaction amount</dt><dd data-bind="text:amount"></dd></div></dl><ul data-bind="foreach:indicators"><li data-bind="text:$data"></li></ul></article>
-    <article class="mb-operation-card mb-employee-control" data-bind="visible:isAdmin"><small>ADMIN CONTROL</small><h3>Change employee status</h3><p>Only employee accounts can be updated.</p><div><input type="number" min="1" placeholder="Employee User ID" data-bind="value:employeeId" /><select data-bind="value:employeeStatus"><option>ACTIVE</option><option>LOCKED</option><option>DEACTIVATED</option><option>PENDING_VERIFICATION</option></select><button type="button" class="mb-link" data-bind="click:requestEmployeeStatusChange">Update status</button></div><p data-bind="visible:employeeAction,text:employeeAction"></p></article>
   </section>
 
-  <div class="mb-confirm-backdrop" data-bind="visible:statusChangeConfirmationOpen">
-    <section class="mb-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="status-change-title">
-      <small>CONFIRM STATUS CHANGE</small>
-      <h2 id="status-change-title">Update this employee?</h2>
-      <p>Employee User ID <strong data-bind="text:employeeId"></strong> will be changed to <strong data-bind="text:employeeStatus"></strong>.</p>
-      <div class="mb-dialog-actions"><button type="button" class="mb-link" data-bind="click:cancelEmployeeStatusChange">Cancel</button><button type="button" class="mb-primary" data-bind="click:changeEmployeeStatus">Confirm change</button></div>
-    </section>
-  </div>
-
-  <article class="mb-panel" data-bind="visible:hasResponse,with:response">
+  <article class="mb-panel mb-assistant-response-chat" data-bind="visible:hasResponse,with:response">
+    <div class="mb-chat-thread-turn">
+      <div class="mb-chat-bubble employee" data-bind="visible:$parent.history().length">
+        <strong>You</strong><span data-bind="text:$parent.history().length ? $parent.history()[0].message : ''"></span>
+      </div>
+      <div class="mb-chat-bubble assistant">
+        <strong>AI Assistant</strong><div class="mb-assistant-answer" data-bind="text:answer"></div>
+      </div>
+    </div>
     <small data-bind="text:intent"></small>
     <h2>Assistant response</h2>
     <div class="mb-assistant-answer" data-bind="visible:!$data.customerProfile && !$data.customer360 && !$data.productOptions && !$data.accountOverview && !$data.transactionReview, text:answer"></div>
