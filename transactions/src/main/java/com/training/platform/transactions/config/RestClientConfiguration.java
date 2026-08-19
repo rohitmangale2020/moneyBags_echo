@@ -14,4 +14,9 @@ public class RestClientConfiguration {
     RestClient.Builder loadBalancedRestClientBuilder(RestClientBuilderConfigurer configurer) {
         return configurer.configure(RestClient.builder());
     }
+
+    @Bean("directRestClientBuilder")
+    RestClient.Builder directRestClientBuilder(RestClientBuilderConfigurer configurer) {
+        return configurer.configure(RestClient.builder());
+    }
 }

@@ -4,6 +4,7 @@ define([
   'viewModels/util',
   'viewModels/indiaAddressOptions',
   'ojs/ojinputtext',
+  'ojs/ojdatetimepicker',
   'ojs/ojbutton',
   'ojs/ojdialog',
 ], function (ko, app, u, indiaAddress) {
@@ -24,6 +25,20 @@ define([
   const nomineeBlank = () => ({
     nomineeId: null, nomineeName: '', relationship: '', relationType: 'NOMINEE', dob: '', phone: '', sharePercentage: 100, status: 'ACTIVE', updatedBy: '', startDate: '', endDate: '', includeAddress: false, address: addressBlank(),
   });
+  const documentTypes = ['PAN', 'AADHAAR', 'PASSPORT', 'DRIVING_LICENSE', 'SALARY_SLIP', 'PHOTO', 'SIGNATURE'];
+  const adultDobMax = () => {
+    const date = new Date();
+    date.setFullYear(date.getFullYear() - 18);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  };
+  const ageInYears = (value) => {
+    const dob = new Date(`${value}T00:00:00`);
+    if (Number.isNaN(dob.getTime())) return null;
+    const now = new Date();
+    let age = now.getFullYear() - dob.getFullYear();
+    if (now.getMonth() < dob.getMonth() || (now.getMonth() === dob.getMonth() && now.getDate() < dob.getDate())) age -= 1;
+    return age;
+  };
   function clean(value) {
     const result = {};
     Object.keys(value).forEach((key) => {
@@ -59,7 +74,7 @@ define([
       const documentType = String(type || '');
       const needsExpiry = ['PASSPORT', 'DRIVING_LICENSE'].includes(documentType);
       const needsNumber = Boolean(documentType) && !['PHOTO', 'SIGNATURE', 'SALARY_SLIP'].includes(documentType);
-      const showsIssueDate = !['PHOTO', 'SIGNATURE'].includes(documentType);
+      const showsIssueDate = ['PASSPORT', 'DRIVING_LICENSE'].includes(documentType);
       s.documentRequiresExpiry(needsExpiry);
       s.documentRequiresNumber(needsNumber);
       s.documentShowsIssueDate(showsIssueDate);
@@ -68,25 +83,84 @@ define([
       if (!showsIssueDate && s.documentForm()) s.documentForm().issueDate = '';
       if (!needsExpiry && s.documentForm()) s.documentForm().expiryDate = '';
     };
-    s.onDocumentTypeChange = (_, event) => s.setDocumentExpiryRequirement(event.target.value);
+    s.onDocumentTypeChange = (_, event) => {
+      s.setDocumentExpiryRequirement(event.target.value);
+      s.documentForm.valueHasMutated();
+    };
     s.kycForm = ko.observable(kycBlank());
     s.documentForm = ko.observable(documentBlank());
+    s.availableDocumentTypes = ko.pureComputed(() => {
+      const usedTypes = new Set((s.detailState.data().documents || []).map((document) => document.documentType));
+      const currentType = s.documentForm().documentType;
+      return documentTypes.filter((type) => type === currentType || !usedTypes.has(type));
+    });
     s.nomineeForm = ko.observable(nomineeBlank());
+    s.otherNomineeShares = ko.observableArray([]);
+    s.nomineeShareLocked = ko.pureComputed(() => s.otherNomineeShares().length === 0);
     s.includeNomineeAddress = ko.observable(false);
     s.indianStates = ko.observableArray(indiaAddress.states());
+    s.addressState = ko.observable('');
+    s.addressDistrict = ko.observable('');
+    s.addressArea = ko.observable('');
+    s.settingAddress = false;
+    s.addressDistricts = ko.pureComputed(() => { s.indianStates(); return indiaAddress.districts(s.addressState()); });
+    s.addressAreas = ko.pureComputed(() => { s.indianStates(); return indiaAddress.areas(s.addressState(), s.addressDistrict()); });
+    s.addressPincodes = ko.pureComputed(() => { s.indianStates(); return indiaAddress.pincodes(s.addressState(), s.addressDistrict(), s.addressArea()); });
     s.nomineeAddressState = ko.observable('');
+    s.nomineeAddressDistrict = ko.observable('');
+    s.nomineeAddressArea = ko.observable('');
     s.settingNomineeAddress = false;
     s.nomineeAddressDistricts = ko.pureComputed(() => {
       s.indianStates();
       return indiaAddress.districts(s.nomineeAddressState());
     });
+    s.nomineeAddressAreas = ko.pureComputed(() => { s.indianStates(); return indiaAddress.areas(s.nomineeAddressState(), s.nomineeAddressDistrict()); });
+    s.nomineeAddressPincodes = ko.pureComputed(() => { s.indianStates(); return indiaAddress.pincodes(s.nomineeAddressState(), s.nomineeAddressDistrict(), s.nomineeAddressArea()); });
     indiaAddress.load().then(() => s.indianStates(indiaAddress.states()));
     s.nomineeAddressState.subscribe((state) => {
       const form = s.nomineeForm();
       if (!form || !form.address) return;
       form.address.state = state;
-      if (!s.settingNomineeAddress) form.address.city = '';
+      if (!s.settingNomineeAddress) {
+        form.address.city = '';
+        form.address.line2 = '';
+        form.address.pincode = '';
+        s.nomineeAddressDistrict('');
+        s.nomineeAddressArea('');
+      }
       s.nomineeForm.valueHasMutated();
+    });
+    s.nomineeAddressDistrict.subscribe((district) => {
+      const form = s.nomineeForm();
+      if (!form || !form.address) return;
+      form.address.city = district;
+      if (!s.settingNomineeAddress) { form.address.line2 = ''; form.address.pincode = ''; s.nomineeAddressArea(''); }
+      s.nomineeForm.valueHasMutated();
+    });
+    s.nomineeAddressArea.subscribe((area) => {
+      const form = s.nomineeForm();
+      if (!form || !form.address) return;
+      form.address.line2 = area;
+      if (!s.settingNomineeAddress) form.address.pincode = '';
+      s.nomineeForm.valueHasMutated();
+    });
+    s.addressState.subscribe((state) => {
+      const form = s.addressForm();
+      form.state = state;
+      if (!s.settingAddress) { form.city = ''; form.line2 = ''; form.pincode = ''; s.addressDistrict(''); s.addressArea(''); }
+      s.addressForm.valueHasMutated();
+    });
+    s.addressDistrict.subscribe((district) => {
+      const form = s.addressForm();
+      form.city = district;
+      if (!s.settingAddress) { form.line2 = ''; form.pincode = ''; s.addressArea(''); }
+      s.addressForm.valueHasMutated();
+    });
+    s.addressArea.subscribe((area) => {
+      const form = s.addressForm();
+      form.line2 = area;
+      if (!s.settingAddress) form.pincode = '';
+      s.addressForm.valueHasMutated();
     });
     s.documentFile = ko.observable(null);
     s.activationNotice = ko.observable('');
@@ -158,6 +232,7 @@ define([
       if (s.isFixedDeposit()) s.accountForm.payoutAccountId(accountId || '');
     });
     s.error = ko.observable('');
+    s.adultDobMax = adultDobMax();
     s.date = u.date;
     s.filtered = ko.pureComputed(() => {
       const q = s.query().toLowerCase();
@@ -359,7 +434,7 @@ define([
       try { await app.services.customers.remove(x.customerId); s.showDetailPage(false); app.notify('Customer deleted.'); s.load(); }
       catch (e) { app.notify(e.message, 'error'); }
     };
-    s.openAddress = async (x) => { s.error(''); try { const value = x ? await app.services.customers.getAddress(s.selected().customerId, x.addressId) : null; s.addressForm(Object.assign(addressBlank(), value || {})); document.getElementById('addressDialog').open(); } catch (e) { app.notify(e.message, 'error'); } };
+    s.openAddress = async (x, newAddressType = 'OFFICE') => { s.error(''); try { const value = x ? await app.services.customers.getAddress(s.selected().customerId, x.addressId) : null; const form = Object.assign(addressBlank(), { addressType: newAddressType }, value || {}); s.addressForm(form); s.settingAddress = true; s.addressState(form.state || ''); s.addressDistrict(form.city || ''); s.addressArea(form.line2 || ''); s.settingAddress = false; document.getElementById('addressDialog').open(); } catch (e) { app.notify(e.message, 'error'); } };
     s.saveAddress = async () => {
       const raw = ko.toJS(s.addressForm()), addressId = raw.addressId, d = clean({ addressType: raw.addressType, line1: raw.line1, line2: raw.line2, city: raw.city, state: raw.state, country: raw.country, pincode: raw.pincode }), id = s.selected().customerId;
       if (!d.line1 || !d.city || !d.state || !d.country || !/^[1-9][0-9]{5}$/.test(d.pincode || '')) return s.error('Complete the address and enter a valid six-digit pincode.');
@@ -403,7 +478,10 @@ define([
     s.saveDocument = async () => {
       const raw = ko.toJS(s.documentForm()), docId = raw.docId, d = clean({ documentType: raw.documentType, documentNumber: s.documentRequiresNumber() ? raw.documentNumber : null, issueDate: s.documentShowsIssueDate() ? raw.issueDate : null, expiryDate: s.documentRequiresExpiry() ? raw.expiryDate : null, status: raw.status, verifiedBy: null, rejectedReason: raw.rejectedReason, remarks: raw.remarks, updatedBy: raw.updatedBy }), id = s.selected().customerId, file = s.documentFile();
       if (!d.documentType) return s.error('Select a document type.');
+      if (d.documentNumber) d.documentNumber = String(d.documentNumber).trim().toUpperCase();
       if ((s.documentRequiresNumber() && !d.documentNumber) || (!docId && !file)) return s.error(s.documentRequiresNumber() ? 'Document number and file are required.' : 'A document file is required.');
+      if (d.documentType === 'PAN' && !/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(d.documentNumber || '')) return s.error('Enter a PAN in the format AAAAA0000A.');
+      if (d.documentType === 'AADHAAR' && !/^[2-9][0-9]{11}$/.test(d.documentNumber || '')) return s.error('Enter a valid 12-digit Aadhaar number.');
       if (d.issueDate && new Date(d.issueDate) > new Date()) return s.error('Document issue date cannot be in the future.');
       if (s.documentRequiresExpiry() && !d.expiryDate) return s.error('Expiry date is required for this document type.');
       if (d.expiryDate && new Date(d.expiryDate) <= new Date()) return s.error('Expiry date must be in the future.');
@@ -417,11 +495,33 @@ define([
           ? await app.services.customers.getNominee(s.selected().customerId, x.nomineeId)
           : null;
         const form = Object.assign(nomineeBlank(), value || {});
+        const otherNominees = (s.detailState.data().nominees || []).filter((nominee) =>
+          nominee.nomineeId !== form.nomineeId
+          && String(nominee.status || '').toUpperCase() === 'ACTIVE'
+          && String(nominee.relationType || 'NOMINEE').toUpperCase() === 'NOMINEE',
+        );
+        const otherShares = otherNominees.map((nominee) => ({
+          nominee,
+          nomineeId: nominee.nomineeId,
+          nomineeName: nominee.nomineeName,
+          sharePercentage: ko.observable(Number(nominee.sharePercentage || 0)),
+        }));
+        s.otherNomineeShares(otherShares);
+        if (!otherShares.length) {
+          form.sharePercentage = 100;
+        } else if (!x && otherShares.length === 1 && Number(otherShares[0].sharePercentage()) === 100) {
+          otherShares[0].sharePercentage(50);
+          form.sharePercentage = 50;
+        } else if (!x) {
+          form.sharePercentage = Math.max(0, 100 - otherShares.reduce((total, nominee) => total + Number(nominee.sharePercentage() || 0), 0));
+        }
         s.includeNomineeAddress(Boolean(value && value.address));
         form.address = Object.assign(addressBlank(), (value && value.address) || {});
         s.nomineeForm(form);
         s.settingNomineeAddress = true;
         s.nomineeAddressState(form.address.state || '');
+        s.nomineeAddressDistrict(form.address.city || '');
+        s.nomineeAddressArea(form.address.line2 || '');
         s.settingNomineeAddress = false;
         document.getElementById('nomineeDialog').open();
       } catch (e) {
@@ -430,16 +530,16 @@ define([
     };
     s.saveNominee = async () => {
       const raw = ko.toJS(s.nomineeForm()), nomineeId = raw.nomineeId, d = clean({ nomineeName: raw.nomineeName, relationship: raw.relationship, relationType: raw.relationType, dob: raw.dob, phone: raw.phone, address: s.includeNomineeAddress() ? clean({ addressType: raw.address.addressType, line1: raw.address.line1, line2: raw.address.line2, city: raw.address.city, state: raw.address.state, country: raw.address.country, pincode: raw.address.pincode }) : null, sharePercentage: raw.sharePercentage, status: raw.status, updatedBy: raw.updatedBy, startDate: raw.startDate, endDate: raw.endDate }), id = s.selected().customerId;
-      d.sharePercentage = Number(d.sharePercentage);
+      const otherShares = s.otherNomineeShares();
+      d.sharePercentage = s.nomineeShareLocked() ? 100 : Number(d.sharePercentage);
       if (!d.nomineeName || d.sharePercentage <= 0 || d.sharePercentage > 100) return s.error('Enter a nominee name and share between 0.01 and 100.');
-      const allocatedShare = (s.detailState.data().nominees || [])
-        .filter((nominee) => nominee.nomineeId !== nomineeId && String(nominee.status || '').toUpperCase() === 'ACTIVE')
-        .reduce((total, nominee) => total + Number(nominee.sharePercentage || 0), 0);
-      if (String(d.status || '').toUpperCase() === 'ACTIVE' && allocatedShare + d.sharePercentage > 100.000001) {
-        return s.error(`Nominee share cannot exceed 100%. ${allocatedShare.toFixed(2)}% is already allocated.`);
+      const allocatedShare = otherShares.reduce((total, nominee) => total + Number(nominee.sharePercentage() || 0), 0);
+      if (String(d.status || '').toUpperCase() === 'ACTIVE' && otherShares.length && Math.abs(allocatedShare + d.sharePercentage - 100) > 0.000001) {
+        return s.error(`All active nominee shares must equal 100%. Current total: ${(allocatedShare + d.sharePercentage).toFixed(2)}%.`);
       }
       if (d.phone && !/^[6-9][0-9]{9}$/.test(d.phone)) return s.error('Nominee phone must be a valid 10-digit Indian mobile number.');
-      if (d.dob && new Date(d.dob) >= new Date()) return s.error('Nominee date of birth must be in the past.');
+      if (d.dob && new Date(`${d.dob}T00:00:00`) >= new Date()) return s.error('Nominee date of birth must be in the past.');
+      if (d.dob && ageInYears(d.dob) < 18) return s.error('Nominee must be at least 18 years old.');
       if (d.address && (!d.address.line1 || !d.address.city || !d.address.state || !d.address.country || !/^[1-9][0-9]{5}$/.test(d.address.pincode || ''))) return s.error('Complete the nominee address and enter a valid six-digit pincode.');
       if (d.address) {
         try {
@@ -448,7 +548,33 @@ define([
           return s.error('PIN validation is temporarily unavailable. Please try again.');
         }
       }
-      try { nomineeId ? await app.services.customers.updateNominee(id, nomineeId, d) : await app.services.customers.nominee(id, d); document.getElementById('nomineeDialog').close(); app.notify('Nominee saved.'); await s.loadDetail(s.selected()); }
+      try {
+        const changedOtherShares = otherShares
+          .filter((nominee) => Number(nominee.nominee.sharePercentage || 0) !== Number(nominee.sharePercentage()))
+          .sort((left, right) =>
+            (Number(left.sharePercentage()) - Number(left.nominee.sharePercentage || 0))
+            - (Number(right.sharePercentage()) - Number(right.nominee.sharePercentage || 0)));
+        const saveOtherShares = async () => {
+          for (const nominee of changedOtherShares) {
+            await app.services.customers.updateNominee(id, nominee.nomineeId,
+              Object.assign({}, nominee.nominee, { sharePercentage: Number(nominee.sharePercentage()) }));
+          }
+        };
+        const previousShare = nomineeId
+          ? Number((s.detailState.data().nominees || []).find((nominee) => nominee.nomineeId === nomineeId)?.sharePercentage || 0)
+          : 0;
+        const saveCurrentNominee = () => nomineeId
+          ? app.services.customers.updateNominee(id, nomineeId, d)
+          : app.services.customers.nominee(id, d);
+        if (d.sharePercentage > previousShare) {
+          await saveOtherShares();
+          await saveCurrentNominee();
+        } else {
+          await saveCurrentNominee();
+          await saveOtherShares();
+        }
+        document.getElementById('nomineeDialog').close(); app.notify('Nominee saved.'); await s.loadDetail(s.selected());
+      }
       catch (e) { s.error(e.message); }
     };
     s.closeNominee = async (x) => { try { await app.services.customers.closeNominee(s.selected().customerId, x.nomineeId); app.notify('Nominee closed.'); await s.loadDetail(s.selected()); } catch (e) { app.notify(e.message, 'error'); } };

@@ -1213,6 +1213,30 @@ body:not(:has(#navDrawer)) .mb-content {
   border-top: 1px solid #e3e9f3;
 }
 
+/* Review is a status label, not a success icon. Keep it compact and contained. */
+.mb-review-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  margin: 0 auto 12px;
+  padding: 0 13px;
+  border: 1px solid #b9caeb;
+  border-radius: 999px;
+  background: #edf3fe;
+  color: var(--mb-primary);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.mb-review-mark.saved {
+  border-color: #b8dfc8;
+  background: #e8f6ef;
+  color: var(--good);
+}
+
 .mb-nominee-address {
   margin-top: 14px;
   padding: 18px;
@@ -1266,6 +1290,52 @@ body:not(:has(#navDrawer)) .mb-content {
 .mb-phone-pair oj-input-text {
   width: 100%;
 }
+
+.mb-nominee-allocation {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 14px;
+  border: 1px solid var(--mb-line);
+  border-radius: 10px;
+  background: #f8faff;
+}
+
+.mb-nominee-allocation strong { font-size: 12px; }
+.mb-nominee-allocation p { margin: 0; color: var(--mb-subtle); font-size: 11px; }
+.mb-nominee-allocation > div { display: grid; gap: 8px; }
+.mb-nominee-allocation label { display: grid; grid-template-columns: minmax(0, 1fr) 90px auto; gap: 8px; align-items: center; font-size: 11px; font-weight: 700; }
+.mb-nominee-allocation input { width: 100%; min-height: 36px; padding: 7px 9px; border: 1px solid var(--mb-line); border-radius: 8px; background: #fff; }
+
+.mb-uploaded-document-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+  text-align: left;
+}
+
+.mb-uploaded-document-list article {
+  display: grid;
+  grid-template-columns: minmax(120px, .7fr) minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid var(--mb-line);
+  border-radius: 9px;
+  background: #fbfcff;
+  font-size: 11px;
+}
+
+.mb-uploaded-document-list article span { min-width: 0; overflow: hidden; color: var(--mb-subtle); text-overflow: ellipsis; white-space: nowrap; }
+
+.mb-document-upload-action {
+  display: flex;
+  justify-content: flex-end;
+  margin: 16px 0;
+}
+
+/* Document records use a direct action button; prefix it with the edit affordance. */
+.mb-resource-list > article > .mb-link::before { content: '✎ '; }
 
 .mb-select-field {
   position: relative;
@@ -1778,6 +1848,7 @@ body:not(:has(#navDrawer)) .mb-content {
 .mb-transaction-submit-state { display: grid; min-height: 270px; place-items: center; align-content: center; gap: 12px; padding: 28px; border-radius: var(--mb-radius); text-align: center; }
 .mb-transaction-submit-state.submitting { color: var(--mb-primary); background: var(--mb-primary-soft); }
 .mb-transaction-submit-state.success { color: #18794e; background: #e9f7f0; }
+.mb-transaction-submit-state.pending { color: #9a6200; background: #fff5dc; }
 .mb-transaction-submit-state.failure { color: #bd3040; background: #fff0f1; }
 .mb-transaction-submit-state strong { font-size: 19px; }
 .mb-transaction-submit-state p { max-width: 380px; margin: 0; color: var(--mb-subtle); font-size: 12px; line-height: 1.55; }
@@ -1786,6 +1857,7 @@ body:not(:has(#navDrawer)) .mb-content {
 .mb-transaction-submit-state.success .mb-transaction-submit-icon::first-letter,
 .mb-transaction-submit-state.failure .mb-transaction-submit-icon::first-letter { color: #fff; }
 .mb-transaction-submit-state.success .mb-transaction-submit-icon { background: #18794e; }
+.mb-transaction-submit-state.pending .mb-transaction-submit-icon { background: #b87900; }
 .mb-transaction-submit-state.failure .mb-transaction-submit-icon { background: #bd3040; }
 @keyframes mb-transaction-spin { to { transform: rotate(360deg); } }
 

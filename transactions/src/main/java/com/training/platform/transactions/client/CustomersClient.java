@@ -2,6 +2,7 @@ package com.training.platform.transactions.client;
 
 import com.training.platform.auditclient.AuditClient;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -13,7 +14,7 @@ import org.springframework.web.client.RestClient;
 public class CustomersClient {
     private final RestClient restClient;
 
-    public CustomersClient(RestClient.Builder builder,
+    public CustomersClient(@Qualifier("loadBalancedRestClientBuilder") RestClient.Builder builder,
                            @Value("${services.customers.base-url}") String baseUrl,
                            AuditClient auditClient) {
         this.restClient = builder.clone()

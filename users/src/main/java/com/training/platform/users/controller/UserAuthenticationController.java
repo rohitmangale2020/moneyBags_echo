@@ -35,9 +35,9 @@ public class UserAuthenticationController {
     }
 
     public record Credentials(@NotBlank String username, @NotBlank String password) { }
-    public record UserResponse(Long userId, String username, Set<String> roles) {
+    public record UserResponse(Long userId, String username, Set<String> roles, boolean passwordChangeRequired) {
         static UserResponse from(User user) {
-            return new UserResponse(user.getId(), user.getUsername(), Set.of(user.getRole()));
+            return new UserResponse(user.getId(), user.getUsername(), Set.of(user.getRole()), user.isPasswordChangeRequired());
         }
     }
 }

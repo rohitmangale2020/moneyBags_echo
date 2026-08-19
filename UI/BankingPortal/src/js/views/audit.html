@@ -101,8 +101,8 @@
       <span data-bind="text:state.error"></span>
       <button type="button" data-bind="click:refresh">Retry</button>
     </div>
-    <div class="mb-account-page-loader mb-table-loader" data-bind="visible:state.loading" role="status" aria-live="polite">
-      <span class="mb-account-page-spinner" aria-hidden="true"></span>
+    <div class="mb-account-page-loader mb-table-loader mb-moneybags-loader" data-bind="visible:state.loading" role="status" aria-live="polite">
+      <svg class="mb-moneybags-loader-logo" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><rect width="36" height="36" rx="10" fill="white"/><text x="18" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="800" fill="#355eb8">M</text></svg>
       <strong data-bind="text:'Loading ' + activeConfig().label.toLowerCase() + ' audits'"></strong>
       <small>Collecting the newest activity and preparing readable changes…</small>
     </div>

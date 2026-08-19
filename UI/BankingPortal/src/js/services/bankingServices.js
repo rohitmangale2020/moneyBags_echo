@@ -18,6 +18,7 @@ define(['services/apiClient'], function (api) {
       create: (d) => api.post('/api/v1/users', d),
       update: (id, d) => api.put(`/api/v1/users/${e(id)}`, d),
       password: (id, password) => api.patch(`/api/v1/users/${e(id)}/password`, { password }),
+      changeOwnPassword: (currentPassword, newPassword) => api.patch('/api/v1/users/me/password', { currentPassword, newPassword }),
       status: (id, s) => api.patch(`/api/v1/users/${e(id)}/status`, { status: s }),
       deactivate: (id) => api.delete(`/api/v1/users/${e(id)}`),
     },
@@ -98,6 +99,8 @@ define(['services/apiClient'], function (api) {
       get: (id) => api.get(`/api/transactions/${e(id)}`),
       transfer: (d) => api.post('/api/transactions', d),
       update: (id, d) => api.put(`/api/transactions/${e(id)}`, d),
+      pendingApprovals: () => api.get('/api/transactions/pending-approvals'),
+      decideApproval: (id, d) => api.post(`/api/transactions/${e(id)}/approval`, d),
     },
     fixedDeposits: {
       open: (d) => api.post('/api/fixed-deposits', d),

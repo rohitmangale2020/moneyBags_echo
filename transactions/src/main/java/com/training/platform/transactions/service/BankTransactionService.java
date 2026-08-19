@@ -10,7 +10,11 @@ import com.training.platform.transactions.client.AccountTransferRequest;
 import com.training.platform.transactions.client.AccountTransferResponse;
 import com.training.platform.transactions.client.AccountTransferRequest.TransferPurpose;
 import com.training.platform.transactions.client.AccountsClient;
+import com.training.platform.transactions.client.AccountDetailsResponse;
 import com.training.platform.transactions.client.CustomersClient;
+import com.training.platform.transactions.client.RiskAssessmentRequest;
+import com.training.platform.transactions.client.RiskAssessmentResponse;
+import com.training.platform.transactions.client.RiskServiceClient;
 import com.training.platform.transactions.entity.AccountStatement;
 import com.training.platform.transactions.entity.BankTransaction;
 import com.training.platform.transactions.entity.StatementEntryType;
@@ -18,9 +22,12 @@ import com.training.platform.transactions.entity.TransactionEventOutbox;
 import com.training.platform.transactions.entity.TransactionEventType;
 import com.training.platform.transactions.entity.TransactionStatus;
 import com.training.platform.transactions.entity.TransactionType;
+import com.training.platform.transactions.entity.TransactionApproval;
+import com.training.platform.transactions.entity.ApprovalStatus;
 import com.training.platform.transactions.repository.AccountStatementRepository;
 import com.training.platform.transactions.repository.BankTransactionRepository;
 import com.training.platform.transactions.repository.TransactionEventOutboxRepository;
+import com.training.platform.transactions.repository.TransactionApprovalRepository;
 import jakarta.persistence.EntityNotFoundException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -47,6 +54,8 @@ public class BankTransactionService {
     private final ObjectMapper objectMapper;
     private final AuditClient auditClient;
     private final LedgerService ledgerService;
+    private final RiskServiceClient riskServiceClient;
+    private final TransactionApprovalRepository approvalRepository;
 
     public BankTransactionService(BankTransactionRepository transactionRepository,
                                   AccountStatementRepository statementRepository,
@@ -55,7 +64,9 @@ public class BankTransactionService {
                                   CustomersClient customersClient,
                                   ObjectMapper objectMapper,
                                   AuditClient auditClient,
-                                  LedgerService ledgerService) {
+                                  LedgerService ledgerService,
+                                  RiskServiceClient riskServiceClient,
+                                  TransactionApprovalRepository approvalRepository) {
         this.transactionRepository = transactionRepository;
         this.statementRepository = statementRepository;
         this.outboxRepository = outboxRepository;
@@ -64,6 +75,8 @@ public class BankTransactionService {
         this.objectMapper = objectMapper;
         this.auditClient = auditClient;
         this.ledgerService = ledgerService;
+        this.riskServiceClient = riskServiceClient;
+        this.approvalRepository = approvalRepository;
     }
 
     public BankTransaction getById(String transactionId) {
@@ -86,6 +99,9 @@ public class BankTransactionService {
 
     public List<BankTransaction> getDebitAccountTransactions(String accountId) { return transactionRepository.findByDebitAccountId(accountId); }
     public List<BankTransaction> getCreditAccountTransactions(String accountId) { return transactionRepository.findByCreditAccountId(accountId); }
+    public List<BankTransaction> getPendingApprovals() {
+        return transactionRepository.findByTransactionStatusOrderByInitiatedAtAsc(TransactionStatus.PENDING_APPROVAL);
+    }
 
     @Transactional
     public BankTransaction initiate(BankTransaction transaction) {
@@ -110,6 +126,56 @@ public class BankTransactionService {
         auditTransactionChange("TRANSACTION_INITIATED", persisted, Map.of(),
                 initiatedAuditDescription(persisted));
 
+        AccountPostingException eligibilityFailure = postingEligibilityFailure(persisted);
+        if (eligibilityFailure != null) {
+            fail(persisted, eligibilityFailure);
+            return transactionRepository.save(persisted);
+        }
+        if (requiresRiskScreening(persisted)) {
+            assessAndStoreRisk(persisted);
+            if (requiresApproval(persisted)) {
+                persisted.setTransactionStatus(TransactionStatus.PENDING_APPROVAL);
+                return transactionRepository.save(persisted);
+            }
+        }
+        postToAccounts(persisted);
+        return transactionRepository.save(persisted);
+    }
+
+    /** Applies a staff decision. A fresh balance-aware assessment is required before posting. */
+    @Transactional
+    public BankTransaction decidePendingApproval(String transactionId, boolean approve, String note, String approverId) {
+        BankTransaction transaction = getById(transactionId);
+        if (transaction.getTransactionStatus() != TransactionStatus.PENDING_APPROVAL) {
+            throw new IllegalStateException("Only transactions pending approval can be decided");
+        }
+        approvalRepository.save(TransactionApproval.riskDecision(transaction, approverId,
+                approve ? ApprovalStatus.APPROVED : ApprovalStatus.REJECTED, limit(note, 500)));
+        if (!approve) {
+            transaction.setTransactionStatus(TransactionStatus.CANCELLED);
+            transaction.setFailureCode("RISK_REJECTED");
+            transaction.setFailureReason(limit(note == null || note.isBlank()
+                    ? "Rejected by an administrator after risk review" : note, 500));
+            return transactionRepository.save(transaction);
+        }
+        AccountPostingException eligibilityFailure = postingEligibilityFailure(transaction);
+        if (eligibilityFailure != null) {
+            fail(transaction, eligibilityFailure);
+            return transactionRepository.save(transaction);
+        }
+        assessAndStoreRisk(transaction);
+        if ("RISK_UNAVAILABLE".equals(transaction.getRiskLevel())) {
+            transaction.setTransactionStatus(TransactionStatus.PENDING_APPROVAL);
+            return transactionRepository.save(transaction);
+        }
+        transaction.setTransactionStatus(TransactionStatus.PROCESSING);
+        transaction.setFailureCode(null);
+        transaction.setFailureReason(null);
+        postToAccounts(transaction);
+        return transactionRepository.save(transaction);
+    }
+
+    private void postToAccounts(BankTransaction persisted) {
         try {
             if (isTransferPosting(persisted.getTransactionType())) {
                 AccountTransferResponse transfer = accountsClient.transfer(new AccountTransferRequest(
@@ -131,7 +197,70 @@ public class BankTransactionService {
         } catch (AccountPostingException exception) {
             fail(persisted, exception);
         }
-        return transactionRepository.save(persisted);
+    }
+
+    private void assessAndStoreRisk(BankTransaction transaction) {
+        try {
+            AccountDetailsResponse debit = transaction.getDebitAccountId() == null ? null
+                    : accountsClient.getAccount(transaction.getDebitAccountId());
+            AccountDetailsResponse credit = transaction.getCreditAccountId() == null ? null
+                    : accountsClient.getAccount(transaction.getCreditAccountId());
+            RiskAssessmentResponse risk = riskServiceClient.assess(new RiskAssessmentRequest(
+                    transaction.getTransactionRef(), transaction.getTransactionType().name(), transaction.getAmount(),
+                    transaction.getCurrencyCode(), transaction.getDebitAccountId(), transaction.getCreditAccountId(),
+                    transaction.getExternalBeneficiary(), transaction.getInitiatedByCustomerId(),
+                    debit == null || debit.availableBalance() == null ? BigDecimal.ZERO : debit.availableBalance(),
+                    credit == null || credit.availableBalance() == null ? BigDecimal.ZERO : credit.availableBalance()));
+            transaction.setRiskAssessmentId(risk.assessmentId());
+            transaction.setRiskLevel(risk.riskLevel());
+            transaction.setRiskScore(risk.finalRiskScore());
+            transaction.setRiskReasons(risk.reasons() == null ? "" : limit(String.join("\n", risk.reasons()), 2000));
+        } catch (RuntimeException exception) {
+            transaction.setRiskAssessmentId(null);
+            transaction.setRiskLevel("RISK_UNAVAILABLE");
+            transaction.setRiskScore(null);
+            transaction.setRiskReasons(limit(exception.getMessage(), 2000));
+        }
+    }
+
+    private boolean requiresRiskScreening(BankTransaction transaction) {
+        return transaction.getTransactionType() == TransactionType.TRANSFER
+                || transaction.getTransactionType() == TransactionType.OPENING_DEPOSIT
+                || transaction.getTransactionType() == TransactionType.DEPOSIT
+                || transaction.getTransactionType() == TransactionType.WITHDRAWAL;
+    }
+
+    private boolean requiresApproval(BankTransaction transaction) {
+        return "RISK_UNAVAILABLE".equals(transaction.getRiskLevel())
+                || "MEDIUM".equals(transaction.getRiskLevel()) || "HIGH".equals(transaction.getRiskLevel());
+    }
+
+    /**
+     * Stops an unpostable debit before it can be sent to risk review. Accounts-service
+     * remains the authoritative validator and repeats this check atomically on posting.
+     */
+    private AccountPostingException postingEligibilityFailure(BankTransaction transaction) {
+        if (!isTransferPosting(transaction.getTransactionType()) && transaction.getTransactionType() != TransactionType.WITHDRAWAL) {
+            return null;
+        }
+        String debitAccountId = transaction.getDebitAccountId();
+        if (isBlank(debitAccountId)) return null;
+        try {
+            AccountDetailsResponse debit = accountsClient.getAccount(debitAccountId);
+            if (debit == null || debit.availableBalance() == null || debit.minimumBalance() == null) return null;
+            BigDecimal availableAfter = debit.availableBalance().subtract(transaction.getAmount());
+            if (availableAfter.compareTo(debit.minimumBalance()) < 0) {
+                return new AccountPostingException("MINIMUM_BALANCE_REQUIRED",
+                        "Transaction would leave " + debit.currencyCode() + " " + availableAfter
+                                + ", below the required minimum balance of " + debit.minimumBalance());
+            }
+        } catch (AccountPostingException exception) {
+            if ("ACCOUNT_NOT_FOUND".equals(exception.getFailureCode())) return exception;
+            // A transient lookup failure is handled by the risk-safe path rather than
+            // incorrectly treating the transaction as a minimum-balance violation.
+            return null;
+        }
+        return null;
     }
 
     @Transactional

@@ -7,6 +7,7 @@ import com.training.platform.users.dto.UserProfileRequest;
 import com.training.platform.users.dto.UserProfileResponse;
 import com.training.platform.users.dto.UserResponse;
 import com.training.platform.users.exception.UserConflictException;
+import com.training.platform.users.exception.CurrentPasswordMismatchException;
 import com.training.platform.users.exception.UserNotFoundException;
 import com.training.platform.users.model.User;
 import com.training.platform.users.model.UserProfile;
@@ -46,6 +47,8 @@ public class UserServiceImpl implements UserService {
         user.setEmail(email);
         user.setPasswordHash(passwordEncoder.encode(request.password()));
         user.setRole(normalizeRole(request.role()));
+        // Credentials supplied at creation are temporary for every platform user.
+        user.setPasswordChangeRequired(true);
         user.setStatus(UserStatus.PENDING_VERIFICATION);
         user.attachProfile(toProfile(request.profile()));
 
@@ -94,6 +97,7 @@ public class UserServiceImpl implements UserService {
     public void updatePassword(Long id, String rawPassword) {
         User user = findUser(id);
         user.setPasswordHash(passwordEncoder.encode(rawPassword));
+        user.setPasswordChangeRequired(true);
         log.info("Password updated id={}", id);
         Map<String, Object> passwordDetails = new LinkedHashMap<>();
         passwordDetails.put("targetUserId", id);
@@ -101,6 +105,24 @@ public class UserServiceImpl implements UserService {
         passwordDetails.put("oldValuesJson", "{\"password\":\"[REDACTED]\"}");
         passwordDetails.put("newValuesJson", "{\"password\":\"[REDACTED]\"}");
         auditClient.success("users", "PASSWORD_CHANGED", "User password changed", passwordDetails);
+    }
+
+    @Override
+    @Transactional
+    public void changeOwnPassword(Long id, String currentPassword, String newPassword) {
+        User user = findUser(id);
+        if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
+            throw new CurrentPasswordMismatchException();
+        }
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        user.setPasswordChangeRequired(false);
+        log.info("User changed own password id={}", id);
+        Map<String, Object> passwordDetails = new LinkedHashMap<>();
+        passwordDetails.put("targetUserId", id);
+        passwordDetails.put("changedFields", "password");
+        passwordDetails.put("oldValuesJson", "{\"password\":\"[REDACTED]\"}");
+        passwordDetails.put("newValuesJson", "{\"password\":\"[REDACTED]\"}");
+        auditClient.success("users", "OWN_PASSWORD_CHANGED", "User changed own password", passwordDetails);
     }
 
     @Override

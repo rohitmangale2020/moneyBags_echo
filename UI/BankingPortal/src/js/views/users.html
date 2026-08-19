@@ -23,8 +23,12 @@
   <div class="mb-error" data-bind="visible:state.error">
     <span data-bind="text:state.error"></span><button data-bind="click:load">Retry</button>
   </div>
-  <div class="mb-loading" data-bind="visible:state.loading">Loading users…</div>
-  <div class="mb-table">
+  <div class="mb-loading mb-moneybags-loader" data-bind="visible:state.loading" role="status" aria-live="polite">
+    <svg class="mb-moneybags-loader-logo" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><rect width="36" height="36" rx="10" fill="white"/><text x="18" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="800" fill="#355eb8">M</text></svg>
+    <strong>Loading users</strong>
+    <small>Preparing the user directory…</small>
+  </div>
+  <div class="mb-table" data-bind="visible:!state.loading()">
     <table>
       <thead>
         <tr>
@@ -88,7 +92,11 @@
   </div>
   <oj-dialog id="userDetailsDialog" class="mb-dialog mb-dialog-details" dialog-title="User details" cancel-behavior="icon">
     <div slot="body">
-      <div class="mb-loading" data-bind="visible:detailState.loading">Loading user details…</div>
+      <div class="mb-loading mb-moneybags-loader" data-bind="visible:detailState.loading" role="status" aria-live="polite">
+        <svg class="mb-moneybags-loader-logo" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><rect width="36" height="36" rx="10" fill="white"/><text x="18" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="800" fill="#355eb8">M</text></svg>
+        <strong>Loading user details</strong>
+        <small>Preparing the selected user…</small>
+      </div>
       <div class="mb-error" data-bind="visible:detailState.error,text:detailState.error"></div>
       <div class="mb-detail-table" data-bind="visible:detailState.data">
         <oj-table class="mb-user-detail-table" aria-label="User details" data="[[detailDataProvider]]" columns="[[detailColumns]]"></oj-table>
@@ -99,30 +107,31 @@
   <oj-dialog id="userDialog" dialog-title="Create platform user" modality="modal"
     ><div slot="body">
       <div class="mb-error" data-bind="visible:error,text:error"></div>
-      <div class="mb-form">
+      <div class="mb-form three">
         <oj-input-text
           label-hint="First name"
           required
           value="{{form().profile.firstName}}"
         ></oj-input-text
+        ><oj-input-text label-hint="Middle name" value="{{form().profile.middleName}}"></oj-input-text
         ><oj-input-text
           label-hint="Last name"
           required
           value="{{form().profile.lastName}}"
         ></oj-input-text
         ><oj-input-text label-hint="Username" required value="{{form().username}}"></oj-input-text
-        ><oj-input-text label-hint="Email" required value="{{form().email}}"></oj-input-text
+        ><oj-input-text label-hint="Email" required validators="[[emailValidators]]" value="{{form().email}}"></oj-input-text
+        ><oj-select-single label-hint="Role" data="[[roleOptions]]" item-text="label" value="{{form().role}}"></oj-select-single
         ><oj-input-password
           label-hint="Temporary password"
           required
           value="{{form().password}}"
         ></oj-input-password
-        ><oj-select-single label-hint="Role" data="[[roleOptions]]" item-text="label" value="{{form().role}}"></oj-select-single
-        ><oj-input-text label-hint="Phone" value="{{form().profile.phoneNumber}}"></oj-input-text
+        ><oj-input-text label-hint="Phone" validators="[[phoneValidators]]" value="{{form().profile.phoneNumber}}"></oj-input-text
         ><oj-input-text
           label-hint="Country code"
           value="{{form().profile.countryCode}}"
-        ></oj-input-text><oj-input-text label-hint="Middle name" value="{{form().profile.middleName}}"></oj-input-text><oj-input-date label-hint="Date of birth" value="{{form().profile.dateOfBirth}}"></oj-input-date><oj-input-text label-hint="Address line 1" value="{{form().profile.addressLine1}}"></oj-input-text><oj-input-text label-hint="Address line 2" value="{{form().profile.addressLine2}}"></oj-input-text><oj-input-text label-hint="City" value="{{form().profile.city}}"></oj-input-text><oj-input-text label-hint="State" value="{{form().profile.state}}"></oj-input-text><oj-input-text label-hint="Postal code" value="{{form().profile.postalCode}}"></oj-input-text>
+        ></oj-input-text><oj-input-date label-hint="Date of birth" value="{{form().profile.dateOfBirth}}"></oj-input-date><oj-input-text label-hint="Address line 1" value="{{form().profile.addressLine1}}"></oj-input-text><oj-input-text label-hint="Address line 2" value="{{form().profile.addressLine2}}"></oj-input-text><oj-input-text label-hint="City" value="{{form().profile.city}}"></oj-input-text><oj-input-text label-hint="State" value="{{form().profile.state}}"></oj-input-text><oj-input-text label-hint="Postal code" value="{{form().profile.postalCode}}"></oj-input-text>
       </div>
     </div>
     <div slot="footer" class="mb-dialog-actions">
