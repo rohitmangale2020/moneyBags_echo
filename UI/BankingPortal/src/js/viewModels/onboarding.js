@@ -119,6 +119,12 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
     s.addressDistricts = ko.pureComputed(() => { s.indianStates(); return indiaAddress.districts(s.address.state()); });
     s.currentAddressDistricts = ko.pureComputed(() => { s.indianStates(); return indiaAddress.districts(s.currentAddress.state()); });
     s.nomineeDistricts = ko.pureComputed(() => { s.indianStates(); return indiaAddress.districts(s.nominee.state()); });
+    s.addressAreas = ko.pureComputed(() => indiaAddress.areas(s.address.state(), s.address.city()));
+    s.currentAddressAreas = ko.pureComputed(() => indiaAddress.areas(s.currentAddress.state(), s.currentAddress.city()));
+    s.nomineeAreas = ko.pureComputed(() => indiaAddress.areas(s.nominee.state(), s.nominee.city()));
+    s.addressPincodes = ko.pureComputed(() => indiaAddress.pincodes(s.address.state(), s.address.city(), s.address.line2()));
+    s.currentAddressPincodes = ko.pureComputed(() => indiaAddress.pincodes(s.currentAddress.state(), s.currentAddress.city(), s.currentAddress.line2()));
+    s.nomineePincodes = ko.pureComputed(() => indiaAddress.pincodes(s.nominee.state(), s.nominee.city(), s.nominee.line2()));
     indiaAddress.load().then(() => s.indianStates(indiaAddress.states()));
     s.address.state.subscribe(() => s.address.city(''));
     s.currentAddress.state.subscribe(() => s.currentAddress.city(''));
@@ -400,7 +406,7 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
           if (!value) e[`nominee${field[0].toUpperCase()}${field.slice(1)}`] = `${label} is required for the nominee address.`;
           else if (field !== 'pincode' && value.length > (field === 'line1' ? 250 : 100)) e[`nominee${field[0].toUpperCase()}${field.slice(1)}`] = `${label} is too long.`;
         });
-        if (text(s.nominee.line2()).length > 250) e.nomineeLine2 = 'Address line 2 cannot exceed 250 characters.';
+        if (text(s.nominee.line2()).length > 250) e.nomineeLine2 = 'Area cannot exceed 250 characters.';
         if (text(s.nominee.pincode())) {
           try {
             if (!await indiaAddress.validatePincode(text(s.nominee.state()), text(s.nominee.city()), text(s.nominee.pincode()))) e.nomineePincode = 'Enter a pincode valid for the selected state and district.';

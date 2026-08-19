@@ -282,11 +282,10 @@
       </div>
 
       <div class="wide">
-        <oj-input-text
-                label-hint="Address line 2"
-                maxlength="250"
-                value="{{address.line2}}"
-        ></oj-input-text>
+        <!-- ko if: addressAreas().length -->
+        <div class="mb-plain-select"><select aria-label="Permanent address area" data-bind="value:address.line2,enable:address.city"><option value="" disabled>Area</option><!-- ko foreach:addressAreas --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select></div>
+        <!-- /ko -->
+        <!-- ko ifnot: addressAreas().length --><oj-input-text label-hint="Area" maxlength="250" value="{{address.line2}}"></oj-input-text><!-- /ko -->
 
         <small
                 class="mb-field-error"
@@ -309,14 +308,8 @@
       </div>
 
       <div class="wide">
-        <oj-input-text
-                label-hint="Pincode"
-                required
-                inputmode="numeric"
-                maxlength="6"
-                placeholder="560001"
-                value="{{address.pincode}}"
-        ></oj-input-text>
+        <!-- ko if: addressPincodes().length --><div class="mb-plain-select"><select aria-label="Permanent address pincode" data-bind="value:address.pincode,enable:address.line2"><option value="" disabled>Pincode</option><!-- ko foreach:addressPincodes --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select></div><!-- /ko -->
+        <!-- ko ifnot: addressPincodes().length --><oj-input-text label-hint="Pincode" required inputmode="numeric" maxlength="6" placeholder="560001" value="{{address.pincode}}"></oj-input-text><!-- /ko -->
 
         <small class="mb-field-hint">
           Six digits; cannot begin with zero.
@@ -334,10 +327,10 @@
       <div class="wide"><h3 class="mb-subsection">Current address</h3></div>
       <div><oj-input-text label-hint="Country" required maxlength="100" value="{{currentAddress.country}}"></oj-input-text><small class="mb-field-error" data-bind="visible:fieldErrors().currentcountry,text:fieldErrors().currentcountry"></small></div>
       <div class="wide"><oj-input-text label-hint="Address line 1" required maxlength="250" value="{{currentAddress.line1}}"></oj-input-text><small class="mb-field-error" data-bind="visible:fieldErrors().currentline1,text:fieldErrors().currentline1"></small></div>
-      <div class="wide"><oj-input-text label-hint="Address line 2" maxlength="250" value="{{currentAddress.line2}}"></oj-input-text><small class="mb-field-error" data-bind="visible:fieldErrors().currentline2,text:fieldErrors().currentline2"></small></div>
+      <div class="wide"><!-- ko if: currentAddressAreas().length --><div class="mb-plain-select"><select aria-label="Current address area" data-bind="value:currentAddress.line2,enable:currentAddress.city"><option value="" disabled>Area</option><!-- ko foreach:currentAddressAreas --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select></div><!-- /ko --><!-- ko ifnot: currentAddressAreas().length --><oj-input-text label-hint="Area" maxlength="250" value="{{currentAddress.line2}}"></oj-input-text><!-- /ko --><small class="mb-field-error" data-bind="visible:fieldErrors().currentline2,text:fieldErrors().currentline2"></small></div>
       <div class="mb-plain-select"><select aria-label="Current address state" data-bind="value:currentAddress.state"><option value="" disabled>State</option><!-- ko foreach:indianStates --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select><small class="mb-field-error" data-bind="visible:fieldErrors().currentstate,text:fieldErrors().currentstate"></small></div>
       <div class="mb-plain-select"><select aria-label="Current address city or district" data-bind="value:currentAddress.city,enable:currentAddress.state"><option value="" disabled>City / district</option><!-- ko foreach:currentAddressDistricts --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select><small class="mb-field-error" data-bind="visible:fieldErrors().currentcity,text:fieldErrors().currentcity"></small></div>
-      <div class="wide"><oj-input-text label-hint="Pincode" required inputmode="numeric" maxlength="6" placeholder="560001" value="{{currentAddress.pincode}}"></oj-input-text><small class="mb-field-error" data-bind="visible:fieldErrors().currentpincode,text:fieldErrors().currentpincode"></small></div>
+      <div class="wide"><!-- ko if: currentAddressPincodes().length --><div class="mb-plain-select"><select aria-label="Current address pincode" data-bind="value:currentAddress.pincode,enable:currentAddress.line2"><option value="" disabled>Pincode</option><!-- ko foreach:currentAddressPincodes --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select></div><!-- /ko --><!-- ko ifnot: currentAddressPincodes().length --><oj-input-text label-hint="Pincode" required inputmode="numeric" maxlength="6" placeholder="560001" value="{{currentAddress.pincode}}"></oj-input-text><!-- /ko --><small class="mb-field-error" data-bind="visible:fieldErrors().currentpincode,text:fieldErrors().currentpincode"></small></div>
       <!-- /ko -->
 
     </div>
@@ -658,11 +651,8 @@
       </div>
 
       <div class="wide">
-        <oj-input-text
-                label-hint="Address line 2"
-                maxlength="250"
-                value="{{nominee.line2}}"
-        ></oj-input-text>
+        <!-- ko if: nomineeAreas().length --><div class="mb-plain-select"><select aria-label="Nominee address area" data-bind="value:nominee.line2,enable:nominee.city"><option value="" disabled>Area</option><!-- ko foreach:nomineeAreas --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select></div><!-- /ko -->
+        <!-- ko ifnot: nomineeAreas().length --><oj-input-text label-hint="Area" maxlength="250" value="{{nominee.line2}}"></oj-input-text><!-- /ko -->
 
         <small
                 class="mb-field-error"
@@ -685,12 +675,8 @@
       </div>
 
       <div>
-        <oj-input-text
-                label-hint="Pincode"
-                inputmode="numeric"
-                maxlength="6"
-                value="{{nominee.pincode}}"
-        ></oj-input-text>
+        <!-- ko if: nomineePincodes().length --><div class="mb-plain-select"><select aria-label="Nominee address pincode" data-bind="value:nominee.pincode,enable:nominee.line2"><option value="" disabled>Pincode</option><!-- ko foreach:nomineePincodes --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select></div><!-- /ko -->
+        <!-- ko ifnot: nomineePincodes().length --><oj-input-text label-hint="Pincode" inputmode="numeric" maxlength="6" value="{{nominee.pincode}}"></oj-input-text><!-- /ko -->
 
         <small
                 class="mb-field-error"

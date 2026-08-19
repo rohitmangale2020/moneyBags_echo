@@ -73,7 +73,7 @@ define([
       const documentType = String(type || '');
       const needsExpiry = ['PASSPORT', 'DRIVING_LICENSE'].includes(documentType);
       const needsNumber = Boolean(documentType) && !['PHOTO', 'SIGNATURE', 'SALARY_SLIP'].includes(documentType);
-      const showsIssueDate = !['PHOTO', 'SIGNATURE'].includes(documentType);
+      const showsIssueDate = ['PASSPORT', 'DRIVING_LICENSE'].includes(documentType);
       s.documentRequiresExpiry(needsExpiry);
       s.documentRequiresNumber(needsNumber);
       s.documentShowsIssueDate(showsIssueDate);
@@ -82,7 +82,10 @@ define([
       if (!showsIssueDate && s.documentForm()) s.documentForm().issueDate = '';
       if (!needsExpiry && s.documentForm()) s.documentForm().expiryDate = '';
     };
-    s.onDocumentTypeChange = (_, event) => s.setDocumentExpiryRequirement(event.target.value);
+    s.onDocumentTypeChange = (_, event) => {
+      s.setDocumentExpiryRequirement(event.target.value);
+      s.documentForm.valueHasMutated();
+    };
     s.kycForm = ko.observable(kycBlank());
     s.documentForm = ko.observable(documentBlank());
     s.availableDocumentTypes = ko.pureComputed(() => {
@@ -95,19 +98,68 @@ define([
     s.nomineeShareLocked = ko.pureComputed(() => s.otherNomineeShares().length === 0);
     s.includeNomineeAddress = ko.observable(false);
     s.indianStates = ko.observableArray(indiaAddress.states());
+    s.addressState = ko.observable('');
+    s.addressDistrict = ko.observable('');
+    s.addressArea = ko.observable('');
+    s.settingAddress = false;
+    s.addressDistricts = ko.pureComputed(() => { s.indianStates(); return indiaAddress.districts(s.addressState()); });
+    s.addressAreas = ko.pureComputed(() => { s.indianStates(); return indiaAddress.areas(s.addressState(), s.addressDistrict()); });
+    s.addressPincodes = ko.pureComputed(() => { s.indianStates(); return indiaAddress.pincodes(s.addressState(), s.addressDistrict(), s.addressArea()); });
     s.nomineeAddressState = ko.observable('');
+    s.nomineeAddressDistrict = ko.observable('');
+    s.nomineeAddressArea = ko.observable('');
     s.settingNomineeAddress = false;
     s.nomineeAddressDistricts = ko.pureComputed(() => {
       s.indianStates();
       return indiaAddress.districts(s.nomineeAddressState());
     });
+    s.nomineeAddressAreas = ko.pureComputed(() => { s.indianStates(); return indiaAddress.areas(s.nomineeAddressState(), s.nomineeAddressDistrict()); });
+    s.nomineeAddressPincodes = ko.pureComputed(() => { s.indianStates(); return indiaAddress.pincodes(s.nomineeAddressState(), s.nomineeAddressDistrict(), s.nomineeAddressArea()); });
     indiaAddress.load().then(() => s.indianStates(indiaAddress.states()));
     s.nomineeAddressState.subscribe((state) => {
       const form = s.nomineeForm();
       if (!form || !form.address) return;
       form.address.state = state;
-      if (!s.settingNomineeAddress) form.address.city = '';
+      if (!s.settingNomineeAddress) {
+        form.address.city = '';
+        form.address.line2 = '';
+        form.address.pincode = '';
+        s.nomineeAddressDistrict('');
+        s.nomineeAddressArea('');
+      }
       s.nomineeForm.valueHasMutated();
+    });
+    s.nomineeAddressDistrict.subscribe((district) => {
+      const form = s.nomineeForm();
+      if (!form || !form.address) return;
+      form.address.city = district;
+      if (!s.settingNomineeAddress) { form.address.line2 = ''; form.address.pincode = ''; s.nomineeAddressArea(''); }
+      s.nomineeForm.valueHasMutated();
+    });
+    s.nomineeAddressArea.subscribe((area) => {
+      const form = s.nomineeForm();
+      if (!form || !form.address) return;
+      form.address.line2 = area;
+      if (!s.settingNomineeAddress) form.address.pincode = '';
+      s.nomineeForm.valueHasMutated();
+    });
+    s.addressState.subscribe((state) => {
+      const form = s.addressForm();
+      form.state = state;
+      if (!s.settingAddress) { form.city = ''; form.line2 = ''; form.pincode = ''; s.addressDistrict(''); s.addressArea(''); }
+      s.addressForm.valueHasMutated();
+    });
+    s.addressDistrict.subscribe((district) => {
+      const form = s.addressForm();
+      form.city = district;
+      if (!s.settingAddress) { form.line2 = ''; form.pincode = ''; s.addressArea(''); }
+      s.addressForm.valueHasMutated();
+    });
+    s.addressArea.subscribe((area) => {
+      const form = s.addressForm();
+      form.line2 = area;
+      if (!s.settingAddress) form.pincode = '';
+      s.addressForm.valueHasMutated();
     });
     s.documentFile = ko.observable(null);
     s.activationNotice = ko.observable('');
@@ -380,7 +432,7 @@ define([
       try { await app.services.customers.remove(x.customerId); s.showDetailPage(false); app.notify('Customer deleted.'); s.load(); }
       catch (e) { app.notify(e.message, 'error'); }
     };
-    s.openAddress = async (x, newAddressType = 'OFFICE') => { s.error(''); try { const value = x ? await app.services.customers.getAddress(s.selected().customerId, x.addressId) : null; s.addressForm(Object.assign(addressBlank(), { addressType: newAddressType }, value || {})); document.getElementById('addressDialog').open(); } catch (e) { app.notify(e.message, 'error'); } };
+    s.openAddress = async (x, newAddressType = 'OFFICE') => { s.error(''); try { const value = x ? await app.services.customers.getAddress(s.selected().customerId, x.addressId) : null; const form = Object.assign(addressBlank(), { addressType: newAddressType }, value || {}); s.addressForm(form); s.settingAddress = true; s.addressState(form.state || ''); s.addressDistrict(form.city || ''); s.addressArea(form.line2 || ''); s.settingAddress = false; document.getElementById('addressDialog').open(); } catch (e) { app.notify(e.message, 'error'); } };
     s.saveAddress = async () => {
       const raw = ko.toJS(s.addressForm()), addressId = raw.addressId, d = clean({ addressType: raw.addressType, line1: raw.line1, line2: raw.line2, city: raw.city, state: raw.state, country: raw.country, pincode: raw.pincode }), id = s.selected().customerId;
       if (!d.line1 || !d.city || !d.state || !d.country || !/^[1-9][0-9]{5}$/.test(d.pincode || '')) return s.error('Complete the address and enter a valid six-digit pincode.');
@@ -424,7 +476,10 @@ define([
     s.saveDocument = async () => {
       const raw = ko.toJS(s.documentForm()), docId = raw.docId, d = clean({ documentType: raw.documentType, documentNumber: s.documentRequiresNumber() ? raw.documentNumber : null, issueDate: s.documentShowsIssueDate() ? raw.issueDate : null, expiryDate: s.documentRequiresExpiry() ? raw.expiryDate : null, status: raw.status, verifiedBy: null, rejectedReason: raw.rejectedReason, remarks: raw.remarks, updatedBy: raw.updatedBy }), id = s.selected().customerId, file = s.documentFile();
       if (!d.documentType) return s.error('Select a document type.');
+      if (d.documentNumber) d.documentNumber = String(d.documentNumber).trim().toUpperCase();
       if ((s.documentRequiresNumber() && !d.documentNumber) || (!docId && !file)) return s.error(s.documentRequiresNumber() ? 'Document number and file are required.' : 'A document file is required.');
+      if (d.documentType === 'PAN' && !/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(d.documentNumber || '')) return s.error('Enter a PAN in the format AAAAA0000A.');
+      if (d.documentType === 'AADHAAR' && !/^[2-9][0-9]{11}$/.test(d.documentNumber || '')) return s.error('Enter a valid 12-digit Aadhaar number.');
       if (d.issueDate && new Date(d.issueDate) > new Date()) return s.error('Document issue date cannot be in the future.');
       if (s.documentRequiresExpiry() && !d.expiryDate) return s.error('Expiry date is required for this document type.');
       if (d.expiryDate && new Date(d.expiryDate) <= new Date()) return s.error('Expiry date must be in the future.');
@@ -463,6 +518,8 @@ define([
         s.nomineeForm(form);
         s.settingNomineeAddress = true;
         s.nomineeAddressState(form.address.state || '');
+        s.nomineeAddressDistrict(form.address.city || '');
+        s.nomineeAddressArea(form.address.line2 || '');
         s.settingNomineeAddress = false;
         document.getElementById('nomineeDialog').open();
       } catch (e) {
