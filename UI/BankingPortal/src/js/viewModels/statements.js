@@ -5,6 +5,7 @@ define([
   'jspdf',
   'ojs/ojinputtext',
   'ojs/ojbutton',
+  'ojs/ojdialog',
 ], function (ko, app, u, jspdf) {
   const dateValue = (date) => {
     const year = date.getFullYear();
@@ -31,6 +32,9 @@ define([
     s.fromDate = ko.observable(initialRange.from);
     s.toDate = ko.observable(initialRange.to);
     s.sortBy = ko.observable('posted-desc');
+    s.pageSize = ko.observable(10);
+    s.pageSizeOptions = [5, 10, 20];
+    s.currentPage = ko.observable(0);
     s.money = u.money;
     s.date = u.date;
     s.activeCustomer = app.activeCustomer;
@@ -39,7 +43,10 @@ define([
     s.customerAccounts = ko.observableArray([]);
 
     s.loadActiveCustomerAccounts = async () => {
-      if (!s.hasActiveCustomer()) return;
+      if (!s.hasActiveCustomer()) {
+        s.customerAccounts([]);
+        return;
+      }
       try {
         const accounts = (await app.services.accounts.customer(s.activeCustomer().customerId))
           .filter((account) => account.status === 'ACTIVE');
@@ -63,9 +70,16 @@ define([
       return s.state.data().slice().sort(sorters[s.sortBy()] || sorters['posted-desc']);
     });
 
+    s.totalPages = ko.pureComputed(() => Math.max(1, Math.ceil(s.filteredStatements().length / Number(s.pageSize()))));
+    s.pagedStatements = ko.pureComputed(() => {
+      const safePage = Math.min(s.currentPage(), s.totalPages() - 1);
+      const start = safePage * Number(s.pageSize());
+      return s.filteredStatements().slice(start, start + Number(s.pageSize()));
+    });
+
     s.resultSummary = ko.pureComputed(() => {
-      const shown = s.filteredStatements().length;
-      const total = s.state.data().length;
+      const shown = s.pagedStatements().length;
+      const total = s.filteredStatements().length;
       return shown === total ? `${total} entr${total === 1 ? 'y' : 'ies'}` : `${shown} of ${total} entries`;
     });
 
@@ -78,6 +92,7 @@ define([
       if (s.fromDate() > s.toDate()) {
         return Promise.resolve(s.state.error('From date cannot be after to date.'));
       }
+      s.currentPage(0);
       return s.state.run(async () => {
         const accounts = u.list(await app.services.accounts.number(accountNumber));
         if (!accounts.length) throw new Error('Account number was not found.');
@@ -105,6 +120,20 @@ define([
       s.currentMonth();
     };
 
+    s.previousPage = () => {
+      if (s.currentPage() > 0) s.currentPage(s.currentPage() - 1);
+    };
+    s.nextPage = () => {
+      if (s.currentPage() < s.totalPages() - 1) s.currentPage(s.currentPage() + 1);
+    };
+    [s.accountNumber, s.entryType, s.channel, s.fromDate, s.toDate, s.sortBy, s.pageSize]
+      .forEach((observable) => observable.subscribe(() => s.currentPage(0)));
+    s.activeCustomer.subscribe(() => {
+      s.accountNumber('');
+      s.loadActiveCustomerAccounts();
+    });
+    s.activeAccountId.subscribe(() => s.loadActiveCustomerAccounts());
+
     s.displayMoney = (value, currencyCode) =>
       value === null || value === undefined ? '' : u.money(value, currencyCode);
 
@@ -123,8 +152,17 @@ define([
       return text.length > maxLength ? `${text.slice(0, maxLength - 3)}...` : text;
     };
 
-    s.download = async () => {
+    s.download = () => {
       if (!s.filteredStatements().length) return;
+      document.getElementById('statementPasswordDialog').open();
+    };
+
+    s.cancelDownload = () => {
+      document.getElementById('statementPasswordDialog').close();
+    };
+
+    s.confirmDownload = async () => {
+      document.getElementById('statementPasswordDialog').close();
       try {
         const accountNumber = String(s.accountNumber() || '').trim();
         const accounts = u.list(await app.services.accounts.number(accountNumber));
@@ -149,8 +187,8 @@ define([
         const columns = [
           { label: 'Posted', width: 26 }, { label: 'Description', width: 72 },
           { label: 'Reference', width: 35 }, { label: 'Channel', width: 31 },
-          { label: 'Withdrawal', width: 31 }, { label: 'Deposit', width: 31 },
-          { label: 'Closing balance', width: 38 },
+          { label: 'Withdrawal', width: 31, align: 'right' }, { label: 'Deposit', width: 31, align: 'right' },
+          { label: 'Closing balance', width: 38, align: 'right' },
         ];
         const header = () => {
           document.setFont('helvetica', 'bold');
@@ -167,7 +205,9 @@ define([
           document.setFont('helvetica', 'bold');
           document.setFontSize(7);
           columns.forEach((column) => {
-            document.text(column.label, x + 1, 36.5);
+            const textX = column.align === 'right' ? x + column.width - 1 : x + 1;
+            document.text(column.label, textX, 36.5,
+              column.align === 'right' ? { align: 'right' } : undefined);
             x += column.width;
           });
           document.setTextColor(0, 0, 0);
@@ -194,7 +234,10 @@ define([
           ];
           let x = margin;
           values.forEach((value, valueIndex) => {
-            document.text(String(value || ''), x + 1, y + 4);
+            const column = columns[valueIndex];
+            const textX = column.align === 'right' ? x + column.width - 1 : x + 1;
+            document.text(String(value || ''), textX, y + 4,
+              column.align === 'right' ? { align: 'right' } : undefined);
             x += columns[valueIndex].width;
           });
           y += 6;

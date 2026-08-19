@@ -399,6 +399,7 @@ define([
     s.sortBy = ko.observable('created-desc');
     s.currentPage = ko.observable(0);
     s.pageSize = ko.observable(20);
+    s.pageSizeOptions = [5, 10, 20];
     s.selectedLog = ko.observable(null);
     s.selectedFields = ko.observableArray([]);
     s.selectedChanges = ko.observableArray([]);
