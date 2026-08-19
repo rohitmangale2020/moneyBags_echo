@@ -149,8 +149,8 @@ public class BankTransactionService {
         if (transaction.getTransactionStatus() != TransactionStatus.PENDING_APPROVAL) {
             throw new IllegalStateException("Only transactions pending approval can be decided");
         }
-        approvalRepository.save(TransactionApproval.riskDecision(transaction, approverId,
-                approve ? ApprovalStatus.APPROVED : ApprovalStatus.REJECTED, limit(note, 500)));
+        recordRiskDecision(transaction, approverId,
+                approve ? ApprovalStatus.APPROVED : ApprovalStatus.REJECTED, limit(note, 500));
         if (!approve) {
             transaction.setTransactionStatus(TransactionStatus.CANCELLED);
             transaction.setFailureCode("RISK_REJECTED");
@@ -173,6 +173,17 @@ public class BankTransactionService {
         transaction.setFailureReason(null);
         postToAccounts(transaction);
         return transactionRepository.save(transaction);
+    }
+
+    private void recordRiskDecision(BankTransaction transaction, String approverId,
+                                    ApprovalStatus status, String note) {
+        approvalRepository
+                .findByTransactionTransactionIdAndAccountHolderAccountIdAndAccountHolderCustomerId(
+                        transaction.getTransactionId(), "RISK_ADMIN", approverId)
+                .ifPresentOrElse(existing -> {
+                    existing.updateRiskDecision(status, note);
+                    approvalRepository.save(existing);
+                }, () -> approvalRepository.save(TransactionApproval.riskDecision(transaction, approverId, status, note)));
     }
 
     private void postToAccounts(BankTransaction persisted) {

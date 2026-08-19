@@ -64,12 +64,21 @@ define([
     s.isSingleAccount = ko.pureComputed(
       () => s.operation() === 'DEPOSIT' || s.operation() === 'WITHDRAWAL',
     );
-    s.hasCustomerAccounts = ko.pureComputed(() => s.accounts().length > 0);
+    const isEligibleTransactionAccount = (account) => account
+      && account.status === 'ACTIVE'
+      && ['SAVINGS', 'SALARY', 'CURRENT'].includes(
+        String(account.productTypeCode || '').toUpperCase(),
+      );
+    s.eligibleAccounts = ko.pureComputed(() =>
+      s.accounts().filter(isEligibleTransactionAccount),
+    );
+    s.hasCustomerAccounts = ko.pureComputed(() => s.eligibleAccounts().length > 0);
     s.eligibleRecipientAccounts = ko.pureComputed(() => {
       const debitAccountId = String(s.form.debitAccountId() || '');
       const currencyCode = String(s.form.currencyCode() || '').toUpperCase();
       return s.recipientAccounts().filter((account) =>
-        String(account.accountId) !== debitAccountId
+        isEligibleTransactionAccount(account)
+        && String(account.accountId) !== debitAccountId
         && (!currencyCode || String(account.currencyCode || '').toUpperCase() === currencyCode),
       );
     });
@@ -304,10 +313,10 @@ define([
         const customerId = String(customer.customerId);
         if (app.setTransactionCustomerId) app.setTransactionCustomerId(customerId);
         const accounts = (await app.services.accounts.customer(customerId))
-          .filter((account) => account.status === 'ACTIVE'
-            && String(account.productTypeCode || '').toUpperCase() !== 'FD');
+          .filter(isEligibleTransactionAccount);
         s.customerId(customerId);
         s.accounts(accounts);
+        const eligibleAccounts = s.eligibleAccounts();
         const firstAccountId = eligibleAccounts[0] ? String(eligibleAccounts[0].accountId) : '';
         const secondAccountId = eligibleAccounts[1] ? String(eligibleAccounts[1].accountId) : '';
         s.form.fromAccountId(firstAccountId);
@@ -338,8 +347,7 @@ define([
         const customer = await s.resolveCustomer(recipientLookup, s.recipientMatches);
         if (!customer) return s.error('Choose a matching recipient below.');
         const accounts = (await app.services.accounts.customer(String(customer.customerId)))
-          .filter((account) => account.status === 'ACTIVE'
-            && String(account.productTypeCode || '').toUpperCase() !== 'FD');
+          .filter(isEligibleTransactionAccount);
         s.recipientAccounts(accounts);
         const eligibleAccounts = s.eligibleRecipientAccounts();
         s.form.creditAccountId(eligibleAccounts[0] ? String(eligibleAccounts[0].accountId) : '');
