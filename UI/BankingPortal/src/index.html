@@ -122,9 +122,11 @@
           config="[[moduleAdapter.koObservableConfig]]"
         ></oj-module>
       </div>
-      <button type="button" class="mb-ai-fab" data-bind="click:openAssistant" aria-label="Open banking assistant">
-        <span class="oj-ux-ico-chat" aria-hidden="true"></span><span>Ask AI</span>
-      </button>
+      <oj-bind-if test="[[isAppShellReady]]">
+        <button type="button" class="mb-ai-fab" data-bind="click:openAssistant, visible:selection.path() !== 'assistant'" aria-label="Open banking assistant">
+          <span class="oj-ux-ico-chat" aria-hidden="true"></span><span>Ask AI</span>
+        </button>
+      </oj-bind-if>
       <div class="mb-toasts" aria-live="polite">
         <oj-bind-for-each data="[[toasts]]"
           ><template
@@ -134,7 +136,7 @@
                   value="[[$current.data.text]]"
                 ></oj-bind-text></span
               ><button
-                on-click="[[$parent.dismiss.bind(null,$current.data)]]"
+                on-click="[[dismiss.bind(null,$current.data)]]"
                 aria-label="Dismiss"
               >
                 ×

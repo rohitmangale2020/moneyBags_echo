@@ -47,7 +47,7 @@
       <small>Fetching customer details…</small>
     </div>
     <div data-bind="with:selected">
-      <div class="mb-detail-hero"><div><small data-bind="text:cifNo"></small><h2 data-bind="text:`${firstName} ${lastName||''}`"></h2><p data-bind="text:`${email||'No email'} · ${phone}`"></p></div><span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span></div>
+      <div class="mb-detail-hero"><div><small data-bind="text:cifNo"></small><h2 data-bind="text:`${firstName} ${lastName||''}`"></h2><p data-bind="text:`${email||'No email'} · ${phone}`"></p></div><span class="mb-badge mb-customer-status" data-bind="text:status,css:status.toLowerCase()"></span><oj-button class="mb-customer-new-transaction" chroming="callToAction" on-oj-action="[[$parent.openTransactionForCustomer]]">New transaction</oj-button></div>
       <div class="mb-detail-actions"><button class="mb-link" data-bind="click:$parent.editCustomer">Edit profile</button><button class="mb-link" data-bind="click:()=>$parent.status($data),text:status==='ACTIVE'?'Deactivate':'Activate'"></button><button class="mb-link" data-bind="click:$parent.openAccountForCustomer,text:$parent.accountActionLabel"></button><button class="mb-link danger" data-bind="click:()=>$parent.remove($data)">Delete</button></div>
     </div>
     <div class="mb-info" data-bind="visible:!kycVerified()">Verify KYC first. An account/product can be added only after KYC is verified.</div>
@@ -70,7 +70,7 @@
         <small>Fetching customer details…</small>
       </div>
       <div data-bind="with:selected">
-        <div class="mb-detail-hero"><div><small data-bind="text:cifNo"></small><h2 data-bind="text:`${firstName} ${lastName||''}`"></h2><p data-bind="text:`${email||'No email'} · ${phone}`"></p></div><span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span></div>
+        <div class="mb-detail-hero"><div><small data-bind="text:cifNo"></small><h2 data-bind="text:`${firstName} ${lastName||''}`"></h2><p data-bind="text:`${email||'No email'} · ${phone}`"></p></div><span class="mb-badge mb-customer-status" data-bind="text:status,css:status.toLowerCase()"></span><oj-button class="mb-customer-new-transaction" chroming="callToAction" on-oj-action="[[$parent.openTransactionForCustomer]]">New transaction</oj-button></div>
         <div class="mb-detail-actions"><button class="mb-link" data-bind="click:$parent.editCustomer">Edit profile</button><button class="mb-link" data-bind="click:()=>$parent.status($data),text:status==='ACTIVE'?'Deactivate':'Activate'"></button><button class="mb-link" data-bind="click:$parent.openAccountForCustomer,text:$parent.accountActionLabel"></button><button class="mb-link danger" data-bind="click:()=>$parent.remove($data)">Delete</button></div>
       </div>
       <div class="mb-info" data-bind="visible:!kycVerified()">Verify KYC first. An account/product can be added only after KYC is verified.</div>

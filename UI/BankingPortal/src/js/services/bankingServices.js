@@ -4,7 +4,7 @@ define(['services/apiClient'], function (api) {
   return {
     auth: { login: (u, p) => api.post('/auth/login', { username: u, password: p }) },
     assistant: {
-      chat: (message, customerId, transactionId, accountId, module) => api.post('/oda/assistant/chat', {
+      chat: (message, customerId, transactionId, accountId, module) => api.postPublic('/auth/gpt-oss/chat', {
         message,
         customerId: customerId ? Number(customerId) : null,
         transactionId: transactionId || null,
