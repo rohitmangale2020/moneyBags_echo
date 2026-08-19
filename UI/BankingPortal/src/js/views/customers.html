@@ -12,8 +12,8 @@
     <label>Status<select data-bind="value:statusFilter"><option value="">All customers</option><option value="KYC_PENDING">KYC pending</option><option value="ACTIVE">Active</option><option value="INACTIVE">Inactive</option></select></label>
   </div>
   <div class="mb-error" data-bind="visible:state.error"><span data-bind="text:state.error"></span><button data-bind="click:load">Retry</button></div>
-  <div class="mb-loading mb-moneybags-loader" data-bind="visible:!showDetailPage() && state.loading()" role="status" aria-live="polite">
-    <img class="mb-moneybags-loader-logo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Crect width='36' height='36' rx='10' fill='white'/%3E%3Ctext x='18' y='25' text-anchor='middle' font-family='Arial,sans-serif' font-size='20' font-weight='800' fill='%23355eb8'%3EM%3C/text%3E%3C/svg%3E" alt="" aria-hidden="true" />
+  <div class="mb-account-page-loader mb-table-loader mb-moneybags-loader" data-bind="visible:!showDetailPage() && state.loading()" role="status" aria-live="polite">
+    <svg class="mb-moneybags-loader-logo" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><rect width="36" height="36" rx="10" fill="white"/><text x="18" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="800" fill="#355eb8">M</text></svg>
     <strong>Loading customers</strong>
     <small>Fetching the latest customer records…</small>
   </div>
@@ -41,12 +41,12 @@
       <oj-button on-oj-action="[[backToDirectory]]">← Back to customers</oj-button>
     </div>
     <div class="mb-error" data-bind="visible:error,text:error"></div>
-    <div class="mb-loading mb-moneybags-loader" data-bind="visible:workspaceLoading() || detailState.loading()" role="status" aria-live="polite">
-      <img class="mb-moneybags-loader-logo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Crect width='36' height='36' rx='10' fill='white'/%3E%3Ctext x='18' y='25' text-anchor='middle' font-family='Arial,sans-serif' font-size='20' font-weight='800' fill='%23355eb8'%3EM%3C/text%3E%3C/svg%3E" alt="" aria-hidden="true" />
+    <div class="mb-account-page-loader mb-table-loader mb-moneybags-loader" data-bind="visible:workspaceLoading() || detailState.loading()" role="status" aria-live="polite">
+      <svg class="mb-moneybags-loader-logo" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><rect width="36" height="36" rx="10" fill="white"/><text x="18" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="800" fill="#355eb8">M</text></svg>
       <strong>Loading customer records</strong>
       <small>Fetching customer details…</small>
     </div>
-    <div data-bind="with:selected">
+    <div data-bind="with:selected,visible:!workspaceLoading() && !detailState.loading()">
       <div class="mb-detail-hero"><div><small data-bind="text:cifNo"></small><h2 data-bind="text:`${firstName} ${lastName||''}`"></h2><p data-bind="text:`${email||'No email'} · ${phone}`"></p></div><span class="mb-badge mb-customer-status" data-bind="text:status,css:status.toLowerCase()"></span><oj-button class="mb-customer-new-transaction" chroming="callToAction" on-oj-action="[[$parent.openTransactionForCustomer]]">New transaction</oj-button></div>
       <div class="mb-detail-actions"><button class="mb-link" data-bind="click:$parent.editCustomer">Edit profile</button><button class="mb-link" data-bind="click:()=>$parent.status($data),text:status==='ACTIVE'?'Deactivate':'Activate'"></button><button class="mb-link" data-bind="click:$parent.openAccountForCustomer,text:$parent.accountActionLabel"></button><button class="mb-link danger" data-bind="click:()=>$parent.remove($data)">Delete</button></div>
     </div>
@@ -125,7 +125,21 @@
     </div>
     <oj-input-text label-hint="Email" value="{{form().email}}"></oj-input-text><oj-input-text label-hint="Occupation" value="{{form().occupation}}"></oj-input-text></div></div><div slot="footer" class="mb-dialog-actions"><oj-button on-oj-action="[[$data.close.bind(null,'customerEditDialog')]]">Cancel</oj-button><oj-button chroming="callToAction" on-oj-action="[[saveCustomer]]">Save profile</oj-button></div></oj-dialog>
 
-  <oj-dialog id="addressDialog" class="mb-dialog" dialog-title="Customer address" cancel-behavior="icon"><div slot="body"><div class="mb-error" data-bind="visible:error,text:error"></div><div class="mb-form"><label class="mb-managed-field" data-field-label="Address type"><select data-bind="value:addressForm().addressType"><option>CURRENT</option><option>PERMANENT</option><option>OFFICE</option></select></label><oj-input-text label-hint="Address line 1" required value="{{addressForm().line1}}"></oj-input-text><div class="mb-select-field"><label>State</label><select data-bind="value:addressState"><option value="">Select state / union territory</option><!-- ko foreach:indianStates --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select></div><div class="mb-select-field"><label>City / district</label><select data-bind="value:addressDistrict,enable:addressState"><option value="">Select city / district</option><!-- ko foreach:addressDistricts --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select></div><!-- ko if: addressAreas().length --><div class="mb-select-field"><label>Area</label><select data-bind="value:addressArea,enable:addressDistrict"><option value="">Select area</option><!-- ko foreach:addressAreas --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select></div><!-- /ko --><!-- ko ifnot: addressAreas().length --><oj-input-text label-hint="Area" value="{{addressArea}}"></oj-input-text><!-- /ko --><oj-input-text label-hint="Country" required value="{{addressForm().country}}"></oj-input-text><!-- ko if: addressPincodes().length --><div class="mb-select-field"><label>Pincode</label><select data-bind="value:addressForm().pincode,enable:addressArea"><option value="">Select pincode</option><!-- ko foreach:addressPincodes --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select></div><!-- /ko --><!-- ko ifnot: addressPincodes().length --><oj-input-text label-hint="Pincode" required value="{{addressForm().pincode}}"></oj-input-text><!-- /ko --></div></div><div slot="footer" class="mb-dialog-actions"><oj-button on-oj-action="[[$data.close.bind(null,'addressDialog')]]">Cancel</oj-button><oj-button chroming="callToAction" on-oj-action="[[saveAddress]]">Save address</oj-button></div></oj-dialog>
+  <oj-dialog id="addressDialog" class="mb-dialog" dialog-title="Customer address" cancel-behavior="icon">
+    <div slot="body"><div class="mb-error" data-bind="visible:error,text:error"></div><div class="mb-form">
+      <!-- ko if: addressForm().addressId --><label class="mb-managed-field" data-field-label="Address type"><select data-bind="value:addressForm().addressType"><option>CURRENT</option><option>PERMANENT</option><option>OFFICE</option></select></label><!-- /ko -->
+      <!-- ko ifnot: addressForm().addressId --><oj-input-text label-hint="Address type" value="OFFICE" readonly></oj-input-text><!-- /ko -->
+      <oj-input-text label-hint="Address line 1" required value="{{addressForm().line1}}"></oj-input-text>
+      <!-- ko if: addressAreas().length --><div class="mb-select-field"><label>Address line 2</label><select data-bind="value:addressArea,enable:addressDistrict"><option value="">Select address line 2</option><!-- ko foreach:addressAreas --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select></div><!-- /ko -->
+      <!-- ko ifnot: addressAreas().length --><oj-input-text label-hint="Address line 2" value="{{addressArea}}"></oj-input-text><!-- /ko -->
+      <div class="mb-select-field"><label>State</label><select data-bind="value:addressState"><option value="">Select state / union territory</option><!-- ko foreach:indianStates --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select></div>
+      <div class="mb-select-field"><label>City / district</label><select data-bind="value:addressDistrict,enable:addressState"><option value="">Select city / district</option><!-- ko foreach:addressDistricts --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select></div>
+      <oj-input-text label-hint="Country" required value="{{addressForm().country}}"></oj-input-text>
+      <!-- ko if: addressPincodes().length --><div class="mb-select-field"><label>Pincode</label><select data-bind="value:addressForm().pincode,enable:addressArea"><option value="">Select pincode</option><!-- ko foreach:addressPincodes --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select></div><!-- /ko -->
+      <!-- ko ifnot: addressPincodes().length --><oj-input-text label-hint="Pincode" required value="{{addressForm().pincode}}"></oj-input-text><!-- /ko -->
+    </div></div>
+    <div slot="footer" class="mb-dialog-actions"><oj-button on-oj-action="[[$data.close.bind(null,'addressDialog')]]">Cancel</oj-button><oj-button chroming="callToAction" on-oj-action="[[saveAddress]]">Save address</oj-button></div>
+  </oj-dialog>
 
   <oj-dialog id="kycDialog" class="mb-dialog" dialog-title="KYC verification" cancel-behavior="icon"><div slot="body"><div class="mb-error" data-bind="visible:error,text:error"></div><div class="mb-form"><label class="mb-managed-field" data-field-label="KYC status"><select data-bind="value:kycForm().kycStatus"><option>NOT_STARTED</option><option>PENDING</option><option>VERIFIED</option><option>REJECTED</option></select></label><oj-input-date label-hint="KYC date" value="{{kycForm().kycDate}}"></oj-input-date><oj-input-date label-hint="Expiry date" value="{{kycForm().expiryDate}}"></oj-input-date><div><oj-input-text label-hint="Verified by user ID" readonly value="{{kycForm().verifiedBy}}"></oj-input-text><small class="mb-field-hint">Automatically taken from the signed-in employee.</small></div><label class="wide mb-managed-field" data-field-label="Remarks"><textarea data-bind="value:kycForm().remarks" maxlength="500"></textarea></label></div></div><div slot="footer" class="mb-dialog-actions"><oj-button on-oj-action="[[$data.close.bind(null,'kycDialog')]]">Cancel</oj-button><oj-button chroming="callToAction" on-oj-action="[[saveKyc]]">Save KYC</oj-button></div></oj-dialog>
 
@@ -154,8 +168,7 @@
       <div class="mb-form three">
         <oj-input-text label-hint="Name" required value="{{nomineeForm().nomineeName}}"></oj-input-text>
         <label class="mb-managed-field" data-field-label="Relationship"><select data-bind="value:nomineeForm().relationship"><option value="">Select relationship</option><option>Legal guardian</option><option>Parent</option><option>Spouse</option><option>Child</option><option>Sibling</option><option>Other</option></select></label>
-        <label class="mb-managed-field" data-field-label="Relation type"><select data-bind="value:nomineeForm().relationType"><option>NOMINEE</option><option>JOIN_HOLDER</option><option>GUARDIAN</option><option>AUTHORIZED_SIGNATORY</option></select></label>
-        <label class="mb-managed-field" data-field-label="Status"><select data-bind="value:nomineeForm().status"><option>ACTIVE</option><option>INACTIVE</option><option>PENDING</option><option>CLOSED</option></select></label>
+        <label class="mb-managed-field" data-field-label="Relation type"><select data-bind="value:nomineeForm().relationType"><option value="" disabled>Select relation type</option><option>NOMINEE</option><option>JOIN_HOLDER</option><option>GUARDIAN</option><option>AUTHORIZED_SIGNATORY</option></select></label>
         <oj-input-date label-hint="Date of birth" max="[[adultDobMax]]" value="{{nomineeForm().dob}}"></oj-input-date>
         <div>
           <div class="mb-phone-pair">
@@ -183,6 +196,11 @@
           </div>
         </div>
         <oj-input-text label-hint="Share percentage" value="{{nomineeForm().sharePercentage}}"></oj-input-text>
+        <div class="wide" data-bind="visible:otherNomineeShares().length">
+          <!-- ko foreach:otherNomineeShares -->
+          <oj-input-text label-hint="[[`${nomineeName} share percentage`]]" inputmode="decimal" value="{{sharePercentage}}"></oj-input-text>
+          <!-- /ko -->
+        </div>
         <oj-input-date label-hint="Start date" value="{{nomineeForm().startDate}}"></oj-input-date>
         <oj-input-date label-hint="End date" value="{{nomineeForm().endDate}}"></oj-input-date>
         <label class="wide mb-nominee-address-toggle"><input type="checkbox" data-bind="checked:includeNomineeAddress" /> Add a separate address for this nominee</label>
@@ -190,8 +208,8 @@
       <div class="mb-form three mb-subsection mb-nominee-address-form" data-bind="visible:includeNomineeAddress">
         <label class="mb-managed-field" data-field-label="Address type"><select data-bind="value:nomineeForm().address.addressType"><option>CURRENT</option><option>PERMANENT</option><option>OFFICE</option></select></label>
         <oj-input-text label-hint="Address line 1" value="{{nomineeForm().address.line1}}"></oj-input-text>
-        <!-- ko if: nomineeAddressAreas().length --><div class="mb-select-field"><label>Area</label><select data-bind="value:nomineeAddressArea,enable:nomineeAddressDistrict"><option value="">Select area</option><!-- ko foreach:nomineeAddressAreas --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select></div><!-- /ko -->
-        <!-- ko ifnot: nomineeAddressAreas().length --><oj-input-text label-hint="Area" value="{{nomineeAddressArea}}"></oj-input-text><!-- /ko -->
+        <!-- ko if: nomineeAddressAreas().length --><div class="mb-select-field"><label>Address line 2</label><select data-bind="value:nomineeAddressArea,enable:nomineeAddressDistrict"><option value="">Select address line 2</option><!-- ko foreach:nomineeAddressAreas --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select></div><!-- /ko -->
+        <!-- ko ifnot: nomineeAddressAreas().length --><oj-input-text label-hint="Address line 2" value="{{nomineeAddressArea}}"></oj-input-text><!-- /ko -->
         <div class="mb-select-field">
           <label for="nomineeState">State</label>
           <select id="nomineeState" data-bind="value:nomineeAddressState"><option value="">Select state / union territory</option><!-- ko foreach:indianStates --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select>

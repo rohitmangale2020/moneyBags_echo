@@ -253,20 +253,6 @@
 
       <div class="wide"><h3 class="mb-subsection">Permanent address</h3></div>
 
-      <div>
-        <oj-input-text
-                label-hint="Country"
-                required
-                maxlength="100"
-                value="{{address.country}}"
-        ></oj-input-text>
-
-        <small
-                class="mb-field-error"
-                data-bind="visible:fieldErrors().permanentcountry,text:fieldErrors().permanentcountry"
-        ></small>
-      </div>
-
       <div class="wide">
         <oj-input-text
                 label-hint="Address line 1"
@@ -283,9 +269,9 @@
 
       <div class="wide">
         <!-- ko if: addressAreas().length -->
-        <div class="mb-plain-select"><select aria-label="Permanent address area" data-bind="value:address.line2,enable:address.city"><option value="" disabled>Area</option><!-- ko foreach:addressAreas --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select></div>
+        <div class="mb-plain-select"><select aria-label="Permanent address line 2" data-bind="value:address.line2,enable:address.city"><option value="" disabled>Address line 2</option><!-- ko foreach:addressAreas --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select></div>
         <!-- /ko -->
-        <!-- ko ifnot: addressAreas().length --><oj-input-text label-hint="Area" maxlength="250" value="{{address.line2}}"></oj-input-text><!-- /ko -->
+        <!-- ko ifnot: addressAreas().length --><oj-input-text label-hint="Address line 2" maxlength="250" value="{{address.line2}}"></oj-input-text><!-- /ko -->
 
         <small
                 class="mb-field-error"
@@ -307,6 +293,11 @@
         <small class="mb-field-error" data-bind="visible:fieldErrors().permanentcity,text:fieldErrors().permanentcity"></small>
       </div>
 
+      <div>
+        <oj-input-text label-hint="Country" required maxlength="100" value="{{address.country}}"></oj-input-text>
+        <small class="mb-field-error" data-bind="visible:fieldErrors().permanentcountry,text:fieldErrors().permanentcountry"></small>
+      </div>
+
       <div class="wide">
         <!-- ko if: addressPincodes().length --><div class="mb-plain-select"><select aria-label="Permanent address pincode" data-bind="value:address.pincode,enable:address.line2"><option value="" disabled>Pincode</option><!-- ko foreach:addressPincodes --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select></div><!-- /ko -->
         <!-- ko ifnot: addressPincodes().length --><oj-input-text label-hint="Pincode" required inputmode="numeric" maxlength="6" placeholder="560001" value="{{address.pincode}}"></oj-input-text><!-- /ko -->
@@ -325,11 +316,11 @@
 
       <!-- ko if:!sameAsPermanentAddress() -->
       <div class="wide"><h3 class="mb-subsection">Current address</h3></div>
-      <div><oj-input-text label-hint="Country" required maxlength="100" value="{{currentAddress.country}}"></oj-input-text><small class="mb-field-error" data-bind="visible:fieldErrors().currentcountry,text:fieldErrors().currentcountry"></small></div>
       <div class="wide"><oj-input-text label-hint="Address line 1" required maxlength="250" value="{{currentAddress.line1}}"></oj-input-text><small class="mb-field-error" data-bind="visible:fieldErrors().currentline1,text:fieldErrors().currentline1"></small></div>
-      <div class="wide"><!-- ko if: currentAddressAreas().length --><div class="mb-plain-select"><select aria-label="Current address area" data-bind="value:currentAddress.line2,enable:currentAddress.city"><option value="" disabled>Area</option><!-- ko foreach:currentAddressAreas --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select></div><!-- /ko --><!-- ko ifnot: currentAddressAreas().length --><oj-input-text label-hint="Area" maxlength="250" value="{{currentAddress.line2}}"></oj-input-text><!-- /ko --><small class="mb-field-error" data-bind="visible:fieldErrors().currentline2,text:fieldErrors().currentline2"></small></div>
+      <div class="wide"><!-- ko if: currentAddressAreas().length --><div class="mb-plain-select"><select aria-label="Current address line 2" data-bind="value:currentAddress.line2,enable:currentAddress.city"><option value="" disabled>Address line 2</option><!-- ko foreach:currentAddressAreas --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select></div><!-- /ko --><!-- ko ifnot: currentAddressAreas().length --><oj-input-text label-hint="Address line 2" maxlength="250" value="{{currentAddress.line2}}"></oj-input-text><!-- /ko --><small class="mb-field-error" data-bind="visible:fieldErrors().currentline2,text:fieldErrors().currentline2"></small></div>
       <div class="mb-plain-select"><select aria-label="Current address state" data-bind="value:currentAddress.state"><option value="" disabled>State</option><!-- ko foreach:indianStates --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select><small class="mb-field-error" data-bind="visible:fieldErrors().currentstate,text:fieldErrors().currentstate"></small></div>
       <div class="mb-plain-select"><select aria-label="Current address city or district" data-bind="value:currentAddress.city,enable:currentAddress.state"><option value="" disabled>City / district</option><!-- ko foreach:currentAddressDistricts --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select><small class="mb-field-error" data-bind="visible:fieldErrors().currentcity,text:fieldErrors().currentcity"></small></div>
+      <div><oj-input-text label-hint="Country" required maxlength="100" value="{{currentAddress.country}}"></oj-input-text><small class="mb-field-error" data-bind="visible:fieldErrors().currentcountry,text:fieldErrors().currentcountry"></small></div>
       <div class="wide"><!-- ko if: currentAddressPincodes().length --><div class="mb-plain-select"><select aria-label="Current address pincode" data-bind="value:currentAddress.pincode,enable:currentAddress.line2"><option value="" disabled>Pincode</option><!-- ko foreach:currentAddressPincodes --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select></div><!-- /ko --><!-- ko ifnot: currentAddressPincodes().length --><oj-input-text label-hint="Pincode" required inputmode="numeric" maxlength="6" placeholder="560001" value="{{currentAddress.pincode}}"></oj-input-text><!-- /ko --><small class="mb-field-error" data-bind="visible:fieldErrors().currentpincode,text:fieldErrors().currentpincode"></small></div>
       <!-- /ko -->
 
@@ -374,24 +365,6 @@
         </select>
       </div>
 
-      <div class="wide">
-        <label class="mb-file">
-          <strong
-                  data-bind="text:file()?file().name:'Choose PDF or image'"
-          ></strong>
-
-          <input
-                  type="file"
-          data-bind="attr:{accept:documentFileAccept},event:{change:choose}"
-          />
-        </label>
-
-        <small
-                class="mb-field-error"
-                data-bind="visible:fieldErrors().file,text:fieldErrors().file"
-        ></small>
-      </div>
-
       <!-- ko if:documentRequiresNumber -->
       <div>
         <oj-input-text label-hint="[[document.documentType()==='PAN' ? 'PAN number (AAAAA0000A)' : document.documentType()==='AADHAAR' ? 'Aadhaar number (12 digits)' : 'Document number']]" required maxlength="100" value="{{document.documentNumber}}"></oj-input-text>
@@ -413,6 +386,14 @@
         <small class="mb-field-error" data-bind="visible:fieldErrors().expiryDate,text:fieldErrors().expiryDate"></small>
       </div>
       <!-- /ko -->
+
+      <div class="wide">
+        <label class="mb-file">
+          <strong data-bind="text:file()?file().name:'Choose PDF or image'"></strong>
+          <input type="file" data-bind="attr:{accept:documentFileAccept},event:{change:choose}" />
+        </label>
+        <small class="mb-field-error" data-bind="visible:fieldErrors().file,text:fieldErrors().file"></small>
+      </div>
 
     </div>
 
@@ -627,19 +608,6 @@
 
       <div>
         <oj-input-text
-                label-hint="Country"
-                maxlength="100"
-                value="{{nominee.country}}"
-        ></oj-input-text>
-
-        <small
-                class="mb-field-error"
-                data-bind="visible:fieldErrors().nomineeCountry,text:fieldErrors().nomineeCountry"
-        ></small>
-      </div>
-
-      <div>
-        <oj-input-text
                 label-hint="Address line 1"
                 maxlength="250"
                 value="{{nominee.line1}}"
@@ -652,8 +620,8 @@
       </div>
 
       <div class="wide">
-        <!-- ko if: nomineeAreas().length --><div class="mb-plain-select"><select aria-label="Nominee address area" data-bind="value:nominee.line2,enable:nominee.city"><option value="" disabled>Area</option><!-- ko foreach:nomineeAreas --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select></div><!-- /ko -->
-        <!-- ko ifnot: nomineeAreas().length --><oj-input-text label-hint="Area" maxlength="250" value="{{nominee.line2}}"></oj-input-text><!-- /ko -->
+        <!-- ko if: nomineeAreas().length --><div class="mb-plain-select"><select aria-label="Nominee address line 2" data-bind="value:nominee.line2,enable:nominee.city"><option value="" disabled>Address line 2</option><!-- ko foreach:nomineeAreas --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select></div><!-- /ko -->
+        <!-- ko ifnot: nomineeAreas().length --><oj-input-text label-hint="Address line 2" maxlength="250" value="{{nominee.line2}}"></oj-input-text><!-- /ko -->
 
         <small
                 class="mb-field-error"
@@ -673,6 +641,11 @@
       <div class="mb-plain-select">
         <select id="nomineeDistrict" aria-label="Nominee city or district" data-bind="value:nominee.city,enable:nominee.state"><option value="" disabled>City / district</option><!-- ko foreach:nomineeDistricts --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select>
         <small class="mb-field-error" data-bind="visible:fieldErrors().nomineeCity,text:fieldErrors().nomineeCity"></small>
+      </div>
+
+      <div>
+        <oj-input-text label-hint="Country" maxlength="100" value="{{nominee.country}}"></oj-input-text>
+        <small class="mb-field-error" data-bind="visible:fieldErrors().nomineeCountry,text:fieldErrors().nomineeCountry"></small>
       </div>
 
       <div>

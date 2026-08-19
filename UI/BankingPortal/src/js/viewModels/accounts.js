@@ -89,6 +89,7 @@ define([
     });
     s.busy = ko.observable(false);
     s.openingAccountForm = ko.observable(false);
+    s.loadingAccountEdit = ko.observable(false);
     s.submissionState = ko.observable('idle');
     s.submissionMessage = ko.observable('');
     s.closingAccount = ko.observable(false);
@@ -223,6 +224,7 @@ define([
     });
     s.money = u.money;
     s.date = u.date;
+    s.preventNumberWheel = (_, event) => event.preventDefault();
     s.currencies = ko.pureComputed(() =>
       Array.from(new Set(['INR', 'USD', ...s.state.data()
         .map((account) => account.currencyCode)
@@ -705,6 +707,8 @@ define([
     };
     s.edit = async (x) => {
       if (!x || !x.accountId) return;
+      s.loadingAccountEdit(s.isAccountEditPage);
+      try {
       if (!x.accountNumber) x = await app.services.accounts.get(x.accountId);
       s.editingId(x.accountId);
       s.editingAccount(x);
@@ -725,7 +729,6 @@ define([
       s.form.currencyCode(x.currencyCode);
       s.form.closedAt(x.closedAt ? String(x.closedAt).slice(0, 10) : '');
       s.closingAccount(x.status === 'CLOSED');
-      try {
         const [productsResult, customerResult, contractsResult] = await Promise.allSettled([
           app.services.products.list(),
           app.services.customers.get(x.customerId),
@@ -746,6 +749,7 @@ define([
         }
         if (!s.isAccountEditPage) document.getElementById('accountDialog').open();
       } catch (e) { app.notify(e.message, 'error'); }
+      finally { s.loadingAccountEdit(false); }
     };
     s.closeAccount = async () => {
       s.error('');
@@ -838,9 +842,17 @@ s.busy(true);
 s.submissionState('submitting');
 s.submissionMessage(s.editingId() ? 'Saving account changes...' : 'Opening account...');
       try {
-        const customerId = s.editingId()
-          ? String(s.form.customerId())
-          : String((await app.services.customers.byCif(s.form.customerCif().trim())).customerId);
+        let customerId = String(s.form.customerId());
+        if (!s.editingId()) {
+          const customer = await app.services.customers.byCif(s.form.customerCif().trim());
+          if (String(customer.status || '').toUpperCase() !== 'ACTIVE') {
+            s.error('Only an active customer can create an account.');
+            s.submissionState('idle');
+            s.submissionMessage('');
+            return;
+          }
+          customerId = String(customer.customerId);
+        }
         s.form.customerId(customerId);
         const payload = {
           accountNumber: s.editingId() ? s.form.accountNumber() : null,

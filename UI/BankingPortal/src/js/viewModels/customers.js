@@ -23,7 +23,7 @@ define([
     docId: null, documentType: '', documentNumber: '', issueDate: '', expiryDate: '', status: 'UPLOADED', verifiedBy: '', rejectedReason: '', remarks: '', updatedBy: '',
   });
   const nomineeBlank = () => ({
-    nomineeId: null, nomineeName: '', relationship: '', relationType: 'NOMINEE', dob: '', phone: '', sharePercentage: 100, status: 'ACTIVE', updatedBy: '', startDate: '', endDate: '', includeAddress: false, address: addressBlank(),
+    nomineeId: null, nomineeName: '', relationship: '', relationType: '', dob: '', phone: '', sharePercentage: 100, status: 'ACTIVE', updatedBy: '', startDate: '', endDate: '', includeAddress: false, address: addressBlank(),
   });
   const documentTypes = ['PAN', 'AADHAAR', 'PASSPORT', 'DRIVING_LICENSE', 'SALARY_SLIP', 'PHOTO', 'SIGNATURE'];
   const adultDobMax = () => {
@@ -251,6 +251,9 @@ define([
     s.kycVerified = ko.pureComputed(() =>
       String((s.detailState.data().kyc || {}).kycStatus || '').toUpperCase() === 'VERIFIED',
     );
+    s.customerIsActive = ko.pureComputed(() =>
+      String((s.selected() || {}).status || '').toUpperCase() === 'ACTIVE',
+    );
     s.accountActionLabel = ko.pureComputed(() => s.kycVerified() ? 'Add account' : 'Add account (KYC required)');
     s.load = async (requestedPage = 0) => {
       const requestId = ++s.directoryRequest;
@@ -376,6 +379,9 @@ define([
       if (!s.kycVerified()) {
         return app.notify('Verify KYC first. An account or product can only be added after KYC is verified.', 'warning');
       }
+      if (!s.customerIsActive()) {
+        return app.notify('Only an active customer can create an account.', 'warning');
+      }
       s.error('');
       s.accountForm.productId('');
       s.accountForm.ownershipType('INDIVIDUAL');
@@ -388,12 +394,18 @@ define([
         document.getElementById('customerAccountDialog').open();
       } catch (e) { s.error(e.message); }
     };
-    s.openTransactionForCustomer = () => app.go('new-transaction');
+    s.openTransactionForCustomer = () => {
+      if (!s.customerIsActive()) {
+        return app.notify('Only an active customer can make a transaction.', 'warning');
+      }
+      return app.go('new-transaction');
+    };
     s.createAccount = async () => {
       const product = s.accountProducts().find((item) => String(item.productId) === String(s.accountForm.productId()));
       const requestedBalance = Number(s.accountForm.availableBalance());
       const fixedDeposit = s.isFixedDeposit();
       if (!s.kycVerified()) return s.error('Verify KYC first. An account cannot be opened before KYC is verified.');
+      if (!s.customerIsActive()) return s.error('Only an active customer can create an account.');
       if (!product) return s.error('Select an active banking product.');
       if (!Number.isFinite(requestedBalance) || requestedBalance < 0) return s.error('Opening balance must be zero or a positive number.');
       if (requestedBalance < Number(product.minimumBalance || 0)) {
@@ -553,6 +565,8 @@ define([
       const otherShares = s.otherNomineeShares();
       d.sharePercentage = s.nomineeShareLocked() ? 100 : Number(d.sharePercentage);
       if (!d.nomineeName || d.sharePercentage <= 0 || d.sharePercentage > 100) return s.error('Enter a nominee name and share between 0.01 and 100.');
+      if (!d.relationType) return s.error('Select a relation type.');
+      if (otherShares.some((nominee) => !Number.isFinite(Number(nominee.sharePercentage())) || Number(nominee.sharePercentage()) <= 0 || Number(nominee.sharePercentage()) > 100)) return s.error('Enter each nominee share between 0.01 and 100.');
       const allocatedShare = otherShares.reduce((total, nominee) => total + Number(nominee.sharePercentage() || 0), 0);
       if (String(d.status || '').toUpperCase() === 'ACTIVE' && otherShares.length && Math.abs(allocatedShare + d.sharePercentage - 100) > 0.000001) {
         return s.error(`All active nominee shares must equal 100%. Current total: ${(allocatedShare + d.sharePercentage).toFixed(2)}%.`);
@@ -633,7 +647,19 @@ define([
         }
       });
     }
-    s.connected = () => setTimeout(consumeRequestedCustomer, 0);
+    const revealManagementSelection = (event) => {
+      const select = event.target;
+      if (!(select instanceof HTMLSelectElement)) return;
+      const dialog = select.closest('#customerEditDialog,#addressDialog,#kycDialog,#documentDialog,#nomineeDialog,#customerAccountDialog');
+      if (!dialog) return;
+      const field = select.closest('.mb-managed-field,.mb-select-field');
+      if (field) field.classList.toggle('mb-has-selection', Boolean(select.value));
+    };
+    s.connected = () => {
+      document.addEventListener('change', revealManagementSelection);
+      setTimeout(consumeRequestedCustomer, 0);
+    };
+    s.disconnected = () => document.removeEventListener('change', revealManagementSelection);
     s.load().then(() => {
       if (app.selection && app.selection.path() === 'customers') consumeRequestedCustomer();
     });
