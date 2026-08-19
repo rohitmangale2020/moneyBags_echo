@@ -2377,3 +2377,78 @@ body.mb-operations-layout .mb-ops-filters{display:flex;align-items:center}
 .mb-live-status button{display:grid;place-items:center;width:29px;height:29px;margin-left:2px;padding:0;border:1px solid #dce5f0;border-radius:6px;background:#fff;color:#1f63df;font:17px/1 inherit;cursor:pointer}
 .mb-live-status button:hover{border-color:#9ebcf3;background:#f5f8ff}
 @media(max-width:760px){body.mb-operations-layout .mb-ops-filters{display:flex;flex-direction:column;align-items:stretch}.mb-live-status{margin-left:0;justify-content:flex-end}}
+
+/* Overview uses the same shared sidebar; only its dashboard content has route-specific styling. */
+@media (min-width:981px) {
+  body.mb-operations-layout .mb-sidebar {
+    width:var(--mb-sidebar-width) !important;
+    background:linear-gradient(180deg,#0b3c80 0%,var(--acct-navy) 42%,#082b64 72%,#041733 100%) !important;
+    border-right:0 !important;
+    box-shadow:10px 0 28px rgba(5,27,67,.18) !important;
+  }
+  body.mb-operations-layout .mb-page { width:calc(100vw - var(--mb-sidebar-width)) !important; margin-left:var(--mb-sidebar-width) !important; }
+  body.mb-operations-layout .mb-sidebar.mb-sidebar-collapsed { width:76px !important; }
+  body.mb-operations-layout .mb-page.mb-page-sidebar-collapsed { width:calc(100vw - 76px) !important; margin-left:76px !important; }
+  body.mb-operations-layout .mb-brand {
+    height:var(--mb-shell-header-height);
+    justify-content:flex-start;
+    gap:11px;
+    padding:0 24px;
+    border-bottom:1px solid rgba(207,223,248,.16) !important;
+  }
+  body.mb-operations-layout .mb-brand-logo { width:42px; height:42px; border:0; border-radius:13px; font-size:17px; }
+  body.mb-operations-layout .mb-sidebar oj-navigation-list { padding:20px 14px; }
+  body.mb-operations-layout .mb-sidebar .oj-navigationlist-item { margin:5px 0; border-radius:12px; }
+  body.mb-operations-layout .mb-sidebar .oj-navigationlist-item-content {
+    min-height:46px;
+    padding:0 14px !important;
+    color:#eaf3ff !important;
+  }
+  body.mb-operations-layout .mb-nav-link { justify-content:flex-start !important; gap:0; }
+  body.mb-operations-layout .mb-nav-icon { width:21px !important; height:21px !important; margin-right:14px !important; }
+  body.mb-operations-layout .mb-nav-label { font-size:13px; font-weight:650; }
+}
+
+/* The Overview route uses the same navigation shell as every other page. */
+@media (min-width:981px) {
+  body.mb-operations-layout .mb-sidebar:not(.mb-sidebar-collapsed) .mb-brand {
+    height:var(--mb-shell-header-height);
+    justify-content:flex-start;
+    gap:11px;
+    padding:0 24px;
+    border-bottom:1px solid rgba(207,223,248,.16) !important;
+  }
+
+  body.mb-operations-layout .mb-sidebar:not(.mb-sidebar-collapsed) .mb-brand-logo {
+    width:42px;
+    height:42px;
+    border:0;
+    border-radius:13px;
+    font-size:17px;
+  }
+
+  body.mb-operations-layout .mb-sidebar:not(.mb-sidebar-collapsed) oj-navigation-list {
+    padding:20px 14px;
+  }
+
+  body.mb-operations-layout .mb-sidebar:not(.mb-sidebar-collapsed) .oj-navigationlist-item {
+    margin:5px 0;
+    border-radius:12px;
+  }
+
+  body.mb-operations-layout .mb-sidebar:not(.mb-sidebar-collapsed) .oj-navigationlist-item-content {
+    min-height:46px;
+    padding:0 14px !important;
+  }
+
+  body.mb-operations-layout .mb-sidebar:not(.mb-sidebar-collapsed) .mb-nav-link {
+    justify-content:flex-start !important;
+    gap:0 !important;
+  }
+
+  body.mb-operations-layout .mb-sidebar:not(.mb-sidebar-collapsed) .mb-nav-icon {
+    width:21px !important;
+    height:21px !important;
+    margin-right:14px !important;
+  }
+}
