@@ -8,7 +8,14 @@ define(['knockout', 'appController', 'viewModels/util'], function (ko, app, u) {
   const accountColors = ['#1b486d', '#2a6fab', '#358fdc', '#6bb1e4', '#a2cdee'];
   const accountTypeColors = { CURRENT: '#1b486d', SAVINGS: '#2a6fab', FD: '#358fdc', FIXED_DEPOSIT: '#358fdc', SALARY: '#6bb1e4', OTHER: '#a2cdee' };
   const count = (page) => Number(page && page.totalElements !== undefined ? page.totalElements : u.list(page).length);
-  const dayKey = (value) => { const date = value ? new Date(value) : null; return date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : null; };
+  const dayKey = (value) => {
+    const date = value ? new Date(value) : null;
+    if (!date || Number.isNaN(date.getTime())) return null;
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${date.getFullYear()}-${month}-${day}`;
+  };
+  const activityDay = (item) => dayKey(item.initiatedAt || item.openedAt || item.completedAt || item.createdAt || item.updatedAt) || dayKey(new Date());
   const lastSevenDays = () => Array.from({ length: 7 }, (_, index) => { const date = new Date(); date.setHours(0, 0, 0, 0); date.setDate(date.getDate() - (6 - index)); return date; });
   const periodDays = (period) => {
     if (period === 'TODAY') return 1;
@@ -72,7 +79,7 @@ define(['knockout', 'appController', 'viewModels/util'], function (ko, app, u) {
     self.openOnboarding = () => app.go('onboarding');
     self.openProfile = () => app.go('profile');
     self.toggleSidebar = app.toggleSidebar;
-    self.period = ko.observable('7D');
+    self.period = ko.observable('ALL');
     const initialRange = daysForPeriod('7D');
     self.startDate = ko.observable(dayKey(initialRange[0]));
     self.endDate = ko.observable(dayKey(initialRange[initialRange.length - 1]));
@@ -80,15 +87,32 @@ define(['knockout', 'appController', 'viewModels/util'], function (ko, app, u) {
     self.lastUpdatedLabel = ko.pureComputed(() => self.lastUpdated() ? `Last updated ${new Intl.DateTimeFormat('en-IN', { hour: 'numeric', minute: '2-digit' }).format(self.lastUpdated())}` : 'Updating…');
     self.activityMetric = ko.observable('TRANSACTIONS');
     self.showComparison = ko.observable(true);
-    self.periodLabel = ko.pureComputed(() => ({ TODAY: 'Today', '7D': 'Last 7 days', '30D': 'Last 30 days', MTD: 'Month to date', YTD: 'Year to date', CUSTOM: 'Custom range' })[self.period()]);
-    self.setPeriod = (period) => { const dates = daysForPeriod(period); self.period(period); self.startDate(dayKey(dates[0])); self.endDate(dayKey(dates[dates.length - 1])); };
+    self.periodLabel = ko.pureComputed(() => ({ ALL: 'All activity', TODAY: 'Today', '7D': 'Last 7 days', '30D': 'Last 30 days', MTD: 'Month to date', YTD: 'Year to date', CUSTOM: 'Custom range' })[self.period()]);
+    self.allActivityDays = ko.pureComputed(() => {
+      const dates = [...self.state.data().transactions, ...self.state.data().accounts].map(activityDay).sort();
+      if (!dates.length) return daysForPeriod('7D');
+      const earliest = new Date(`${dates[0]}T00:00:00`);
+      const today = dayKey(new Date());
+      const latestKey = dates[dates.length - 1] > today ? dates[dates.length - 1] : today;
+      const latest = new Date(`${latestKey}T00:00:00`);
+      if ((latest - earliest) / 86400000 <= 366) return daysForRange(dates[0], latestKey);
+      return [...new Set(dates)].map((date) => new Date(`${date}T00:00:00`));
+    });
+    self.setPeriod = (period) => {
+      self.period(period);
+      const dates = period === 'ALL' ? self.allActivityDays() : daysForPeriod(period);
+      self.startDate(dayKey(dates[0]));
+      self.endDate(dayKey(dates[dates.length - 1]));
+    };
     self.applyDateRange = () => self.period('CUSTOM');
-    self.selectedDays = ko.pureComputed(() => daysForRange(self.startDate(), self.endDate()));
+    self.selectedDays = ko.pureComputed(() => self.period() === 'ALL' ? self.allActivityDays() : daysForRange(self.startDate(), self.endDate()));
     self.filteredTransactions = ko.pureComputed(() => {
+      if (self.period() === 'ALL') return self.state.data().transactions;
       const earliest = self.startDate(); const latest = self.endDate();
       return self.state.data().transactions.filter((transaction) => dayKey(transaction.initiatedAt) >= earliest && dayKey(transaction.initiatedAt) <= latest);
     });
     self.filteredAccounts = ko.pureComputed(() => {
+      if (self.period() === 'ALL') return self.state.data().accounts;
       const earliest = self.startDate(); const latest = self.endDate();
       return self.state.data().accounts.filter((account) => dayKey(account.openedAt || account.createdAt) >= earliest && dayKey(account.openedAt || account.createdAt) <= latest);
     });
@@ -114,8 +138,8 @@ define(['knockout', 'appController', 'viewModels/util'], function (ko, app, u) {
     });
     self.operationalPulse = ko.pureComputed(() => {
       const days = self.selectedDays();
-      const transactionCounts = days.map((day) => self.filteredTransactions().filter((transaction) => dayKey(transaction.initiatedAt) === dayKey(day)).length);
-      const accountCounts = days.map((day) => self.filteredAccounts().filter((account) => dayKey(account.openedAt || account.createdAt) === dayKey(day)).length);
+      const transactionCounts = days.map((day) => self.filteredTransactions().filter((transaction) => activityDay(transaction) === dayKey(day)).length);
+      const accountCounts = days.map((day) => self.filteredAccounts().filter((account) => activityDay(account) === dayKey(day)).length);
       const transactionsSelected = self.activityMetric() === 'TRANSACTIONS';
       const primary = transactionsSelected ? transactionCounts : accountCounts;
       const secondary = self.showComparison() ? (transactionsSelected ? accountCounts : transactionCounts) : primary.map(() => 0);
@@ -132,16 +156,19 @@ define(['knockout', 'appController', 'viewModels/util'], function (ko, app, u) {
     self.metrics = ko.pureComputed(() => {
       const data = self.state.data();
       const failed = data.transactions.filter((transaction) => transaction.transactionStatus === 'FAILED').length;
-      const opened = data.accounts.filter((account) => lastSevenDays().some((day) => dayKey(account.openedAt || account.createdAt) === dayKey(day))).length;
+      const weekDays = lastSevenDays();
+      const createdThisWeek = data.customers.filter((customer) => weekDays.some((day) => dayKey(customer.createdAt) === dayKey(day))).length;
+      const openedThisWeek = data.accounts.filter((account) => weekDays.some((day) => dayKey(account.openedAt || account.createdAt) === dayKey(day))).length;
+      const kycCompletion = percent(data.customerTotals.ACTIVE || 0, data.customerTotal);
       return [
         { label: 'Total customers', value: data.customerTotal, note: 'Live portfolio', tone: 'blue' },
-        { label: 'Total accounts', value: data.accounts.length, note: `${opened} opened this week`, tone: 'teal' },
-        { label: 'Transactions', value: data.transactionsTotal, note: 'Recorded activity', tone: 'blue' },
-        { label: 'Active customers', value: data.customerTotals.ACTIVE || 0, note: 'Verified and active', tone: 'green' },
-        { label: 'KYC pending', value: data.customerTotals.KYC_PENDING || 0, note: 'Requires review', tone: 'amber' },
-        { label: 'Failed transactions', value: failed, note: 'In loaded activity', tone: failed ? 'red' : 'green' },
+        { label: 'Total accounts', value: data.accounts.length, note: 'Live portfolio', tone: 'teal' },
         { label: 'Active products', value: data.products.filter((product) => product.status === 'ACTIVE').length, note: 'Available products', tone: 'blue' },
-        { label: 'Inactive customers', value: data.customerTotals.INACTIVE || 0, note: 'Customer records', tone: 'slate' },
+        { label: 'Transactions', value: data.transactionsTotal, note: 'Recorded activity', tone: 'blue' },
+        { label: 'New customers', value: createdThisWeek, note: 'Joined this week', tone: 'green' },
+        { label: 'Accounts opened', value: openedThisWeek, note: 'Opened this week', tone: 'teal' },
+        { label: 'KYC completion', value: `${kycCompletion}%`, note: 'Verified and active', tone: 'green' },
+        { label: 'Failed transactions', value: failed, note: 'In loaded activity', tone: failed ? 'red' : 'green' },
       ];
     });
     self.recentTransactions = ko.pureComputed(() => self.filteredTransactions().slice().sort((left, right) => Date.parse(right.initiatedAt || 0) - Date.parse(left.initiatedAt || 0)).slice(0, 4));
@@ -158,9 +185,17 @@ define(['knockout', 'appController', 'viewModels/util'], function (ko, app, u) {
     });
     self.load = () => self.state.run(async () => {
       if (self.isCustomer()) return { usersTotal: 0, customerTotal: 0, customerTotals: {}, products: [], customers: [], accounts: [], transactions: [], transactionsTotal: 0 };
-      const values = await Promise.all([app.services.customers.list(0, 100), app.services.customers.list(0, 1, 'KYC_PENDING'), app.services.customers.list(0, 1, 'ACTIVE'), app.services.customers.list(0, 1, 'INACTIVE'), app.services.products.list(), app.services.accounts.list(), app.services.transactions.list(0, 100)]);
+      const values = await Promise.all([app.services.customers.list(0, 1000), app.services.customers.list(0, 1, 'KYC_PENDING'), app.services.customers.list(0, 1, 'ACTIVE'), app.services.customers.list(0, 1, 'INACTIVE'), app.services.products.list(), app.services.accounts.list(), app.services.transactions.list()]);
       return { customerTotal: count(values[0]), customers: u.list(values[0]), customerTotals: { KYC_PENDING: count(values[1]), ACTIVE: count(values[2]), INACTIVE: count(values[3]) }, products: values[4], accounts: u.list(values[5]), transactions: u.list(values[6]), transactionsTotal: count(values[6]) };
-    }).then((result) => { self.lastUpdated(new Date()); return result; }).catch(() => null);
+    }).then((result) => {
+      if (self.period() === 'ALL') {
+        const dates = self.allActivityDays();
+        self.startDate(dayKey(dates[0]));
+        self.endDate(dayKey(dates[dates.length - 1]));
+      }
+      self.lastUpdated(new Date());
+      return result;
+    }).catch(() => null);
     self.load();
   }
   return VM;

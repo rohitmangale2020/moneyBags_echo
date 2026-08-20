@@ -86,8 +86,10 @@ textarea {
 .mb-product-section-heading h2 { margin: 5px 0 4px; font-size: 20px; }
 .mb-product-section-heading p { margin: 0; color: var(--mb-subtle); font-size: 12px; }
 .mb-product-heading-actions { display: flex; align-items: center; gap: 10px; }
-.mb-product-heading-actions .mb-product-refresh { display: flex; align-items: center; height: 32px; min-height: 32px; max-height: 32px; }
-.mb-product-heading-actions .mb-product-refresh .oj-button-button { box-sizing: border-box; min-height: 32px !important; height: 32px !important; max-height: 32px !important; padding: 5px 10px; border-radius: 8px; font-size: 11px; }
+.mb-product-heading-actions .mb-product-refresh,
+.mb-product-heading-actions .mb-product-compact { display: flex; align-items: center; height: 32px; min-height: 32px; max-height: 32px; }
+.mb-product-heading-actions .mb-product-refresh .oj-button-button,
+.mb-product-heading-actions .mb-product-compact .oj-button-button { box-sizing: border-box; min-height: 32px !important; height: 32px !important; max-height: 32px !important; padding: 5px 10px; border-radius: 8px; font-size: 11px; }
 .mb-account-actions { display: flex; align-items: center; gap: 10px; }
 .mb-page-size { display: flex; align-items: center; gap: 7px; color: var(--mb-subtle); font-size: 10px; font-weight: 700; }
 .mb-page-size select { min-height: 32px; padding: 5px 8px; border: 1px solid var(--mb-line); border-radius: 8px; color: var(--mb-text); background: var(--mb-surface); font: inherit; }
@@ -2322,6 +2324,7 @@ body.mb-operations-layout .mb-topbar{z-index:60!important}
 .mb-ops-composition{display:flex;flex-direction:column}
 .mb-ops-composition .mb-composition-grid{flex:1;align-content:center}
 .mb-ops-status{display:flex;flex-direction:column}
+.mb-ops-status>header{padding-top:22px}
 .mb-ops-status .mb-ops-status-list{flex:1;align-content:center}
 .mb-ops-queues{display:flex;flex-direction:column}
 .mb-ops-queues .mb-queue-layout{flex:1;align-content:center}
