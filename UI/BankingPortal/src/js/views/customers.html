@@ -227,8 +227,6 @@
           <oj-input-text label-hint="[[`${nomineeName} share percentage`]]" inputmode="decimal" value="{{sharePercentage}}"></oj-input-text>
           <!-- /ko -->
         </div>
-        <oj-input-date label-hint="Start date" value="{{nomineeForm().startDate}}"></oj-input-date>
-        <oj-input-date label-hint="End date" value="{{nomineeForm().endDate}}"></oj-input-date>
         <label class="wide mb-nominee-address-toggle"><input type="checkbox" data-bind="checked:includeNomineeAddress" /> Add a separate address for this nominee</label>
       </div>
       <div class="mb-form three mb-subsection mb-nominee-address-form" data-bind="visible:includeNomineeAddress">

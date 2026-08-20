@@ -300,7 +300,7 @@
         <small class="mb-field-error" data-bind="visible:fieldErrors().permanentcountry,text:fieldErrors().permanentcountry"></small>
       </div>
 
-      <div class="wide">
+      <div>
         <!-- ko if: addressPincodes().length --><div class="mb-plain-select"><select aria-label="Permanent address pincode" data-bind="value:address.pincode,enable:address.line2"><option value="" disabled>Pincode</option><!-- ko foreach:addressPincodes --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select></div><!-- /ko -->
         <!-- ko ifnot: addressPincodes().length --><oj-input-text label-hint="Pincode" required inputmode="numeric" maxlength="6" placeholder="560001" value="{{address.pincode}}"></oj-input-text><!-- /ko -->
 
@@ -323,7 +323,7 @@
       <div class="mb-plain-select"><select aria-label="Current address state" data-bind="value:currentAddress.state"><option value="" disabled>State</option><!-- ko foreach:indianStates --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select><small class="mb-field-error" data-bind="visible:fieldErrors().currentstate,text:fieldErrors().currentstate"></small></div>
       <div class="mb-plain-select"><select aria-label="Current address city or district" data-bind="value:currentAddress.city,enable:currentAddress.state"><option value="" disabled>City / district</option><!-- ko foreach:currentAddressDistricts --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select><small class="mb-field-error" data-bind="visible:fieldErrors().currentcity,text:fieldErrors().currentcity"></small></div>
       <div><oj-input-text label-hint="Country" required maxlength="100" value="{{currentAddress.country}}"></oj-input-text><small class="mb-field-error" data-bind="visible:fieldErrors().currentcountry,text:fieldErrors().currentcountry"></small></div>
-      <div class="wide"><!-- ko if: currentAddressPincodes().length --><div class="mb-plain-select"><select aria-label="Current address pincode" data-bind="value:currentAddress.pincode,enable:currentAddress.line2"><option value="" disabled>Pincode</option><!-- ko foreach:currentAddressPincodes --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select></div><!-- /ko --><!-- ko ifnot: currentAddressPincodes().length --><oj-input-text label-hint="Pincode" required inputmode="numeric" maxlength="6" placeholder="560001" value="{{currentAddress.pincode}}"></oj-input-text><!-- /ko --><small class="mb-field-error" data-bind="visible:fieldErrors().currentpincode,text:fieldErrors().currentpincode"></small></div>
+      <div><!-- ko if: currentAddressPincodes().length --><div class="mb-plain-select"><select aria-label="Current address pincode" data-bind="value:currentAddress.pincode,enable:currentAddress.line2"><option value="" disabled>Pincode</option><!-- ko foreach:currentAddressPincodes --><option data-bind="value:$data,text:$data"></option><!-- /ko --></select></div><!-- /ko --><!-- ko ifnot: currentAddressPincodes().length --><oj-input-text label-hint="Pincode" required inputmode="numeric" maxlength="6" placeholder="560001" value="{{currentAddress.pincode}}"></oj-input-text><!-- /ko --><small class="mb-field-error" data-bind="visible:fieldErrors().currentpincode,text:fieldErrors().currentpincode"></small></div>
       <!-- /ko -->
 
     </div>
