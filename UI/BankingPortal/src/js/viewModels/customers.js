@@ -393,19 +393,8 @@ define([
       if (!s.customerIsActive()) {
         return app.notify('Only an active customer can create an account.', 'warning');
       }
-      s.error('');
-      s.accountCreationState('idle');
-      s.accountCreationMessage('');
-      s.accountForm.productId('');
-      s.accountForm.ownershipType('INDIVIDUAL');
-      s.accountForm.availableBalance(0);
-      s.accountForm.fundingAccountId('');
-      s.accountForm.payoutAccountId('');
-      try {
-        s.accountProducts((await app.services.products.list()).filter((product) => product.status === 'ACTIVE'));
-        if (!s.accountProducts().length) return s.error('No active banking products are available for account opening.');
-        document.getElementById('customerAccountDialog').open();
-      } catch (e) { s.error(e.message); }
+      app.setActiveCustomer(s.selected());
+      return app.go('new-account');
     };
     s.openTransactionForCustomer = () => {
       if (!s.customerIsActive()) {
