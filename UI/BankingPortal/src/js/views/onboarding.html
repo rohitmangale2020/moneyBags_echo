@@ -442,7 +442,7 @@
     <div class="mb-form three">
 
       <div class="mb-plain-select mb-kyc-status-select" data-field-label="KYC status">
-        <select aria-label="KYC status" data-bind="value:kyc.kycStatus">
+        <select aria-label="KYC status" data-bind="value:kyc.kycStatus,event:{change:function(_,event){event.currentTarget.parentElement.classList.add('mb-has-selection')}}">
           <option>PENDING</option>
           <option>VERIFIED</option>
           <option>NOT_STARTED</option>
