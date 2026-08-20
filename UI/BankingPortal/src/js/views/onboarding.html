@@ -441,16 +441,14 @@
 
     <div class="mb-form three">
 
-      <label>
-        KYC status
-
-        <select data-bind="value:kyc.kycStatus">
+      <div class="mb-plain-select mb-kyc-status-select" data-field-label="KYC status">
+        <select aria-label="KYC status" data-bind="value:kyc.kycStatus">
           <option>PENDING</option>
           <option>VERIFIED</option>
           <option>NOT_STARTED</option>
           <option>REJECTED</option>
         </select>
-      </label>
+      </div>
 
       <div>
         <oj-input-date
