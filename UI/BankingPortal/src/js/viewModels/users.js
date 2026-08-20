@@ -1,5 +1,6 @@
 define([
   'knockout',
+  'ojs/ojconverter-datetime',
   'appController',
   'viewModels/util',
   'ojs/ojarraydataprovider',
@@ -9,7 +10,7 @@ define([
   'ojs/ojbutton',
   'ojs/ojdialog',
   'ojs/ojtable',
-], function (ko, app, u, ArrayDataProvider) {
+], function (ko, DateTimeConverter, app, u, ArrayDataProvider) {
   function blank() {
     return {
       username: '',
@@ -35,6 +36,9 @@ define([
   const e164Phone = /^\+?[1-9]\d{7,14}$/;
   function VM() {
     const s = this;
+    s.dateOfBirthConverter = new DateTimeConverter.IntlDateTimeConverter({
+      pattern: 'dd/MM/yyyy',
+    });
     s.state = u.state([]);
     s.roleOptions = new ArrayDataProvider(
       [
