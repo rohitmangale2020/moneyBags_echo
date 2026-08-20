@@ -196,7 +196,7 @@
       </div>
 
       <div class="mb-form">
-        <oj-input-text label-hint="Amount" value="{{form.amount}}"></oj-input-text>
+        <oj-input-text label-hint="Amount" virtual-keyboard="number" inputmode="decimal" pattern="[0-9]+([.][0-9]{0,4})?" value="{{form.amount}}" data-bind="event:{beforeinput:amountBeforeInput,keydown:amountKeydown,paste:amountPaste}"></oj-input-text>
         <oj-input-text label-hint="Currency" value="{{form.currencyCode}}"></oj-input-text>
       </div>
 

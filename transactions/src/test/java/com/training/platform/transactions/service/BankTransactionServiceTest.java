@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.when;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -41,6 +42,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class BankTransactionServiceTest {
@@ -159,6 +162,51 @@ class BankTransactionServiceTest {
         verifyNoInteractions(riskServiceClient);
     }
 
+    @Test void administratorRejectionCreatesRejectedAuditAndOutboxEvent() {
+        BankTransaction highRisk = new BankTransaction();
+        ReflectionTestUtils.setField(highRisk, "transactionId", "transaction-high-risk-1");
+        highRisk.setTransactionRef("TXN-HIGH-RISK-1");
+        highRisk.setTransactionType(TransactionType.TRANSFER);
+        highRisk.setTransactionStatus(TransactionStatus.PENDING_APPROVAL);
+        highRisk.setDebitAccountId("account-1");
+        highRisk.setCreditAccountId("account-2");
+        highRisk.setAmount(new BigDecimal("50000.00"));
+        highRisk.setFeeAmount(BigDecimal.ZERO);
+        highRisk.setCurrencyCode("INR");
+        highRisk.setInitiatedByCustomerId("customer-1");
+        highRisk.setInitiatedByUserId("customer-user-1");
+
+        when(transactionRepository.findById("transaction-high-risk-1")).thenReturn(Optional.of(highRisk));
+        when(transactionRepository.save(highRisk)).thenReturn(highRisk);
+        when(approvalRepository
+                .findByTransactionTransactionIdAndAccountHolderAccountIdAndAccountHolderCustomerId(
+                        "transaction-high-risk-1", "RISK_ADMIN", "admin-1"))
+                .thenReturn(Optional.empty());
+        when(approvalRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(outboxRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        BankTransaction rejected = transactionService.decidePendingApproval(
+                "transaction-high-risk-1", false, "Unusual beneficiary and amount", "admin-1");
+
+        assertSame(TransactionStatus.CANCELLED, rejected.getTransactionStatus());
+        org.junit.jupiter.api.Assertions.assertEquals("RISK_REJECTED", rejected.getFailureCode());
+        ArgumentCaptor<TransactionEventOutbox> outbox = ArgumentCaptor.forClass(TransactionEventOutbox.class);
+        verify(outboxRepository).save(outbox.capture());
+        assertSame(com.training.platform.transactions.entity.TransactionEventType.TRANSACTION_REJECTED,
+                outbox.getValue().getEventType());
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<Map<String, Object>> details = ArgumentCaptor.forClass(Map.class);
+        verify(auditClient).rejected(eq("transactions"), eq("TRANSACTION_REJECTED"),
+                eq("Transaction rejected by an administrator after risk review"),
+                eq("RISK_REJECTED"), eq("Unusual beneficiary and amount"), details.capture());
+        org.junit.jupiter.api.Assertions.assertEquals("PENDING_APPROVAL",
+                details.getValue().get("previousStatus"));
+        org.junit.jupiter.api.Assertions.assertEquals("CANCELLED", details.getValue().get("newStatus"));
+        org.junit.jupiter.api.Assertions.assertEquals("Unusual beneficiary and amount",
+                details.getValue().get("failureReason"));
+        verifyNoInteractions(accountsClient);
+    }
+
     @Test void annualFeeDebitsAccountAndCreatesStatementLedgerAndOutboxRecords() {
         BankTransaction fee = new BankTransaction();
         fee.setTransactionRef("AF2026-account1");
@@ -215,6 +263,13 @@ class BankTransactionServiceTest {
                 auditDetails.capture());
         org.junit.jupiter.api.Assertions.assertEquals("SYSTEM", auditDetails.getValue().get("actorId"));
         org.junit.jupiter.api.Assertions.assertEquals("SYSTEM", auditDetails.getValue().get("actorType"));
+        InOrder auditOrder = inOrder(auditClient);
+        auditOrder.verify(auditClient).success(eq("transactions"), eq("OUTBOX_EVENT_CREATED"),
+                anyString(), any());
+        auditOrder.verify(auditClient).success(eq("transactions"), eq("TRANSACTION_COMPLETED"),
+                anyString(), any());
+        auditOrder.verify(auditClient).success(eq("transactions"), eq("STATEMENT_ENTRY_CREATED"),
+                anyString(), any());
     }
 
     @Test void prematureFixedDepositClosureIsNotRejectedByTheFdProductMinimum() {
@@ -250,6 +305,13 @@ class BankTransactionServiceTest {
                 transfer.getValue().purpose());
         verify(accountsClient, never()).getAccount(anyString());
         verify(ledgerService).postCompletedTransaction(closure);
+        InOrder auditOrder = inOrder(auditClient);
+        auditOrder.verify(auditClient).success(eq("transactions"), eq("OUTBOX_EVENT_CREATED"),
+                anyString(), any());
+        auditOrder.verify(auditClient).success(eq("transactions"), eq("TRANSACTION_COMPLETED"),
+                anyString(), any());
+        auditOrder.verify(auditClient, org.mockito.Mockito.times(2)).success(
+                eq("transactions"), eq("STATEMENT_ENTRY_CREATED"), anyString(), any());
     }
 
     @Test void savingsInterestUsesThePeriodEndInTransactionStatementAndAuditDescriptions() {

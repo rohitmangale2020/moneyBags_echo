@@ -110,6 +110,37 @@ define([
       fundingAccountId: ko.observable(''),
       payoutAccountId: ko.observable(''),
     };
+    s.customerMatches = ko.observableArray([]);
+    s.customerLookupLabel = (customer) => {
+      const name = [customer.firstName, customer.lastName].filter(Boolean).join(' ') || 'Unnamed customer';
+      return `${name} · ${customer.phone || 'No phone'} · ${customer.email || 'No email'} · CIF ${customer.cifNo || 'Not assigned'}`;
+    };
+    s.applyOpeningCustomer = (customer) => {
+      if (!customer) return null;
+      s.form.customerCif(customer.cifNo || '');
+      s.form.customerId(String(customer.customerId));
+      s.customerMatches([]);
+      return customer;
+    };
+    s.resolveOpeningCustomer = async (value) => {
+      const searchValue = String(value || '').trim();
+      if (!searchValue) throw new Error('Enter a customer CIF or name first.');
+      if (/^CIF/i.test(searchValue)) {
+        return s.applyOpeningCustomer(await app.services.customers.byCif(searchValue));
+      }
+      const firstName = searchValue.split(/\s+/)[0];
+      const matches = u.list(await app.services.customers.byFirstName(firstName)).filter((customer) =>
+        [customer.firstName, customer.lastName].filter(Boolean).join(' ')
+          .toLowerCase().includes(searchValue.toLowerCase()),
+      );
+      if (!matches.length) throw new Error('No customer matches that name.');
+      if (matches.length > 1) {
+        s.customerMatches(matches);
+        return null;
+      }
+      return s.applyOpeningCustomer(matches[0]);
+    };
+    s.chooseOpeningCustomerMatch = (customer) => s.applyOpeningCustomer(customer);
     s.customerAccounts = ko.observableArray([]);
     s.loadingCustomerAccounts = ko.observable(false);
     s.fixedDepositAccountsLoaded = ko.observable(false);
@@ -152,12 +183,12 @@ define([
       });
     });
     s.loadFixedDepositAccounts = async () => {
-      const customerCif = String(s.form.customerCif() || '').trim();
+      const customerLookup = String(s.form.customerCif() || '').trim();
       let customerId = String(s.form.customerId() || '').trim();
-      if (!s.editingId() && !customerCif) {
+      if (!s.editingId() && !customerLookup) {
         s.customerAccounts([]);
         s.fixedDepositAccountsLoaded(false);
-        s.error('Enter the customer CIF before loading eligible accounts.');
+        s.error('Enter the customer CIF or name before loading eligible accounts.');
         return false;
       }
       s.loadingCustomerAccounts(true);
@@ -165,11 +196,15 @@ define([
       s.error('');
       try {
         if (!s.editingId()) {
-          const customer = await app.services.customers.byCif(customerCif);
+          const customer = await s.resolveOpeningCustomer(customerLookup);
+          if (!customer) {
+            s.error('Choose a matching customer before loading eligible accounts.');
+            return false;
+          }
           customerId = String(customer.customerId);
           s.form.customerId(customerId);
         }
-        if (!customerId) throw new Error('The customer could not be resolved from the entered CIF.');
+        if (!customerId) throw new Error('The customer could not be resolved from the entered CIF or name.');
         const accounts = u.list(await app.services.accounts.customer(customerId));
         const productById = new Map(s.products().map((product) => [String(product.productId), product]));
         s.customerAccounts(accounts.map((account) => Object.assign({}, account, {
@@ -183,7 +218,7 @@ define([
         if (!eligible.some((account) => String(account.accountId) === String(s.form.payoutAccountId()))) {
           s.form.payoutAccountId(eligible.length ? String(eligible[0].accountId) : '');
         }
-        s.loadedFundingCustomerCif(customerCif);
+        s.loadedFundingCustomerCif(String(s.form.customerCif() || '').trim());
         s.fixedDepositAccountsLoaded(true);
         return true;
       } catch (error) {
@@ -218,6 +253,29 @@ define([
       s.customerAccounts([]);
       s.fixedDepositAccountsLoaded(false);
       s.loadedFundingCustomerCif('');
+    });
+    const findOpeningCustomerMatches = async (value) => {
+      const searchValue = String(value || '').trim();
+      if (searchValue.length < 2 || /^CIF/i.test(searchValue)) {
+        s.customerMatches([]);
+        return;
+      }
+      try {
+        const firstName = searchValue.split(/\s+/)[0];
+        const matches = u.list(await app.services.customers.byFirstName(firstName)).filter((customer) =>
+          [customer.firstName, customer.lastName].filter(Boolean).join(' ')
+            .toLowerCase().includes(searchValue.toLowerCase()),
+        );
+        s.customerMatches(matches);
+      } catch (_) {
+        s.customerMatches([]);
+      }
+    };
+    let openingCustomerMatchTimer = null;
+    s.form.customerCif.subscribe((value) => {
+      if (s.editingId()) return;
+      if (openingCustomerMatchTimer) window.clearTimeout(openingCustomerMatchTimer);
+      openingCustomerMatchTimer = window.setTimeout(() => findOpeningCustomerMatches(value), 250);
     });
     s.form.fundingAccountId.subscribe((accountId) => {
       if (s.isFixedDeposit()) s.form.payoutAccountId(accountId || '');
@@ -684,6 +742,7 @@ define([
       s.form.closedAt(null);
       s.form.fundingAccountId('');
       s.form.payoutAccountId('');
+      s.customerMatches([]);
       s.customerAccounts([]);
       s.fixedDepositAccountsLoaded(false);
       s.loadedFundingCustomerCif('');
@@ -722,6 +781,7 @@ define([
       s.form.accountNumber(x.accountNumber);
       s.form.customerId(x.customerId);
       s.form.customerCif('');
+      s.customerMatches([]);
       s.form.productId(x.productId);
       s.form.ownershipType(x.ownershipType);
       s.form.availableBalance(x.availableBalance);
@@ -808,7 +868,7 @@ if ((!p && !s.editingId()) || (s.editingId() && !s.form.customerId())) {
   return s.error('Complete all required fields.');
 }
 if (!s.editingId() && !s.form.customerCif().trim()) {
-  return s.error('Customer CIF is required.');
+  return s.error('Customer CIF or name is required.');
 }
 if (!Number.isFinite(requestedBalance) || requestedBalance < 0) {
   return s.error('Available balance cannot be negative.');
@@ -838,21 +898,24 @@ if (!/^[A-Za-z]{3}$/.test(s.editingId() ? s.form.currencyCode() : p.currency)) {
 }
 
 let savedAccount = !s.editingId() ? s.pendingCreatedAccount() : null;
+
+if (!s.editingId()) {
+  try {
+    const customer = await s.resolveOpeningCustomer(s.form.customerCif());
+    if (!customer) return s.error('Choose one of the matching customers before opening the account.');
+    if (String(customer.status || '').toUpperCase() !== 'ACTIVE') {
+      return s.error('Only an active customer can create an account.');
+    }
+  } catch (error) {
+    return s.error(error.message);
+  }
+}
+
 s.busy(true);
 s.submissionState('submitting');
 s.submissionMessage(s.editingId() ? 'Saving account changes...' : 'Opening account...');
       try {
         let customerId = String(s.form.customerId());
-        if (!s.editingId()) {
-          const customer = await app.services.customers.byCif(s.form.customerCif().trim());
-          if (String(customer.status || '').toUpperCase() !== 'ACTIVE') {
-            s.error('Only an active customer can create an account.');
-            s.submissionState('idle');
-            s.submissionMessage('');
-            return;
-          }
-          customerId = String(customer.customerId);
-        }
         s.form.customerId(customerId);
         const payload = {
           accountNumber: s.editingId() ? s.form.accountNumber() : null,

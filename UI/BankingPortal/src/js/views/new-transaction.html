@@ -36,7 +36,7 @@
       <div class="mb-form" data-bind="visible:isSingleAccount"><label class="wide" data-bind="visible:hasCustomerAccounts">Customer account<select data-bind="value:form.accountId,options:accounts,optionsText:accountLabel,optionsValue:'accountId'"></select></label></div>
       <div class="mb-stack" data-bind="visible:isSelfTransfer"><div class="mb-form" data-bind="visible:accounts().length"><label>From account<select data-bind="value:form.fromAccountId,options:accounts,optionsText:accountLabel,optionsValue:'accountId'"></select></label><label>To account<select data-bind="value:form.toAccountId,options:accounts,optionsText:accountLabel,optionsValue:'accountId'"></select></label></div></div>
       <div class="mb-info" data-bind="visible:hasActiveCustomer">Load a customer by CIF or name to choose eligible active accounts.</div>
-      <div class="mb-form"><oj-input-text label-hint="Amount" value="{{form.amount}}"></oj-input-text><oj-input-text label-hint="Currency" value="{{form.currencyCode}}"></oj-input-text></div>
+      <div class="mb-form"><oj-input-text label-hint="Amount" virtual-keyboard="number" inputmode="decimal" pattern="[0-9]+([.][0-9]{0,4})?" value="{{form.amount}}" data-bind="event:{beforeinput:amountBeforeInput,keydown:amountKeydown,paste:amountPaste}"></oj-input-text><oj-input-text label-hint="Currency" value="{{form.currencyCode}}"></oj-input-text></div>
     </div>
 
     <div class="mb-dialog-actions" data-bind="visible:submissionState() === 'idle'">

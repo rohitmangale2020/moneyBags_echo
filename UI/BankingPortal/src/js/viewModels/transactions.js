@@ -6,6 +6,37 @@ define([
   'ojs/ojbutton',
   'ojs/ojdialog',
 ], function (ko, app, u) {
+  const inputElement = (event) => {
+    if (event.target && String(event.target.tagName).toLowerCase() === 'input') return event.target;
+    return event.currentTarget && event.currentTarget.querySelector
+      ? event.currentTarget.querySelector('input') : null;
+  };
+  const decimalText = (value) => {
+    const cleaned = String(value || '').replace(/[^0-9.]/g, '');
+    const decimalAt = cleaned.indexOf('.');
+    if (decimalAt < 0) return cleaned;
+    return `${cleaned.slice(0, decimalAt)}.${cleaned.slice(decimalAt + 1).replace(/\./g, '').slice(0, 4)}`;
+  };
+  const proposedValue = (event) => {
+    const input = inputElement(event);
+    if (!input || event.data === null || event.data === undefined) return null;
+    const start = input.selectionStart === null ? input.value.length : input.selectionStart;
+    const end = input.selectionEnd === null ? start : input.selectionEnd;
+    return input.value.slice(0, start) + event.data + input.value.slice(end);
+  };
+  const replacePastedValue = (event, sanitize) => {
+    const input = inputElement(event);
+    if (!input || !event.clipboardData) return true;
+    event.preventDefault();
+    const start = input.selectionStart === null ? input.value.length : input.selectionStart;
+    const end = input.selectionEnd === null ? start : input.selectionEnd;
+    const next = input.value.slice(0, start)
+      + event.clipboardData.getData('text') + input.value.slice(end);
+    input.value = sanitize(next);
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    return false;
+  };
+
   const timestamp = (value) => {
     const parsed = Date.parse(value || '');
     return Number.isNaN(parsed) ? 0 : parsed;
@@ -54,6 +85,28 @@ define([
       amount: ko.observable(''),
       currencyCode: ko.observable('INR'),
     };
+    s.amountBeforeInput = (_, event) => {
+      if (String(event.inputType || '').startsWith('delete')) return true;
+      const proposed = proposedValue(event);
+      if (proposed === null || /^\d*(?:\.\d{0,4})?$/.test(proposed)) return true;
+      event.preventDefault();
+      return false;
+    };
+    s.amountKeydown = (_, event) => {
+      if (event.ctrlKey || event.metaKey || event.altKey
+          || ['Backspace', 'Delete', 'Tab', 'Enter', 'Escape', 'ArrowLeft', 'ArrowRight',
+            'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)
+          || /^\d$/.test(event.key) || event.key === '.') return true;
+      event.preventDefault();
+      return false;
+    };
+    s.amountPaste = (_, event) => replacePastedValue(event, decimalText);
+    s.form.amount.subscribe((value) => {
+      if (value === null || value === undefined) return;
+      const current = String(value);
+      const sanitized = decimalText(current);
+      if (current !== sanitized) s.form.amount(sanitized);
+    });
 
     s.money = u.money;
     s.date = u.date;

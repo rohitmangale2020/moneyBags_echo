@@ -170,9 +170,11 @@
             <oj-input-text
                     label-hint="Mobile"
                     inputmode="numeric"
+                    pattern="[0-9]*"
                     maxlength="10"
                     placeholder="9876543210"
                     value="{{profile.phone}}"
+                    data-bind="event:{beforeinput:phoneBeforeInput,keydown:phoneKeydown,paste:phonePaste}"
             ></oj-input-text>
           </div>
 
@@ -553,9 +555,11 @@
             <oj-input-text
                     label-hint="Mobile"
                     inputmode="numeric"
+                    pattern="[0-9]*"
                     maxlength="10"
                     placeholder="9876543210"
                     value="{{nominee.phone}}"
+                    data-bind="event:{beforeinput:phoneBeforeInput,keydown:phoneKeydown,paste:phonePaste}"
             ></oj-input-text>
           </div>
 

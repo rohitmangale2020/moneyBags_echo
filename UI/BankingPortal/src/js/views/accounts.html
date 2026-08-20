@@ -127,7 +127,8 @@
           </select></label><label class="wide" data-bind="visible:editingId"><span>Active product</span><input type="text" disabled="disabled" data-bind="value:productLabel" /></label
         ><label data-bind="visible:!editingId() && selectedProduct()"><span>Interest rate offered</span><input type="text" disabled="disabled" data-bind="value:selectedProductInterestRate" /></label
         ><label data-bind="visible:!editingId() && selectedProduct()"><span>Tenure</span><input type="text" disabled="disabled" data-bind="value:selectedProductTenure" /></label
-        ><label data-bind="visible:!editingId()"><span>Customer CIF</span><input type="text" data-bind="value:form.customerCif" /></label
+        ><label class="wide" data-bind="visible:!editingId()"><span>Customer CIF or name</span><input type="text" autocomplete="off" data-bind="value:form.customerCif,valueUpdate:'input'" /></label
+        ><div class="wide mb-customer-match-list" data-bind="visible:!editingId() && customerMatches().length"><small>Matching customers · choose one</small><!-- ko foreach: customerMatches --><button type="button" data-bind="text:$parent.customerLookupLabel($data),click:() => $parent.chooseOpeningCustomerMatch($data)"></button><!-- /ko --></div
         ><label data-bind="visible:editingId"><span>Customer ID</span><input type="text" disabled="disabled" data-bind="value:form.customerId" /></label
         ><label data-bind="visible:editingId"><span>Customer CIF</span><input type="text" disabled="disabled" data-bind="value:form.customerCif" /></label
         ><label data-bind="visible:editingId"><span>Account number</span><input type="text" disabled="disabled" data-bind="value:form.accountNumber" /></label

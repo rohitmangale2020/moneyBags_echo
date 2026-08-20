@@ -218,7 +218,7 @@ define([
         const parties = debitName && creditName ? `${debitName} → ${creditName}` : (debitName || creditName);
         return {
           primary: parties || humanize(log.relatedEntityType || 'Transaction activity'),
-          secondary: idLine('Transaction ID', log.transactionId),
+          secondary: '',
         };
       }
       case 'api-access':

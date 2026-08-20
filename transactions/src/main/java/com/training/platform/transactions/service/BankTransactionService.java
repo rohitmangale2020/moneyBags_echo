@@ -152,10 +152,12 @@ public class BankTransactionService {
         recordRiskDecision(transaction, approverId,
                 approve ? ApprovalStatus.APPROVED : ApprovalStatus.REJECTED, limit(note, 500));
         if (!approve) {
+            Map<String, Object> previousValues = transactionValues(transaction);
             transaction.setTransactionStatus(TransactionStatus.CANCELLED);
             transaction.setFailureCode("RISK_REJECTED");
             transaction.setFailureReason(limit(note == null || note.isBlank()
                     ? "Rejected by an administrator after risk review" : note, 500));
+            recordRejection(transaction, previousValues);
             return transactionRepository.save(transaction);
         }
         AccountPostingException eligibilityFailure = postingEligibilityFailure(transaction);
@@ -186,6 +188,24 @@ public class BankTransactionService {
                     existing.updateRiskDecision(status, note);
                     approvalRepository.save(existing);
                 }, () -> approvalRepository.save(TransactionApproval.riskDecision(transaction, approverId, status, note)));
+    }
+
+    private void recordRejection(BankTransaction transaction, Map<String, Object> previousValues) {
+        Map<String, Object> payload = basePayload(transaction);
+        payload.put("failureCode", transaction.getFailureCode());
+        payload.put("failureReason", transaction.getFailureReason());
+        TransactionEventOutbox outboxEvent = TransactionEventOutbox.create(transaction.getTransactionId(),
+                TransactionEventType.TRANSACTION_REJECTED, toJson(payload));
+        outboxRepository.save(outboxEvent);
+
+        Map<String, Object> details = transactionAuditDetails(transaction);
+        details.put("previousStatus", previousValues.get("transactionStatus"));
+        details.put("newStatus", transaction.getTransactionStatus().name());
+        details.put("failureReason", transaction.getFailureReason());
+        putChanges(details, previousValues, transactionValues(transaction));
+        auditClient.rejected("transactions", "TRANSACTION_REJECTED",
+                "Transaction rejected by an administrator after risk review",
+                transaction.getFailureCode(), transaction.getFailureReason(), details);
     }
 
     private void postToAccounts(BankTransaction persisted) {
@@ -425,14 +445,6 @@ public class BankTransactionService {
                 StatementEntryType.DEBIT, transfer.debitBalanceAfter(), debitDescription);
         AccountStatement creditEntry = statement(transaction, transaction.getCreditAccountId(),
                 StatementEntryType.CREDIT, transfer.creditBalanceAfter(), creditDescription);
-        statementRepository.saveAll(List.of(debitEntry, creditEntry));
-        ledgerService.postCompletedTransaction(transaction);
-        auditRelatedCreated("STATEMENT_ENTRY_CREATED", transaction, "STATEMENT",
-                debitEntry.getStatementId(), statementAuditDescription(transaction, StatementEntryType.DEBIT),
-                statementValues(debitEntry));
-        auditRelatedCreated("STATEMENT_ENTRY_CREATED", transaction, "STATEMENT",
-                creditEntry.getStatementId(), statementAuditDescription(transaction, StatementEntryType.CREDIT),
-                statementValues(creditEntry));
 
         Map<String, Object> payload = basePayload(transaction);
         payload.put("debitBalanceAfter", transfer.debitBalanceAfter());
@@ -444,6 +456,15 @@ public class BankTransactionService {
                 outboxEvent.getEventId(), outboxAuditDescription(transaction, true), outboxValues(outboxEvent));
         auditTransactionChange("TRANSACTION_COMPLETED", transaction, previousValues,
                 completedAuditDescription(transaction));
+
+        statementRepository.saveAll(List.of(debitEntry, creditEntry));
+        ledgerService.postCompletedTransaction(transaction);
+        auditRelatedCreated("STATEMENT_ENTRY_CREATED", transaction, "STATEMENT",
+                debitEntry.getStatementId(), statementAuditDescription(transaction, StatementEntryType.DEBIT),
+                statementValues(debitEntry));
+        auditRelatedCreated("STATEMENT_ENTRY_CREATED", transaction, "STATEMENT",
+                creditEntry.getStatementId(), statementAuditDescription(transaction, StatementEntryType.CREDIT),
+                statementValues(creditEntry));
     }
 
     private void completeAdjustment(BankTransaction transaction, String accountId,
@@ -463,11 +484,6 @@ public class BankTransactionService {
         transaction.setDescription(limit(transactionDescription, 500));
         AccountStatement statementEntry = statement(transaction, accountId, entryType,
                 adjustment.balanceAfter(), description);
-        statementRepository.save(statementEntry);
-        ledgerService.postCompletedTransaction(transaction);
-        auditRelatedCreated("STATEMENT_ENTRY_CREATED", transaction, "STATEMENT",
-                statementEntry.getStatementId(), statementAuditDescription(transaction, entryType),
-                statementValues(statementEntry));
 
         Map<String, Object> payload = basePayload(transaction);
         payload.put("accountId", accountId);
@@ -479,6 +495,12 @@ public class BankTransactionService {
                 outboxEvent.getEventId(), outboxAuditDescription(transaction, true), outboxValues(outboxEvent));
         auditTransactionChange("TRANSACTION_COMPLETED", transaction, previousValues,
                 completedAuditDescription(transaction));
+
+        statementRepository.save(statementEntry);
+        ledgerService.postCompletedTransaction(transaction);
+        auditRelatedCreated("STATEMENT_ENTRY_CREATED", transaction, "STATEMENT",
+                statementEntry.getStatementId(), statementAuditDescription(transaction, entryType),
+                statementValues(statementEntry));
     }
 
     private String postingAccountId(BankTransaction transaction) {

@@ -8,6 +8,44 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
   };
   const text = (value) => String(value || '').trim();
+  const digits = (value, maximumLength = 10) => String(value || '')
+    .replace(/\D/g, '').slice(0, maximumLength);
+  const inputElement = (event) => {
+    if (event.target && String(event.target.tagName).toLowerCase() === 'input') return event.target;
+    return event.currentTarget && event.currentTarget.querySelector
+      ? event.currentTarget.querySelector('input') : null;
+  };
+  const digitsBeforeInput = (event, maximumLength = 10) => {
+    if (String(event.inputType || '').startsWith('delete')) return true;
+    const input = inputElement(event);
+    if (!input || event.data === null || event.data === undefined) return true;
+    const start = input.selectionStart === null ? input.value.length : input.selectionStart;
+    const end = input.selectionEnd === null ? start : input.selectionEnd;
+    const proposed = input.value.slice(0, start) + event.data + input.value.slice(end);
+    if (/^\d*$/.test(proposed) && proposed.length <= maximumLength) return true;
+    event.preventDefault();
+    return false;
+  };
+  const digitsKeydown = (event) => {
+    if (event.ctrlKey || event.metaKey || event.altKey
+        || ['Backspace', 'Delete', 'Tab', 'Enter', 'Escape', 'ArrowLeft', 'ArrowRight',
+          'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)
+        || /^\d$/.test(event.key)) return true;
+    event.preventDefault();
+    return false;
+  };
+  const digitsPaste = (event, maximumLength = 10) => {
+    const input = inputElement(event);
+    if (!input || !event.clipboardData) return true;
+    event.preventDefault();
+    const start = input.selectionStart === null ? input.value.length : input.selectionStart;
+    const end = input.selectionEnd === null ? start : input.selectionEnd;
+    const next = input.value.slice(0, start)
+      + event.clipboardData.getData('text') + input.value.slice(end);
+    input.value = digits(next, maximumLength);
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    return false;
+  };
   const dateValue = (value) => {
     const raw = text(value);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) return null;
@@ -103,6 +141,17 @@ define(['knockout', 'appController', 'viewModels/indiaAddressOptions', 'ojs/ojin
       country: ko.observable(''),
       pincode: ko.observable(''),
     };
+    s.phoneBeforeInput = (_, event) => digitsBeforeInput(event);
+    s.phoneKeydown = (_, event) => digitsKeydown(event);
+    s.phonePaste = (_, event) => digitsPaste(event);
+    s.profile.phone.subscribe((value) => {
+      const sanitized = digits(value);
+      if (String(value || '') !== sanitized) s.profile.phone(sanitized);
+    });
+    s.nominee.phone.subscribe((value) => {
+      const sanitized = digits(value);
+      if (String(value || '') !== sanitized) s.nominee.phone(sanitized);
+    });
     s.currentAddress = {
       addressType: ko.observable('CURRENT'),
       line1: ko.observable(''),
