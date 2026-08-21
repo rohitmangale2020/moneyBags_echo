@@ -54,7 +54,7 @@
           <p data-bind="text:cifNo"></p>
           <div class="mb-customer-overview-contact"><span data-bind="text:email||'No email address'"></span><span data-bind="text:phone||'No mobile number'"></span></div>
         </div>
-        <div class="mb-customer-overview-status"><span class="mb-badge" data-bind="text:status,css:status.toLowerCase()"></span><span class="mb-badge" data-bind="text:$parent.detailState.data().kyc ? $parent.detailState.data().kyc.kycStatus : 'KYC NOT STARTED',css:$parent.detailState.data().kyc ? $parent.detailState.data().kyc.kycStatus.toLowerCase() : 'kyc_pending'"></span></div>
+        <div class="mb-customer-overview-status"><span class="mb-badge" data-bind="text:String(status||'').toUpperCase()==='ACTIVE'?'ACTIVE':'INACTIVE',css:String(status||'').toUpperCase()==='ACTIVE'?'active':'kyc_pending'"></span><span class="mb-badge" data-bind="text:$parent.detailState.data().kyc ? $parent.detailState.data().kyc.kycStatus : 'KYC NOT STARTED',css:$parent.detailState.data().kyc ? $parent.detailState.data().kyc.kycStatus.toLowerCase() : 'kyc_pending'"></span></div>
       </section>
       <div class="mb-detail-actions mb-customer-workspace-actions">
         <button class="mb-link mb-workspace-action edit" data-bind="click:$parent.editCustomer"><span class="mb-workspace-action-icon" aria-hidden="true">✎</span>Edit profile</button>
