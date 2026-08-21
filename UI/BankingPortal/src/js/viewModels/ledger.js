@@ -87,7 +87,7 @@ define([
       };
       const loadedEntries = Array.isArray(s.entryState.data()) ? s.entryState.data() : [];
       return loadedEntries.filter((entry) => {
-        const searchable = [entry.transactionRef, entry.ledgerAccountCode, entry.customerAccountId, entry.description]
+        const searchable = [entry.transactionRef, entry.ledgerAccountCode, entry.customerAccountDisplay, entry.description]
           .filter(Boolean).join(' ').toLowerCase();
         const createdAt = dateValue(entry.createdAt);
         return (!text || searchable.includes(text))
@@ -116,6 +116,34 @@ define([
     s.isBalanced = ko.pureComputed(() => s.totalDebits() > 0
       && Math.abs(s.totalDebits() - s.totalCredits()) < 0.00001);
 
+    s.enrichEntries = async (payload) => {
+      const entries = normalizeEntries(payload);
+      const accountIds = [...new Set(entries.map((entry) => entry.customerAccountId).filter(Boolean))];
+      if (!accountIds.length) return entries;
+
+      const accounts = await Promise.all(accountIds.map(async (accountId) => {
+        try { return await app.services.accounts.get(accountId); } catch (error) { return null; }
+      }));
+      const accountsById = new Map(accounts.filter(Boolean).map((account) => [String(account.accountId), account]));
+      const customerIds = [...new Set(accounts.filter(Boolean).map((account) => account.customerId).filter(Boolean))];
+      const customers = await Promise.all(customerIds.map(async (customerId) => {
+        try { return await app.services.customers.get(customerId); } catch (error) { return null; }
+      }));
+      const customersById = new Map(customers.filter(Boolean).map((customer) => [String(customer.customerId), customer]));
+
+      return entries.map((entry) => {
+        const account = accountsById.get(String(entry.customerAccountId));
+        const customer = account && customersById.get(String(account.customerId));
+        const customerName = customer && [customer.firstName, customer.lastName].filter(Boolean).join(' ');
+        return {
+          ...entry,
+          customerAccountDisplay: account && customerName
+            ? `${customerName} · ${account.accountNumber || 'Account unavailable'}`
+            : entry.customerAccountId ? 'Account unavailable' : '—',
+        };
+      });
+    };
+
     s.loadAccounts = () => s.accountState.run(async () => u.list(await app.services.ledger.accounts()))
       .catch(() => null);
     s.loadEntries = () => {
@@ -130,7 +158,7 @@ define([
         return Promise.resolve();
       }
       s.currentPage(0);
-      return s.entryState.run(async () => normalizeEntries(await app.services.ledger.entries({ transactionRef, accountCode })))
+      return s.entryState.run(async () => s.enrichEntries(await app.services.ledger.entries({ transactionRef, accountCode })))
         .catch(() => null);
     };
     s.selectAccount = (account) => {
@@ -197,7 +225,7 @@ define([
         const postedEntries = await app.services.ledger.post(payload);
         s.transactionRef(payload.transactionRef);
         s.accountCode('');
-        s.entryState.data(normalizeEntries(postedEntries));
+        s.entryState.data(await s.enrichEntries(postedEntries));
         await s.loadAccounts();
         s.closePost();
         app.notify('Balanced ledger entry posted.', 'success');

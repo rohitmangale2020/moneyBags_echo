@@ -67,7 +67,7 @@
         <tr>
           <td data-bind="text:$parent.date(createdAt)"></td>
           <td><code data-bind="text:ledgerAccountCode"></code></td>
-          <td data-bind="text:customerAccountId || '—'"></td>
+          <td data-bind="text:customerAccountDisplay"></td>
           <td data-bind="text:description || '—'"></td>
           <td class="debit mb-amount" data-bind="text:entryType === 'DEBIT' ? $parent.money(amount,currencyCode) : '—'"></td>
           <td class="credit mb-amount" data-bind="text:entryType === 'CREDIT' ? $parent.money(amount,currencyCode) : '—'"></td>
